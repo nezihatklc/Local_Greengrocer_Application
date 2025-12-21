@@ -138,6 +138,7 @@ Each role MUST have:
 - Implemented in a separate Stage
 - Same product MUST be merged into a single cart entry
 - Total price MUST include VAT
+- **Order Summary:** MUST be shown before finalizing purchase.
 - Threshold rule:
   - If stock ≤ threshold → price is doubled
 
@@ -252,6 +253,8 @@ com.group18.greengrocer
 - UI MUST be responsive when resized
 - SceneBuilder MUST be used for FXML files
 - At least 6 distinct event handlers MUST exist
+- **Header:** User's username MUST be displayed in a corner.
+- **Title:** Stage title MUST be "Group18 GreenGrocer".
 
 ---
 

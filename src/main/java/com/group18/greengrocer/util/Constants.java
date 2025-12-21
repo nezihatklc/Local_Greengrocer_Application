@@ -15,5 +15,10 @@ public class Constants {
     public static final int WINDOW_HEIGHT = 540;
     
     // Business Logic Constants
-    public static final double VAT_RATE = 0.18; // %1 VAT for food items
+    // Business Logic Constants
+    public static final double VAT_RATE = 0.18; // 18% VAT
+    
+    // Loyalty Defaults
+    public static final int DEFAULT_LOYALTY_MIN_ORDER_COUNT = 5;
+    public static final double DEFAULT_LOYALTY_DISCOUNT_RATE = 10.0; // percentage
 }

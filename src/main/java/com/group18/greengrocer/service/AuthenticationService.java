@@ -1,39 +1,48 @@
 package com.group18.greengrocer.service;
 
-import com.group18.greengrocer.dao.UserDAO;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.model.Role;
-import com.group18.greengrocer.util.SessionManager;
 
 public class AuthenticationService {
-    
-    private UserDAO userDAO;
 
-    public AuthenticationService() {
-        this.userDAO = new UserDAO();
+    /**
+     * Authenticates user with username and password.
+     * 
+     * - MUST return full User object including Role on success
+     * - MUST return null if authentication fails
+     * - NO UI logic here (alerts handled in controller)
+     */
+    public User login(String username, String password) {
+        return null;
     }
 
-    public boolean login(String username, String password) {
-        // Business Rule: Validate credentials
-        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-            return false;
-        }
-
-        User user = userDAO.findUserByUsername(username);
-        if (user != null && user.getPassword().equals(password)) {
-            // Success
-            SessionManager.getInstance().setCurrentUser(user);
-            return true;
-        }
+    /**
+     * Registers a new user.
+     *
+     * IMPORTANT RULES:
+     * - ONLY users with role CUSTOMER can be registered
+     * - Username MUST be unique
+     * - Password MUST pass validatePasswordStrength(...)
+     * - Throws ValidationException on any rule violation
+     *
+     * Business logic only, NO UI code.
+     */
+    public void register(User user) { // throws ValidationException
+        return null;
+    }
+    
+    /**
+     * Checks password strength according to project rules.
+     * (length, digit, uppercase, etc.)
+     */
+    public boolean validatePasswordStrength(String password) {
         return false;
     }
-
-    public boolean register(String username, String password, Role role) {
-        // Business Rule: Check password strength, uniqueness, etc.
-        if (userDAO.findUserByUsername(username) != null) {
-            return false; // User already exists
-        }
-        // Proceed to create
-        return true; 
+    
+    /**
+     * Checks whether given username already exists in database.
+     */
+    public boolean isUsernameUnique(String username) {
+        return false;
     }
 }
