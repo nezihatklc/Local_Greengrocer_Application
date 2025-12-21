@@ -188,12 +188,49 @@ The owner MUST be able to:
 
 ## 7. Database Rules
 
+### 1.2 Package & Directory Structure (STANDARDIZED)
+
+**Java Source Code (`src/main/java`):**
+com.group18.greengrocer
+├── ...
+
+---
+
+## 4. Customer Interface Rules
+
+### 4.1 Product Display & Categories
+- Products MUST be categorized as `FRUIT` or `VEGETABLE` (Use Enum).
+- Images stored as BLOBs.
+
+### 4.4 Discounts & Loyalty
+- **Coupons:** Managed via `Coupons` table and `DiscountService`.
+
+---
+
+## 5. Carrier Interface Rules
+
+### 5.1 Order States
+- `AVAILABLE` (Pending, Purchased)
+- `SELECTED` (Taken by Carrier)
+- `COMPLETED` (Delivered)
+- `CANCELLED`
+
+### 5.2 Delivery & Rating
+- `CarrierRatings` table MUST be used for ratings (Separated from OrderInfo).
+- Invoice stored as `LONGTEXT` (CLOB) in `OrderInfo`.
+
+---
+
+## 7. Database Rules
+
 ### 7.1 Mandatory Tables
 - UserInfo
 - ProductInfo
 - OrderInfo
-
-Each table MUST contain at least 25 records.
+- OrderItems (Normalization)
+- Messages
+- Coupons
+- CarrierRatings
 
 ---
 
