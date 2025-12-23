@@ -33,6 +33,7 @@ public class OrderDAO {
      * @param order The order to create.
      * @return true if the order was successfully created, false otherwise.
      */
+    // ASSIGNED TO: Customer (Places Order)
     public boolean createOrder(Order order) {
         String insertOrderSql = "INSERT INTO OrderInfo (customer_id, carrier_id, ordertime, deliverytime, status, totalcost, used_coupon_id, invoice) " +
                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -127,6 +128,7 @@ public class OrderDAO {
      * @param id The ID of the order.
      * @return The Order object if found, otherwise null.
      */
+    // ASSIGNED TO: Shared (Used by all roles)
     public Order findOrderById(int id) {
         String sql = "SELECT * FROM OrderInfo WHERE id = ?";
         Order order = null;
@@ -154,6 +156,7 @@ public class OrderDAO {
      * @param customerId The ID of the customer.
      * @return A list of orders belonging to the customer.
      */
+    // ASSIGNED TO: Customer (Order History)
     public List<Order> findOrdersByCustomerId(int customerId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM OrderInfo WHERE customer_id = ? ORDER BY ordertime DESC";
@@ -181,6 +184,7 @@ public class OrderDAO {
      * @param carrierId The ID of the carrier.
      * @return A list of orders associated with the carrier.
      */
+    // ASSIGNED TO: Carrier (Work History)
     public List<Order> findOrdersByCarrierId(int carrierId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM OrderInfo WHERE carrier_id = ? ORDER BY ordertime DESC";
@@ -208,6 +212,7 @@ public class OrderDAO {
      *
      * @return A list of available orders.
      */
+    // ASSIGNED TO: Carrier (Job Board)
     public List<Order> findAvailableOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM OrderInfo WHERE status = 'AVAILABLE' ORDER BY ordertime ASC";
@@ -232,6 +237,7 @@ public class OrderDAO {
      * 
      * @return A list of all orders.
      */
+    // ASSIGNED TO: Owner (Admin View)
     public List<Order> findAllOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM OrderInfo ORDER BY ordertime DESC";
@@ -260,6 +266,7 @@ public class OrderDAO {
      * @param carrierId The ID of the carrier selecting the order.
      * @return true if successful, false if order is no longer available.
      */
+    // ASSIGNED TO: Carrier
     public boolean selectOrder(int orderId, int carrierId) {
         String sql = "UPDATE OrderInfo SET carrier_id = ?, status = 'SELECTED' WHERE id = ? AND status = 'AVAILABLE'";
         
@@ -286,6 +293,7 @@ public class OrderDAO {
      * @param deliveryTime The time when the order was delivered (entered by carrier).
      * @return true if successful.
      */
+    // ASSIGNED TO: Carrier
     public boolean completeOrder(int orderId, Timestamp deliveryTime) {
         String sql = "UPDATE OrderInfo SET status = 'COMPLETED', deliverytime = ? WHERE id = ? AND status = 'SELECTED'";
         
@@ -310,6 +318,7 @@ public class OrderDAO {
      * @param orderId The ID of the order to cancel.
      * @return true if the cancellation was successful.
      */
+    // ASSIGNED TO: Customer
     public boolean cancelOrder(int orderId) {
         String sql = "UPDATE OrderInfo SET status = 'CANCELLED' WHERE id = ? AND status != 'COMPLETED'";
         try (Connection conn = dbAdapter.getConnection();
@@ -330,6 +339,7 @@ public class OrderDAO {
      * @param invoiceContent The invoice content (text or path).
      * @return true if successful.
      */
+    // ASSIGNED TO: Carrier (After delivery)
     public boolean updateInvoice(int orderId, String invoiceContent) {
         String sql = "UPDATE OrderInfo SET invoice = ? WHERE id = ?";
         try (Connection conn = dbAdapter.getConnection();
