@@ -107,6 +107,11 @@ Each role MUST have:
 - Failed login MUST show an alert
 - Successful login MUST close the login stage
 
+### 3.4 Profile Updates
+- Users (Customer/Carrier/Owner) can update address, phone, and password.
+- **CRITICAL:** Profile update MUST NOT change the user's Role.
+- Role management is strictly reserved for the Owner (Employ/Fire Carrier).
+
 ---
 
 ---

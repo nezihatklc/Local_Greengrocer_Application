@@ -44,6 +44,7 @@ public class DiscountService {
      * Your current Order model is empty, so we cannot truly compute totals yet.
      * This method will compile and run, but you must later connect it to real Order fields.
      */
+    // ASSIGNED TO: Owner (Pricing Rules)
     public double calculateFinalPrice(Order order) {
         if (order == null) throw new IllegalArgumentException("Order cannot be null.");
 
@@ -82,6 +83,7 @@ public class DiscountService {
      * @return Coupon if valid, null otherwise
      * Validity includes expiration date.
      */
+    // ASSIGNED TO: Owner
     public Coupon validateCoupon(String code) {
         if (ValidatorUtil.isEmpty(code)) return null;
 
@@ -107,6 +109,7 @@ public class DiscountService {
      * Creates a new coupon (Owner-only in controller/access control).
      * Discount value MUST be > 0.
      */
+    // ASSIGNED TO: Owner
     public void createCoupon(Coupon coupon) {
         if (coupon == null) throw new IllegalArgumentException("Coupon cannot be null.");
 
@@ -128,6 +131,7 @@ public class DiscountService {
      * Loyalty discount percent based on user's past completed orders.
      * DAO-less: you MUST plug a real completed-order-count source later.
      */
+    // ASSIGNED TO: Owner
     public double getLoyaltyDiscount(int userId) {
         if (userId <= 0) return 0.0;
 
@@ -141,6 +145,7 @@ public class DiscountService {
     /**
      * Updates loyalty rules (Owner-only enforced by controller).
      */
+    // ASSIGNED TO: Owner
     public void updateLoyaltyRules(int minOrderCount, double discountRate) {
         if (minOrderCount <= 0) throw new IllegalArgumentException("minOrderCount must be > 0.");
         if (discountRate <= 0) throw new IllegalArgumentException("discountRate must be > 0.");

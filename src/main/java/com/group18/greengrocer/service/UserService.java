@@ -28,17 +28,20 @@ public class UserService {
     // -------------------------
 
     /** Owner/admin: list all users */
+    // ASSIGNED TO: Team Leader
     public List<User> getAllUsers() {
         return userDAO.findAll();
     }
 
     /** Get user by id */
+    // ASSIGNED TO: Team Leader
     public User getUserById(int userId) {
         if (userId <= 0) throw new IllegalArgumentException("Invalid user id.");
         return userDAO.findUserById(userId);
     }
 
     /** Owner: list carriers */
+    // ASSIGNED TO: Owner
     public List<User> getAllCarriers() {
         return userDAO.findUsersByRole(Role.CARRIER);
     }
@@ -56,6 +59,7 @@ public class UserService {
      *
      * Role may be null in the UI object -> keep existing role.
      */
+    // ASSIGNED TO: Team Leader
     public void updateUser(User user) {
         if (user == null) throw new IllegalArgumentException("User cannot be null.");
         if (user.getId() <= 0) throw new IllegalArgumentException("Invalid user id.");
@@ -73,13 +77,9 @@ public class UserService {
         if (address.isEmpty())  throw new IllegalArgumentException("Address cannot be empty.");
         if (phone.isEmpty())    throw new IllegalArgumentException("Phone number cannot be empty.");
 
-        // If role not provided (common), keep existing role
-        if (user.getRole() == null) {
-            user.setRole(existing.getRole());
-        }
-        if (user.getRole() == null) {
-            throw new IllegalArgumentException("Role cannot be null.");
-        }
+        // CRITICAL: Profile update must NEVER change the role.
+        // We force the existing role, ignoring whatever came from the UI.
+        user.setRole(existing.getRole());
 
         // Username unique check ONLY if changed
         if (!existing.getUsername().equals(username)) {
@@ -116,6 +116,7 @@ public class UserService {
      * Changes password after validating old password.
      * Rules: strong password required (ValidatorUtil).
      */
+    // ASSIGNED TO: Team Leader
     public void changePassword(int userId, String oldPass, String newPass) {
         if (userId <= 0) throw new IllegalArgumentException("Invalid user id.");
 
@@ -149,6 +150,7 @@ public class UserService {
      * Employ carrier.
      * Rules: username unique, strong password (ValidatorUtil), role is CARRIER.
      */
+    // ASSIGNED TO: Owner
     public void addCarrier(User carrier) {
         if (carrier == null) throw new IllegalArgumentException("Carrier cannot be null.");
 
@@ -182,6 +184,7 @@ public class UserService {
      * Fire carrier (delete).
      * If you later add an 'active' column, switch to deactivate instead.
      */
+    // ASSIGNED TO: Owner
     public void removeCarrier(int carrierId) {
         if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
 
@@ -198,6 +201,7 @@ public class UserService {
     // -------------------------
 
     /** Returns average rating for a carrier from CarrierRatings table. */
+    // ASSIGNED TO: Carrier
     public double getCarrierRating(int carrierId) {
         if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
 
