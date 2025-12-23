@@ -10,6 +10,7 @@ public class UserService {
      * 
      * @return List of all users.
      */
+    // ASSIGNED TO: Team Leader
     public List<User> getAllUsers() {
         return null;
     }
@@ -20,6 +21,7 @@ public class UserService {
      * @param userId The ID of the user.
      * @return The User object or null.
      */
+    // ASSIGNED TO: Team Leader
     public User getUserById(int userId) {
         return null;
     }
@@ -29,6 +31,7 @@ public class UserService {
      * 
      * @param user The user object with updated info.
      */
+    // ASSIGNED TO: Team Leader
     public void updateUser(User user) {
     }
 
@@ -40,6 +43,7 @@ public class UserService {
      * @param oldPass The current password.
      * @param newPass The new password.
      */
+    // ASSIGNED TO: Team Leader
     public void changePassword(int userId, String oldPass, String newPass) {
     }
 
@@ -48,6 +52,7 @@ public class UserService {
      * 
      * @param carrier The User object representing the carrier.
      */
+    // ASSIGNED TO: Owner
     public void addCarrier(User carrier) {
     }
 
@@ -56,6 +61,7 @@ public class UserService {
      * 
      * @param carrierId The ID of the carrier to remove.
      */
+    // ASSIGNED TO: Owner
     public void removeCarrier(int carrierId) {
     }
 
@@ -64,6 +70,7 @@ public class UserService {
      * 
      * @return List of carriers.
      */
+    // ASSIGNED TO: Owner
     public List<User> getAllCarriers() {
         return null;
     }
@@ -74,6 +81,7 @@ public class UserService {
      * @param carrierId The ID of the carrier.
      * @return The average rating (1-5).
      */
+    // ASSIGNED TO: Carrier
     public double getCarrierRating(int carrierId) {
         return 0.0;
     }

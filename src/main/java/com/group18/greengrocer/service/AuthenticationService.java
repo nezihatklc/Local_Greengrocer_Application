@@ -12,6 +12,7 @@ public class AuthenticationService {
      * - MUST return null if authentication fails
      * - NO UI logic here (alerts handled in controller)
      */
+    // ASSIGNED TO: Team Leader
     public User login(String username, String password) {
         return null;
     }
@@ -27,6 +28,7 @@ public class AuthenticationService {
      *
      * Business logic only, NO UI code.
      */
+    // ASSIGNED TO: Team Leader
     public void register(User user) { // throws ValidationException
         return null;
     }
@@ -35,6 +37,7 @@ public class AuthenticationService {
      * Checks password strength according to project rules.
      * (length, digit, uppercase, etc.)
      */
+    // ASSIGNED TO: Team Leader
     public boolean validatePasswordStrength(String password) {
         return false;
     }
@@ -42,6 +45,7 @@ public class AuthenticationService {
     /**
      * Checks whether given username already exists in database.
      */
+    // ASSIGNED TO: Team Leader
     public boolean isUsernameUnique(String username) {
         return false;
     }

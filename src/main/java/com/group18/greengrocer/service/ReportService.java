@@ -10,6 +10,7 @@ public class ReportService {
      * 
      * @return List of report data points.
      */
+    // ASSIGNED TO: Owner
     public List<ReportData> generateSalesReport() {
         return null;
     }
@@ -19,6 +20,7 @@ public class ReportService {
      * 
      * @return List of report data points.
      */
+    // ASSIGNED TO: Owner
     public List<ReportData> generateStockReport() {
         return null;
     }
@@ -28,6 +30,7 @@ public class ReportService {
      * 
      * @return List of report data points.
      */
+    // ASSIGNED TO: Owner
     public List<ReportData> generateCarrierPerformanceReport() {
         return null;
     }
@@ -37,6 +40,7 @@ public class ReportService {
      * 
      * @return List of report data points.
      */
+    // ASSIGNED TO: Owner
     public List<ReportData> generateIncomeReport() {
         return null;
     }

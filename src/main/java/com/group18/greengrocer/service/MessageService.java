@@ -11,6 +11,7 @@ public class MessageService {
      * @param message The message object containing content and sender details.
      * @throws IllegalArgumentException if the sender is not a customer.
      */
+    // ASSIGNED TO: Carrier (Communication Module Owner)
     public void sendMessage(Message message) {
     }
 
@@ -19,6 +20,7 @@ public class MessageService {
      * 
      * @return List of messages for the owner.
      */
+    // ASSIGNED TO: Carrier
     public List<Message> getMessagesForOwner() {
         return null;
     }
@@ -29,6 +31,7 @@ public class MessageService {
      * @param userId The ID of the customer.
      * @return List of messages for the customer.
      */
+    // ASSIGNED TO: Carrier
     public List<Message> getMessagesForCustomer(int userId) {
         return null;
     }
@@ -38,6 +41,7 @@ public class MessageService {
      * ONLY owner can reply.
      * Reply should be stored as a new message linked to the original one.
      */
+    // ASSIGNED TO: Carrier
     public void replyToMessage(int originalMessageId, String replyContent) {
     }
 }

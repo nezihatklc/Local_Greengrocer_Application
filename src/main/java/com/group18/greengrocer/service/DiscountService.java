@@ -13,6 +13,7 @@ public class DiscountService {
      * - Coupon discount (if exists)
      * - Loyalty discount (if eligible)
      */
+    // ASSIGNED TO: Owner (Defines pricing rules)
     public double calculateFinalPrice(Order order) {
         return 0.0;
     }
@@ -23,6 +24,7 @@ public class DiscountService {
      * @return Coupon if valid, null otherwise
      * Coupon validity includes expiration and usage rules.
      */
+    // ASSIGNED TO: Owner (Defines validation logic)
     public Coupon validateCoupon(String code) {
     }
 
@@ -32,6 +34,7 @@ public class DiscountService {
      * ONLY owner can create coupons.
      * Discount value MUST be greater than zero.
      */
+    // ASSIGNED TO: Owner
     public void createCoupon(Coupon coupon) {
     }
 
@@ -40,6 +43,7 @@ public class DiscountService {
      *
      * @return discount percentage (e.g. 10.0 for %10)
      */
+    // ASSIGNED TO: Owner
     public double getLoyaltyDiscount(int userId) {
         return 0.0;
     }
@@ -51,6 +55,7 @@ public class DiscountService {
      * - discountRate > 0
      * - OWNER only
      */
+    // ASSIGNED TO: Owner
     public void updateLoyaltyRules(int minOrderCount, double discountRate) {
     }
 }

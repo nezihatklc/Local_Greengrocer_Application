@@ -13,6 +13,7 @@ public class OrderService {
      * @param userId The ID of the customer.
      * @return The Order object representing the cart.
      */
+    // ASSIGNED TO: Customer
     public Order getCart(int userId) {
         return null;
     }
@@ -25,6 +26,7 @@ public class OrderService {
      * @param productId The ID of the product.
      * @param amount The quantity to add (e.g., in kg).
      */
+    // ASSIGNED TO: Customer
     public void addToCart(int userId, int productId, double amount) {
     }
 
@@ -34,6 +36,7 @@ public class OrderService {
      * @param userId The ID of the customer.
      * @param productId The ID of the product to remove.
      */
+    // ASSIGNED TO: Customer
     public void removeFromCart(int userId, int productId) {
     }
 
@@ -44,6 +47,7 @@ public class OrderService {
      * @param productId The ID of the product.
      * @param amount The new quantity.
      */
+    // ASSIGNED TO: Customer
     public void updateCartItem(int userId, int productId, double amount) {
     }
 
@@ -53,6 +57,7 @@ public class OrderService {
      * 
      * @param order The order to be checked out.
      */
+    // ASSIGNED TO: Customer
     public void checkout(Order order) {
     }
 
@@ -62,6 +67,7 @@ public class OrderService {
      * 
      * @return List of pending orders.
      */
+    // ASSIGNED TO: Carrier
     public List<Order> getPendingOrders() {
         return null;
     }
@@ -73,6 +79,7 @@ public class OrderService {
      * @param orderId The ID of the order.
      * @param carrierId The ID of the carrier.
      */
+    // ASSIGNED TO: Carrier
     public void assignOrderToCarrier(int orderId, int carrierId) {
     }
 
@@ -83,6 +90,7 @@ public class OrderService {
      * @param orderId The ID of the order.
      * @param deliveryDate The date/time when it was delivered.
      */
+    // ASSIGNED TO: Carrier
     public void completeOrder(int orderId, Date deliveryDate) {
     }
 
@@ -92,6 +100,7 @@ public class OrderService {
      * 
      * @param orderId The ID of the order.
      */
+    // ASSIGNED TO: Customer
     public void cancelOrder(int orderId) {
     }
 
@@ -100,6 +109,7 @@ public class OrderService {
      * 
      * @return List of all orders in the system.
      */
+    // ASSIGNED TO: Owner
     public List<Order> getAllOrders() {
         return null;
     }
@@ -111,6 +121,7 @@ public class OrderService {
      * @param rating Rating value (1-5).
      * @param comment Optional comment.
      */
+    // ASSIGNED TO: Customer
     public void rateOrder(int orderId, int rating, String comment) {
     }
 
@@ -120,6 +131,7 @@ public class OrderService {
      * @param userId The ID of the customer.
      * @return List of customer's orders.
      */
+    // ASSIGNED TO: Customer
     public List<Order> getOrdersByCustomer(int userId) {
         return null;
     }
@@ -130,6 +142,7 @@ public class OrderService {
      * @param carrierId The ID of the carrier.
      * @return List of orders associated with the carrier.
      */
+    // ASSIGNED TO: Carrier
     public List<Order> getOrdersByCarrier(int carrierId) {
         return null;
     }
@@ -141,6 +154,7 @@ public class OrderService {
      * @param orderId The ID of the order.
      * @return The invoice text content.
      */
+    // ASSIGNED TO: Carrier (Documentation Specialist)
     public String getInvoice(int orderId) {
         return null;
     }

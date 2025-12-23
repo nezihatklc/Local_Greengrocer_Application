@@ -168,7 +168,7 @@ An order MUST NOT be selected by more than one carrier.
 
 ### 5.2 Delivery Completion
 - Carrier MUST enter delivery date
-- Order MUST be marked as delivered
+- Order MUST be marked as delivered"   
 - Customer MUST be able to rate the carrier
 
 ---
@@ -260,22 +260,7 @@ To ensure type safety and consistency between Java Model and Database:
     - DB: `VARCHAR`
     - Code MUST use `Category` Enum, but `type` is free text.
 
-### 7.4 Enum Usage (Rules to Remember)
-Three main structures MUST be mapped to Enums for type safety:
 
-1.  **User Role** (`UserInfo.role`):
-    - Enum: `Role`
-    - Values: `CUSTOMER`, `CARRIER`, `OWNER`
-
-2.  **Product Category** (`ProductInfo.category`):
-    - Enum: `Category`
-    - Values: `FRUIT`, `VEGETABLE`
-
-3.  **Product Type** (`ProductInfo.type`):
-    - Enum: `ProductType`
-    - Values: All specific types (e.g., `GALA`, `VINE`, `RUSSET`...) plus `OTHER`.
-
-This ensures consistency between the Model layer and Database storage.
 
 ---
 
