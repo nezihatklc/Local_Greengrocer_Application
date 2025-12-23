@@ -244,6 +244,39 @@ com.group18.greengrocer
 - Database MUST be exported as a `.sql` file (`GroupXX.sql`).
 - Must include schema and AT LEAST 25 rows for each mandatory table.
 
+### 7.4 Enum Usage Rules (MANDATORY)
+To ensure type safety and consistency between Java Model and Database:
+
+1.  **User Role** (`UserInfo.role`):
+    - Java: `Role` Enum
+    - DB: `ENUM('CUSTOMER', 'CARRIER', 'OWNER')`
+
+2.  **Product Category** (`ProductInfo.category`):
+    - Java: `Category` Enum
+    - DB: `ENUM('FRUIT', 'VEGETABLE')`
+
+3.  **Product Type** (`ProductInfo.type`):
+    - Java: `String` (Dynamic types)
+    - DB: `VARCHAR`
+    - Code MUST use `Category` Enum, but `type` is free text.
+
+### 7.4 Enum Usage (Rules to Remember)
+Three main structures MUST be mapped to Enums for type safety:
+
+1.  **User Role** (`UserInfo.role`):
+    - Enum: `Role`
+    - Values: `CUSTOMER`, `CARRIER`, `OWNER`
+
+2.  **Product Category** (`ProductInfo.category`):
+    - Enum: `Category`
+    - Values: `FRUIT`, `VEGETABLE`
+
+3.  **Product Type** (`ProductInfo.type`):
+    - Enum: `ProductType`
+    - Values: All specific types (e.g., `GALA`, `VINE`, `RUSSET`...) plus `OTHER`.
+
+This ensures consistency between the Model layer and Database storage.
+
 ---
 
 ## 8. GUI & UX Rules

@@ -6,7 +6,8 @@ package com.group18.greengrocer.util;
 public class Constants {
     // Database Config
     public static final String DB_URL = "jdbc:mysql://localhost:3306/greengrocer_db";
-    public static final String DB_USER = "myuser@localhost"; // From project description
+    public static final String DB_USER = "myuser"; // Project requires 'myuser'@'localhost', so we use "myuser" here
+    // NOTE: In JDBC, we provide just the username ("myuser"). The "@localhost" part is determined by the connection source.
     public static final String DB_PASS = "1234";             // From project description
     
     // UI Config
