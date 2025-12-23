@@ -58,6 +58,7 @@ public class ProductService {
      * @param quantity The requested quantity.
      * @return true if stock is sufficient, false otherwise.
      */
+    // ASSIGNED TO: Customer (Validation)
     public boolean checkStockAvailability(int productId, double quantity) {
         Product product = productDAO.findById(productId);
         return product != null && product.getStock() >= quantity;
@@ -70,6 +71,7 @@ public class ProductService {
      * @param product the product whose effective price will be calculated
      * @return the effective price considering the stock threshold rule
      */
+     // ASSIGNED TO: Owner (Pricing Logic)
      public double getEffectivePrice(Product product) {
         if (product.getStock() <= product.getThreshold()) {
             return product.getPrice() * 2;
@@ -86,6 +88,7 @@ public class ProductService {
      * @param keyword The search term.
      * @return List of matching products.
      */
+    // ASSIGNED TO: Customer
     public List<Product> searchProducts(String keyword) {
         return productDAO.findAvailableProducts()
                 .stream()
