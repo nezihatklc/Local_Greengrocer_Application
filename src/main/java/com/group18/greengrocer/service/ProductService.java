@@ -1,17 +1,26 @@
 package com.group18.greengrocer.service;
 
+import com.group18.greengrocer.dao.ProductDAO;
 import com.group18.greengrocer.model.Product;
 import java.util.List;
 
 public class ProductService {
 
+   private final ProductDAO productDAO;
+
+    public ProductService() {
+        this.productDAO = new ProductDAO();
+    }
+
+
+    /* ----- CUSTOMER USE ------ */
     /**
      * Retrieves all products available in the catalog.
      * 
      * @return List of all products.
      */
     public List<Product> getAllProducts() {
-        return null;
+        return productDAO.findAvailableProducts();
     }
 
     /**
@@ -21,7 +30,11 @@ public class ProductService {
      * @return List of products in the category.
      */
     public List<Product> getProductsByCategory(String category) {
-        return null;
+       return productDAO.findAvailableProducts()
+                .stream()
+                .filter(p -> p.getCategory() != null &&
+                             p.getCategory().name().equalsIgnoreCase(category))
+                .toList();
     }
 
     /**
@@ -31,8 +44,55 @@ public class ProductService {
      * @return The Product object, or null if not found.
      */
     public Product getProductById(int productId) {
-        return null;
+       return productDAO.findById(productId);
     }
+
+
+     /**
+     * Checks if there is enough stock for a requested quantity.
+     * 
+     * @param productId The ID of the product.
+     * @param quantity The requested quantity.
+     * @return true if stock is sufficient, false otherwise.
+     */
+    public boolean checkStockAvailability(int productId, double quantity) {
+        Product product = productDAO.findById(productId);
+        return product != null && product.getStock() >= quantity;
+    }
+
+
+    /**
+     * Calculates the effective price of a product based on its current stock level.
+     * 
+     * @param product the product whose effective price will be calculated
+     * @return the effective price considering the stock threshold rule
+     */
+     public double getEffectivePrice(Product product) {
+        if (product.getStock() <= product.getThreshold()) {
+            return product.getPrice() * 2;
+        }
+        return product.getPrice();
+    }
+
+
+
+
+     /**
+     * Searches for products matching a keyword.
+     * 
+     * @param keyword The search term.
+     * @return List of matching products.
+     */
+    public List<Product> searchProducts(String keyword) {
+        return productDAO.findAvailableProducts()
+                .stream()
+                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .toList();
+    }
+
+
+
+      /* ----- OWNER USE ------ */
 
     /**
      * Adds a new product to the catalog.
@@ -40,7 +100,8 @@ public class ProductService {
      * @param product The product to add.
      */
     public void addProduct(Product product) {
-    }
+        productDAO.insert(product);
+    };
 
     /**
      * Updates an existing product's details.
@@ -48,6 +109,7 @@ public class ProductService {
      * @param product The product with updated information.
      */
     public void updateProduct(Product product) {
+        productDAO.update(product);
     }
 
     /**
@@ -56,6 +118,7 @@ public class ProductService {
      * @param productId The ID of the product to remove.
      */
     public void removeProduct(int productId) {
+        productDAO.delete(productId);
     }
 
     /**
@@ -65,18 +128,19 @@ public class ProductService {
      * @param quantity The amount to add (positive) or remove (negative).
      */
     public void updateStock(int productId, double quantity) {
+        Product product = productDAO.findById(productId);
+        if (product == null) return;
+
+        double newStock = product.getStock() + quantity;
+        if (newStock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
+
+        product.setStock(newStock);
+        productDAO.update(product);
     }
 
-    /**
-     * Checks if there is enough stock for a requested quantity.
-     * 
-     * @param productId The ID of the product.
-     * @param quantity The requested quantity.
-     * @return true if stock is sufficient, false otherwise.
-     */
-    public boolean checkStockAvailability(int productId, double quantity) {
-        return false;
-    }
+   
 
     /**
      * Sets the price threshold for a product.
@@ -86,15 +150,17 @@ public class ProductService {
      * @param threshold The threshold quantity.
      */
     public void setPriceThreshold(int productId, double threshold) {
-    }
+        if (threshold <= 0) {
+            throw new IllegalArgumentException("Threshold must be positive");
+        }
 
-    /**
-     * Searches for products matching a keyword.
-     * 
-     * @param keyword The search term.
-     * @return List of matching products.
-     */
-    public List<Product> searchProducts(String keyword) {
-        return null;
+        Product product = productDAO.findById(productId);
+        if (product == null) return;
+
+        product.setThreshold(threshold);
+        productDAO.update(product);
     }
+    
+
+   
 }
