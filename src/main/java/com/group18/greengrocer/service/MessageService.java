@@ -1,9 +1,24 @@
 package com.group18.greengrocer.service;
 
+import com.group18.greengrocer.dao.MessageDAO;
+import com.group18.greengrocer.dao.UserDAO;
 import com.group18.greengrocer.model.Message;
+import com.group18.greengrocer.model.Role;
+import com.group18.greengrocer.model.User;
+import com.group18.greengrocer.util.SessionManager;
 import java.util.List;
 
 public class MessageService {
+    private final UserDAO userDAO;
+    private final MessageDAO messageDAO;
+    private final SessionManager sessionManager;
+
+    public MessageService() {
+        this.messageDAO = new MessageDAO();
+        this.userDAO = new UserDAO();
+        this.sessionManager = SessionManager.getInstance();
+    }
+
 
     /**
      * Sends a message from a customer to the owner.
@@ -13,7 +28,30 @@ public class MessageService {
      */
     // ASSIGNED TO: Carrier (Communication Module Owner)
     public void sendMessage(Message message) {
+        if (!sessionManager.isCustomer()) {
+            throw new IllegalArgumentException("Only customers can send messages to the owner.");
+        }
+
+        if (message == null || message.getContent() == null || message.getContent().trim().isEmpty()) {
+            throw new IllegalArgumentException("Message content cannot be empty.");
+        }
+
+        User currentUser = sessionManager.getCurrentUser();
+        message.setSenderId(currentUser.getId());
+
+        List<User> owners = userDAO.findUsersByRole(Role.OWNER);
+        if (owners.isEmpty()) {
+            throw new IllegalStateException("No owner found in the system.");
+        }
+
+        User owner = owners.get(0); // sistemde 1 owner varsayımı
+        message.setReceiverId(owner.getId());
+
+
+        messageDAO.sendMessage(message);
     }
+
+    
 
     /**
      * Retrieves all messages sent to the owner.
@@ -22,7 +60,12 @@ public class MessageService {
      */
     // ASSIGNED TO: Carrier
     public List<Message> getMessagesForOwner() {
-        return null;
+               if (!sessionManager.isOwner()) {
+            throw new IllegalStateException("Only owner can view incoming messages.");
+        }
+
+        return messageDAO.getMessagesForReceiver(sessionManager.getCurrentUser().getId());
+ 
     }
 
     /**
@@ -33,7 +76,13 @@ public class MessageService {
      */
     // ASSIGNED TO: Carrier
     public List<Message> getMessagesForCustomer(int userId) {
-        return null;
+                if (!sessionManager.isOwner() && !sessionManager.isCustomer()) {
+            throw new IllegalStateException("Unauthorized access to messages.");
+        }
+
+        int currentUserId = sessionManager.getCurrentUser().getId();
+        return messageDAO.getMessagesBetweenUsers(currentUserId, userId);
+
     }
 
     /**
@@ -43,5 +92,28 @@ public class MessageService {
      */
     // ASSIGNED TO: Carrier
     public void replyToMessage(int originalMessageId, String replyContent) {
+        if (!sessionManager.isOwner()) {
+            throw new IllegalStateException("Only owner can reply to messages.");
+        }
+
+        if (replyContent == null || replyContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Reply content cannot be empty.");
+        }
+
+        Message originalMessage = messageDAO.getMessageById(originalMessageId);
+
+        if (originalMessage == null) {
+            throw new IllegalArgumentException("Original message not found.");
+        }
+
+        
+        Message reply = new Message();
+        reply.setSenderId(sessionManager.getCurrentUser().getId()); // Owner
+        reply.setReceiverId(originalMessage.getSenderId());        // Customer
+        reply.setContent(replyContent);
+
+        
+        messageDAO.sendMessage(reply);
+
     }
 }
