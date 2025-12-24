@@ -66,6 +66,55 @@ public class ProductDAO {
     }
 
     /**
+     * Searches for products by name matching the keyword.
+     * Case-insensitive search using LIKE %keyword%.
+     * 
+     * @param keyword The search keyword.
+     * @return List of matching products.
+     */
+    public List<Product> searchByName(String keyword) {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM ProductInfo WHERE name LIKE ? ORDER BY name ASC";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, "%" + keyword + "%");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
+
+    /**
+     * Retrieves products filtered by category.
+     * 
+     * @param category The category to filter by (FRUIT or VEGETABLE).
+     * @return List of products in the category.
+     */
+    public List<Product> findByCategory(Category category) {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM ProductInfo WHERE category = ? ORDER BY name ASC";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, category.name());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
+
+    /**
      * Finds a product by ID.
      * 
      * @param id The product ID.
