@@ -31,8 +31,8 @@ public class ProductDAO {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM ProductInfo ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 products.add(mapProduct(rs));
@@ -53,8 +53,8 @@ public class ProductDAO {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM ProductInfo WHERE stock > 0 ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 products.add(mapProduct(rs));
