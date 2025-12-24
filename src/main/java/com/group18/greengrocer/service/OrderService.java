@@ -5,20 +5,24 @@ import com.group18.greengrocer.dao.OrderDAO;
 import com.group18.greengrocer.model.CarrierRating;
 import com.group18.greengrocer.model.CartItem;
 import com.group18.greengrocer.model.Order;
+import com.group18.greengrocer.model.Product;
+import com.group18.greengrocer.dao.ProductDAO;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
-import java.sql.Timestamp;
 
 
 public class OrderService {
 
     private final OrderDAO orderDAO;
 
+    private final ProductDAO productDAO;
+
     private final List<CartItem> cart;
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
+        this.productDAO = new ProductDAO();
         this.cart = new ArrayList<>();
     }
 
@@ -47,16 +51,35 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void addToCart(int userId, int productId, double amount) {
-        for (CartItem item : cart) {
-            if (item.getProduct() != null && item.getProduct().getId() == productId) {
-                item.setQuantity(item.getQuantity() + amount);
-                return;
-            }
+         if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be greater than zero.");
     }
 
-        CartItem newItem = new CartItem();
-        newItem.setQuantity(amount);
-        cart.add(newItem);
+    Product product = productDAO.findById(productId);
+    if (product == null) {
+        throw new IllegalArgumentException("Product not found.");
+    }
+
+    double alreadyInCart = 0;
+    for (CartItem item : cart) {
+        if (item.getProduct().getId() == productId) {
+            alreadyInCart = item.getQuantity();
+            break;
+        }
+    }
+
+    if (product.getStock() < alreadyInCart + amount) {
+        throw new IllegalStateException("Insufficient stock.");
+    }
+
+    for (CartItem item : cart) {
+        if (item.getProduct().getId() == productId) {
+            item.setQuantity(item.getQuantity() + amount);
+            return;
+        }
+    }
+
+    cart.add(new CartItem(product, amount));
     }
 
 
@@ -84,16 +107,25 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void updateCartItem(int userId, int productId, double amount) {
-                for (CartItem item : cart) {
-            if (item.getProduct() != null && item.getProduct().getId() == productId) {
-                if (amount <= 0) {
-                    cart.remove(item);
-                } else {
-                    item.setQuantity(amount);
-                }
-                return;
-            }
+        if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be greater than zero.");
+    }
+
+    Product product = productDAO.findById(productId);
+    if (product == null) {
+        throw new IllegalArgumentException("Product not found.");
+    }
+
+    if (product.getStock() < amount) {
+        throw new IllegalStateException("Insufficient stock.");
+    }
+
+    for (CartItem item : cart) {
+        if (item.getProduct().getId() == productId) {
+            item.setQuantity(amount);
+            return;
         }
+    }
     }
 
     /**
@@ -104,11 +136,62 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void checkout(Order order) {
-        order.setOrderTime(new Timestamp(System.currentTimeMillis()));
+        
+        if (cart.isEmpty()) {
+            throw new IllegalStateException("Cart is empty.");
+        }
+
+
+        double total = 0.0;
+
+    // FINAL STOCK CHECK + PRICE CALCULATION
+    for (CartItem item : cart) {
+        Product product = productDAO.findById(item.getProduct().getId());
+
+        if (product == null || product.getStock() < item.getQuantity()) {
+            throw new IllegalStateException("Stock changed. Please review your cart.");
+        }
+
+        double price = product.getPrice();
+
+        // Threshold rule
+        if (product.getStock() <= product.getThreshold()) {
+            price *= 2;
+        }
+
+        item.setPriceAtPurchase(price);
+        total += price * item.getQuantity();
+    }
+
+        // VAT 18%
+        total = total * 1.18;
+        order.setTotalCost(total);
+
+        // CREATE ORDER
+        order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
         order.setStatus(Order.Status.AVAILABLE);
         orderDAO.createOrder(order);
+
+        // STOCK DECREASE
+        for (CartItem item : cart) {
+            Product product = productDAO.findById(item.getProduct().getId());
+            if (product == null) {
+                throw new RuntimeException("Product not found");
+            }
+            
+            double newStock = product.getStock() - item.getQuantity();
+            
+            if (newStock < 0) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+            
+            product.setStock(newStock);
+            productDAO.update(product);
+        }
+        
         cart.clear();
     }
+
 
     /**
      * Retrieves all orders that are ready to be picked up by carriers.
@@ -151,7 +234,28 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void cancelOrder(int orderId) {
-        orderDAO.cancelOrder(orderId);
+        Order order = orderDAO.findOrderById(orderId);
+
+        if (order == null) {
+            return;
+        }
+        
+        if (orderDAO.cancelOrder(orderId)) {
+            
+            // RESTORE STOCK
+            for (CartItem item : order.getItems()) {
+                
+                Product product = productDAO.findById(item.getProduct().getId());
+                if (product == null) {
+                continue;
+            }
+
+            double restoredStock = product.getStock() + item.getQuantity();
+            product.setStock(restoredStock);
+
+            productDAO.update(product);
+        }
+    }
     }
 
     /**
