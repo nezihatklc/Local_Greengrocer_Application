@@ -134,6 +134,31 @@ public class MessageDAO {
         return false;
     }
     
+    /**
+     * Retrieves a message by its ID.
+     * 
+     * @param messageId The ID of the message.
+     * @return The Message object, or null if not found.
+     */
+    public Message getMessageById(int messageId) {
+        String sql = "SELECT m.*, u.username as sender_name FROM Messages m " + 
+                     "JOIN UserInfo u ON m.sender_id = u.id " +
+                     "WHERE m.id = ?";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, messageId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapMessage(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Not found
+    }
+
     private Message mapMessage(ResultSet rs) throws SQLException {
         Message m = new Message();
         m.setId(rs.getInt("id"));
