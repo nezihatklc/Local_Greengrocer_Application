@@ -1,10 +1,26 @@
 package com.group18.greengrocer.service;
 
+import com.group18.greengrocer.dao.CarrierRatingDAO;
+import com.group18.greengrocer.dao.OrderDAO;
+import com.group18.greengrocer.model.CarrierRating;
+import com.group18.greengrocer.model.CartItem;
 import com.group18.greengrocer.model.Order;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
+import java.sql.Timestamp;
+
 
 public class OrderService {
+
+    private final OrderDAO orderDAO;
+
+    private final List<CartItem> cart;
+
+    public OrderService() {
+        this.orderDAO = new OrderDAO();
+        this.cart = new ArrayList<>();
+    }
 
     /**
      * Retrieves the current active shopping cart for a user.
@@ -15,7 +31,10 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public Order getCart(int userId) {
-        return null;
+        Order cartOrder = new Order();
+        cartOrder.setCustomerId(userId);
+        cartOrder.setItems(cart);
+        return cartOrder;
     }
 
     /**
@@ -28,7 +47,18 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void addToCart(int userId, int productId, double amount) {
+        for (CartItem item : cart) {
+            if (item.getProduct() != null && item.getProduct().getId() == productId) {
+                item.setQuantity(item.getQuantity() + amount);
+                return;
+            }
     }
+
+        CartItem newItem = new CartItem();
+        newItem.setQuantity(amount);
+        cart.add(newItem);
+    }
+
 
     /**
      * Removes a specific product from the cart.
@@ -38,7 +68,12 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void removeFromCart(int userId, int productId) {
+        cart.removeIf(item ->
+                item.getProduct() != null && item.getProduct().getId() == productId
+        );
     }
+
+
 
     /**
      * Updates the quantity of a product in the cart.
@@ -49,6 +84,16 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void updateCartItem(int userId, int productId, double amount) {
+                for (CartItem item : cart) {
+            if (item.getProduct() != null && item.getProduct().getId() == productId) {
+                if (amount <= 0) {
+                    cart.remove(item);
+                } else {
+                    item.setQuantity(amount);
+                }
+                return;
+            }
+        }
     }
 
     /**
@@ -59,6 +104,10 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void checkout(Order order) {
+        order.setOrderTime(new Timestamp(System.currentTimeMillis()));
+        order.setStatus(Order.Status.AVAILABLE);
+        orderDAO.createOrder(order);
+        cart.clear();
     }
 
     /**
@@ -102,6 +151,7 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void cancelOrder(int orderId) {
+        orderDAO.cancelOrder(orderId);
     }
 
     /**
@@ -123,6 +173,41 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void rateOrder(int orderId, int rating, String comment) {
+        // 1. Check if the order exists
+    Order order = orderDAO.findOrderById(orderId);
+    if (order == null) {
+        return;
+    }
+
+    // 2. Only COMPLETED orders can be rated
+    if (order.getStatus() != Order.Status.COMPLETED) {
+        return;
+    }
+
+    CarrierRatingDAO ratingDAO = new CarrierRatingDAO();
+
+    // 3. Prevent duplicate ratings for the same order
+    if (ratingDAO.hasRated(orderId)) {
+        return;
+    }
+
+    // 4. Validate rating range (1–5)
+    if (rating < 1 || rating > 5) {
+        return;
+    }
+
+    // 5. Create CarrierRating object using existing setters
+    CarrierRating carrierRating = new CarrierRating();
+    carrierRating.setOrderId(order.getId());
+    carrierRating.setCustomerId(order.getCustomerId());
+    carrierRating.setCarrierId(order.getCarrierId());
+    carrierRating.setRating(rating);
+    carrierRating.setComment(comment);
+    // created_at is optional; DB may also set it automatically
+    carrierRating.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+
+    // 6. Save rating to database
+    ratingDAO.addRating(carrierRating);
     }
 
     /**
@@ -133,7 +218,7 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public List<Order> getOrdersByCustomer(int userId) {
-        return null;
+        return orderDAO.findOrdersByCustomerId(userId);
     }
 
     /**
