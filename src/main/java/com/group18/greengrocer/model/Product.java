@@ -1,6 +1,5 @@
 package com.group18.greengrocer.model;
 
-import java.util.Arrays;
 
 /**
  * Represents a Product in the inventory.
