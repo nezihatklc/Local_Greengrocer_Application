@@ -5,7 +5,6 @@ import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.util.ValidatorUtil;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -115,6 +114,18 @@ public class ProductService {
     /* -------------------------
        OWNER USE (Management)
        ------------------------- */
+
+       
+
+    /**
+    * Retrieves ALL products (including out-of-stock ones).
+    * Rule: Owner must be able to view and manage all products.
+    */
+     
+    public List<Product> getAllProductsForOwner() {
+         return productDAO.findAll();
+    }
+
 
     /**
      * Calculates effective price based on threshold rule.
