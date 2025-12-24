@@ -1,177 +1,234 @@
 package com.group18.greengrocer.service;
 
 import com.group18.greengrocer.dao.ProductDAO;
+import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.model.Product;
-import java.util.List;
+import com.group18.greengrocer.util.ValidatorUtil;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+/**
+ * ProductService
+ * Business logic for product browsing and owner management.
+ *
+ * Rules:
+ * - Controllers MUST NOT run SQL.
+ * - DAO does raw DB operations.
+ * - Service does validation + business rules.
+ */
 public class ProductService {
 
-   private final ProductDAO productDAO;
+    private final ProductDAO productDAO;
 
     public ProductService() {
         this.productDAO = new ProductDAO();
     }
 
+    public ProductService(ProductDAO productDAO) {
+        this.productDAO = productDAO;
+    }
 
-    /* ----- CUSTOMER USE ------ */
+    /* -------------------------
+       CUSTOMER USE (Browsing)
+       ------------------------- */
+
     /**
      * Retrieves all products available in the catalog.
-     * 
-     * @return List of all products.
+     * Rule: products with zero stock must not be displayed -> handled by DAO findAvailableProducts().
      */
-    // ASSIGNED TO: Customer (Browsing)
     public List<Product> getAllProducts() {
         return productDAO.findAvailableProducts();
     }
 
     /**
      * Retrieves products filtered by category (FRUIT or VEGETABLE).
-     * 
-     * @param category The category name.
-     * @return List of products in the category.
+     * Safer overload: use Category enum.
      */
-    // ASSIGNED TO: Customer (Browsing)
-    public List<Product> getProductsByCategory(String category) {
-       return productDAO.findAvailableProducts()
+    public List<Product> getProductsByCategory(Category category) {
+        if (category == null) throw new IllegalArgumentException("Category cannot be null.");
+
+        return productDAO.findAvailableProducts()
                 .stream()
-                .filter(p -> p.getCategory() != null &&
-                             p.getCategory().name().equalsIgnoreCase(category))
-                .toList();
+                .filter(p -> p.getCategory() == category)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * String-based category filter (for UI usage).
+     * Accepts: "FRUIT" or "VEGETABLE" (case-insensitive).
+     */
+    public List<Product> getProductsByCategory(String category) {
+        if (ValidatorUtil.isEmpty(category)) {
+            throw new IllegalArgumentException("Category cannot be empty.");
+        }
+
+        final Category parsed;
+        try {
+            parsed = Category.valueOf(category.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid category. Use FRUIT or VEGETABLE.");
+        }
+
+        return getProductsByCategory(parsed);
     }
 
     /**
      * Retrieves a single product by its ID.
-     * 
-     * @param productId The ID of the product.
-     * @return The Product object, or null if not found.
      */
-    // ASSIGNED TO: Customer
     public Product getProductById(int productId) {
-       return productDAO.findById(productId);
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+        return productDAO.findById(productId);
     }
 
-
-     /**
+    /**
      * Checks if there is enough stock for a requested quantity.
-     * 
-     * @param productId The ID of the product.
-     * @param quantity The requested quantity.
-     * @return true if stock is sufficient, false otherwise.
+     * Required by rules: zero/negative quantity must be handled.
      */
-    // ASSIGNED TO: Customer (Validation)
     public boolean checkStockAvailability(int productId, double quantity) {
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be > 0.");
+
         Product product = productDAO.findById(productId);
         return product != null && product.getStock() >= quantity;
     }
 
-
     /**
-     * Calculates the effective price of a product based on its current stock level.
-     * 
-     * @param product the product whose effective price will be calculated
-     * @return the effective price considering the stock threshold rule
+     * Searches for products matching a keyword (case-insensitive).
+     * If keyword is empty -> return all available products (simple UX).
      */
-     // ASSIGNED TO: Owner (Pricing Logic)
-     public double getEffectivePrice(Product product) {
-        if (product.getStock() <= product.getThreshold()) {
-            return product.getPrice() * 2;
-        }
-        return product.getPrice();
-    }
-
-
-
-
-     /**
-     * Searches for products matching a keyword.
-     * 
-     * @param keyword The search term.
-     * @return List of matching products.
-     */
-    // ASSIGNED TO: Customer
     public List<Product> searchProducts(String keyword) {
+        if (ValidatorUtil.isEmpty(keyword)) {
+            return getAllProducts();
+        }
+
+        String key = keyword.trim().toLowerCase(Locale.ROOT);
+
         return productDAO.findAvailableProducts()
                 .stream()
-                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
+                .filter(p -> p.getName() != null && p.getName().toLowerCase(Locale.ROOT).contains(key))
+                .collect(Collectors.toList());
     }
 
+    /* -------------------------
+       OWNER USE (Management)
+       ------------------------- */
 
+    /**
+     * Calculates effective price based on threshold rule.
+     * Rule: If stock <= threshold -> price doubled.
+     * Rule: threshold <= 0 must be handled explicitly.
+     */
+    public double getEffectivePrice(Product product) {
+        if (product == null) throw new IllegalArgumentException("Product cannot be null.");
+        if (product.getPrice() < 0) throw new IllegalArgumentException("Price cannot be negative.");
+        if (product.getThreshold() <= 0) throw new IllegalArgumentException("Threshold must be > 0.");
 
-      /* ----- OWNER USE ------ */
+        return (product.getStock() <= product.getThreshold())
+                ? product.getPrice() * 2.0
+                : product.getPrice();
+    }
 
     /**
      * Adds a new product to the catalog.
-     * 
-     * @param product The product to add.
+     * Rules: no magic numbers, validate input; stock/threshold must be non-negative/positive.
      */
-    // ASSIGNED TO: Owner
     public void addProduct(Product product) {
-        productDAO.insert(product);
-    };
+        validateProductForUpsert(product, false);
+
+        boolean ok = productDAO.insert(product);
+        if (!ok) throw new IllegalStateException("Failed to add product.");
+    }
 
     /**
      * Updates an existing product's details.
-     * 
-     * @param product The product with updated information.
      */
-    // ASSIGNED TO: Owner
     public void updateProduct(Product product) {
-        productDAO.update(product);
+        validateProductForUpsert(product, true);
+
+        boolean ok = productDAO.update(product);
+        if (!ok) throw new IllegalStateException("Failed to update product.");
     }
 
     /**
      * Removes a product from the catalog.
-     * 
-     * @param productId The ID of the product to remove.
      */
-    // ASSIGNED TO: Owner
     public void removeProduct(int productId) {
-        productDAO.delete(productId);
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+
+        boolean ok = productDAO.delete(productId);
+        if (!ok) throw new IllegalStateException("Failed to remove product.");
     }
 
     /**
      * Updates the stock quantity of a product.
-     * 
-     * @param productId The ID of the product.
-     * @param quantity The amount to add (positive) or remove (negative).
+     * quantity can be positive (add) or negative (remove).
+     * Rule: stock must not become negative.
      */
-    // ASSIGNED TO: Owner (Stock Management)
     public void updateStock(int productId, double quantity) {
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+
         Product product = productDAO.findById(productId);
-        if (product == null) return;
+        if (product == null) throw new IllegalArgumentException("Product not found.");
 
         double newStock = product.getStock() + quantity;
         if (newStock < 0) {
-            throw new IllegalArgumentException("Stock cannot be negative");
+            throw new IllegalArgumentException("Stock cannot be negative.");
         }
 
         product.setStock(newStock);
-        productDAO.update(product);
+        boolean ok = productDAO.update(product);
+        if (!ok) throw new IllegalStateException("Failed to update stock.");
     }
-
-   
 
     /**
      * Sets the price threshold for a product.
-     * If stock falls below this threshold, price is doubled.
-     * 
-     * @param productId The ID of the product.
-     * @param threshold The threshold quantity.
+     * Rule: threshold must be > 0, otherwise invalid.
      */
-    // ASSIGNED TO: Owner
     public void setPriceThreshold(int productId, double threshold) {
-        if (threshold <= 0) {
-            throw new IllegalArgumentException("Threshold must be positive");
-        }
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+        if (threshold <= 0) throw new IllegalArgumentException("Threshold must be > 0.");
 
         Product product = productDAO.findById(productId);
-        if (product == null) return;
+        if (product == null) throw new IllegalArgumentException("Product not found.");
 
         product.setThreshold(threshold);
-        productDAO.update(product);
+        boolean ok = productDAO.update(product);
+        if (!ok) throw new IllegalStateException("Failed to update threshold.");
     }
-    
 
-   
+    /* -------------------------
+       Internal validation
+       ------------------------- */
+
+    private void validateProductForUpsert(Product product, boolean requireId) {
+        if (product == null) throw new IllegalArgumentException("Product cannot be null.");
+
+        if (requireId && product.getId() <= 0) {
+            throw new IllegalArgumentException("Product id must be set for update.");
+        }
+
+        if (ValidatorUtil.isEmpty(product.getName())) {
+            throw new IllegalArgumentException("Product name cannot be empty.");
+        }
+
+        if (product.getCategory() == null) {
+            throw new IllegalArgumentException("Product category is required.");
+        }
+
+        if (product.getPrice() <= 0) {
+            throw new IllegalArgumentException("Product price must be > 0.");
+        }
+
+        if (product.getStock() < 0) {
+            throw new IllegalArgumentException("Product stock cannot be negative.");
+        }
+
+        if (product.getThreshold() <= 0) {
+            throw new IllegalArgumentException("Product threshold must be > 0.");
+        }
+
+    }
 }
