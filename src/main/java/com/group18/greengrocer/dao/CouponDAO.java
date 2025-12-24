@@ -77,6 +77,30 @@ public class CouponDAO {
     }
     
     /**
+     * Finds a coupon by its ID.
+     * Useful for retrieving coupon details from an order history or for management.
+     * 
+     * @param id The coupon ID.
+     * @return The Coupon object if found, otherwise null.
+     */
+    public Coupon findCouponById(int id) {
+        String sql = "SELECT * FROM Coupons WHERE id = ?";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapCoupon(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
      * Retrieves all coupons (for Owner management).
      * 
      * @return List of all coupons.
