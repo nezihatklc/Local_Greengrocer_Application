@@ -76,6 +76,7 @@ public class UserService {
         if (username.isEmpty()) throw new IllegalArgumentException("Username cannot be empty.");
         if (address.isEmpty())  throw new IllegalArgumentException("Address cannot be empty.");
         if (phone.isEmpty())    throw new IllegalArgumentException("Phone number cannot be empty.");
+        if (!ValidatorUtil.isValidPhoneNumber(phone)) throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 
         // CRITICAL: Profile update must NEVER change the role.
         // We force the existing role, ignoring whatever came from the UI.
@@ -163,6 +164,7 @@ public class UserService {
         if (password.isEmpty()) throw new IllegalArgumentException("Password cannot be empty.");
         if (address.isEmpty())  throw new IllegalArgumentException("Address cannot be empty.");
         if (phone.isEmpty())    throw new IllegalArgumentException("Phone number cannot be empty.");
+        if (!ValidatorUtil.isValidPhoneNumber(phone)) throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 
         if (userDAO.findUserByUsername(username) != null)
             throw new IllegalArgumentException("Username already taken.");

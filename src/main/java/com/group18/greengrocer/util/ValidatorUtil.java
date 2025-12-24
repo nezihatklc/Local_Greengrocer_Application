@@ -61,4 +61,12 @@ public class ValidatorUtil {
         if (isEmpty(email)) return false;
         return EMAIL_PATTERN.matcher(email).matches();
     }
+
+    /**
+     * Validates phone number format.
+     */
+    public static boolean isValidPhoneNumber(String phone) {
+        if (isEmpty(phone)) return false;
+        return PHONE_PATTERN.matcher(phone).matches();
+    }
 }
