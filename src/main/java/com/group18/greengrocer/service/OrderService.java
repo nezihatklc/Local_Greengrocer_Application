@@ -15,14 +15,17 @@ import java.util.Date;
 public class OrderService {
 
     private final OrderDAO orderDAO;
-
     private final ProductDAO productDAO;
+    private final DiscountService discountService;
 
+    
     private final List<CartItem> cart;
+
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
         this.productDAO = new ProductDAO();
+        this.discountService = new DiscountService();
         this.cart = new ArrayList<>();
     }
 
@@ -38,6 +41,7 @@ public class OrderService {
         Order cartOrder = new Order();
         cartOrder.setCustomerId(userId);
         cartOrder.setItems(cart);
+
         return cartOrder;
     }
 
@@ -136,60 +140,57 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void checkout(Order order) {
-        
         if (cart.isEmpty()) {
-            throw new IllegalStateException("Cart is empty.");
-        }
+        throw new IllegalStateException("Cart is empty.");
+    }
 
-
-        double total = 0.0;
-
-    // FINAL STOCK CHECK + PRICE CALCULATION
+    // 1. Final stock check (concurrency safety)
     for (CartItem item : cart) {
-        Product product = productDAO.findById(item.getProduct().getId());
+        Product dbProduct = productDAO.findById(item.getProduct().getId());
 
-        if (product == null || product.getStock() < item.getQuantity()) {
+        if (dbProduct == null || dbProduct.getStock() < item.getQuantity()) {
             throw new IllegalStateException("Stock changed. Please review your cart.");
         }
 
-        double price = product.getPrice();
-
-        // Threshold rule
-        if (product.getStock() <= product.getThreshold()) {
-            price *= 2;
-        }
-
-        item.setPriceAtPurchase(price);
-        total += price * item.getQuantity();
+        // sync product data
+        item.setPriceAtPurchase(dbProduct.getPrice());
+        item.getProduct().setStock(dbProduct.getStock());
+        item.getProduct().setThreshold(dbProduct.getThreshold());
     }
 
-        // VAT 18%
-        total = total * 1.18;
-        order.setTotalCost(total);
+    // 2. Attach cart items to order
+    order.setItems(new ArrayList<>(cart));
+    order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
+    order.setStatus(Order.Status.AVAILABLE);
 
-        // CREATE ORDER
-        order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
-        order.setStatus(Order.Status.AVAILABLE);
-        orderDAO.createOrder(order);
+    // 3. Calculate FINAL price (coupon + loyalty + threshold + VAT)
+    double finalTotal = discountService.calculateFinalPrice(order);
+    order.setTotalCost(finalTotal);
 
-        // STOCK DECREASE
-        for (CartItem item : cart) {
-            Product product = productDAO.findById(item.getProduct().getId());
-            if (product == null) {
-                throw new RuntimeException("Product not found");
-            }
-            
+    // 4. Generate invoice (TEXT – PDF later)
+    String invoice = generateInvoiceText(order);
+    order.setInvoice(invoice);
+
+    // 5. Create order (DB)
+    boolean created = orderDAO.createOrder(order);
+    if (!created) {
+        throw new IllegalStateException("Order creation failed.");
+    }
+
+    // 6. Decrease stock AFTER successful order creation
+    for (CartItem item : cart) {
+         Product product = productDAO.findById(item.getProduct().getId());
+         
+         if (product != null) {
             double newStock = product.getStock() - item.getQuantity();
-            
-            if (newStock < 0) {
-                throw new RuntimeException("Insufficient stock for product: " + product.getName());
-            }
-            
             product.setStock(newStock);
             productDAO.update(product);
-        }
+    }
+    }
+
+    // 7. Clear cart
+    cart.clear();
         
-        cart.clear();
     }
 
 
@@ -347,4 +348,27 @@ public class OrderService {
     public String getInvoice(int orderId) {
         return null;
     }
+
+    private String generateInvoiceText(Order order) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INVOICE\n");
+        sb.append("Order ID: ").append(order.getId()).append("\n");
+        sb.append("Customer ID: ").append(order.getCustomerId()).append("\n\n");
+        
+        for (CartItem item : order.getItems()) {
+            sb.append(item.getProduct().getName())
+            .append(" x ")
+            .append(item.getQuantity())
+            .append(" = ")
+            .append(item.getTotalPrice())
+            .append("\n");
+        }
+        
+        sb.append("\nTOTAL (VAT included): ")
+        .append(order.getTotalCost());
+        
+        return sb.toString();
+}
+
+
 }
