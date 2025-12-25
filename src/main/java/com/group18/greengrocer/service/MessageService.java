@@ -36,17 +36,15 @@ public class MessageService {
             throw new IllegalArgumentException("Message content cannot be empty.");
         }
 
-        User currentUser = sessionManager.getCurrentUser();
-        message.setSenderId(currentUser.getId());
+        User customer = sessionManager.getCurrentUser();
+        message.setSenderId(customer.getId());
 
         List<User> owners = userDAO.findUsersByRole(Role.OWNER);
         if (owners.isEmpty()) {
             throw new IllegalStateException("No owner found in the system.");
         }
 
-        User owner = owners.get(0); // sistemde 1 owner varsayımı
-        message.setReceiverId(owner.getId());
-
+         message.setReceiverId(owners.get(0).getId());
 
         messageDAO.sendMessage(message);
     }
@@ -76,13 +74,21 @@ public class MessageService {
      */
     // ASSIGNED TO: Carrier
     public List<Message> getMessagesForCustomer(int userId) {
-                if (!sessionManager.isOwner() && !sessionManager.isCustomer()) {
-            throw new IllegalStateException("Unauthorized access to messages.");
+                User currentUser = sessionManager.getCurrentUser();
+
+        if (sessionManager.isCustomer()) {
+            List<User> owners = userDAO.findUsersByRole(Role.OWNER);
+            if (owners.isEmpty()) {
+                throw new IllegalStateException("No owner found in the system.");
+            }
+            return messageDAO.getMessagesBetweenUsers(currentUser.getId(), owners.get(0).getId());
         }
 
-        int currentUserId = sessionManager.getCurrentUser().getId();
-        return messageDAO.getMessagesBetweenUsers(currentUserId, userId);
+        if (sessionManager.isOwner()) {
+            return messageDAO.getMessagesBetweenUsers(currentUser.getId(), userId);
+        }
 
+        throw new IllegalStateException("Unauthorized access.");
     }
 
     /**
@@ -115,5 +121,17 @@ public class MessageService {
         
         messageDAO.sendMessage(reply);
 
+    }
+
+     public void markMessageAsRead(int messageId) {
+
+        if (!sessionManager.isOwner() && !sessionManager.isCustomer()) {
+            throw new IllegalStateException("Unauthorized access.");
+        }
+
+        boolean success = messageDAO.markAsRead(messageId);
+        if (!success) {
+            throw new IllegalStateException("Message could not be marked as read.");
+        }
     }
 }
