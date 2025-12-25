@@ -6,6 +6,7 @@ import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.model.Role;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.util.SessionManager;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class MessageService {
@@ -46,7 +47,15 @@ public class MessageService {
 
          message.setReceiverId(owners.get(0).getId());
 
-        messageDAO.sendMessage(message);
+         message.setSentAt(new Timestamp(System.currentTimeMillis()));
+
+        
+         message.setRead(false);
+
+         boolean success = messageDAO.sendMessage(message);
+         if (!success) {
+            throw new IllegalStateException("Message could not be sent.");
+         }
     }
 
     
@@ -118,8 +127,15 @@ public class MessageService {
         reply.setReceiverId(originalMessage.getSenderId());        // Customer
         reply.setContent(replyContent);
 
+        reply.setSentAt(new Timestamp(System.currentTimeMillis()));
+        reply.setRead(false);
+
+        boolean success = messageDAO.sendMessage(reply);
+        if (!success) {
+            throw new IllegalStateException("Reply could not be sent.");
+        }
+
         
-        messageDAO.sendMessage(reply);
 
     }
 
