@@ -7,6 +7,8 @@ import com.group18.greengrocer.model.CarrierRating;
 import com.group18.greengrocer.model.CartItem;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
+import com.group18.greengrocer.util.PDFGenerator;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -144,53 +146,83 @@ public class OrderService {
         throw new IllegalStateException("Cart is empty.");
     }
 
-    // 1. Final stock check (concurrency safety)
-    for (CartItem item : cart) {
-        Product dbProduct = productDAO.findById(item.getProduct().getId());
+    double subtotal = 0.0;
 
-        if (dbProduct == null || dbProduct.getStock() < item.getQuantity()) {
+    // 1. Final stock check + price calculation
+    for (CartItem item : cart) {
+
+        Product product = productDAO.findById(item.getProduct().getId());
+
+        if (product == null || product.getStock() < item.getQuantity()) {
             throw new IllegalStateException("Stock changed. Please review your cart.");
         }
 
-        // sync product data
-        item.setPriceAtPurchase(dbProduct.getPrice());
-        item.getProduct().setStock(dbProduct.getStock());
-        item.getProduct().setThreshold(dbProduct.getThreshold());
+        double price = product.getPrice();
+
+        // Threshold rule
+        if (product.getStock() <= product.getThreshold()) {
+            price *= 2;
+        }
+
+        item.setPriceAtPurchase(price);
+        subtotal += price * item.getQuantity();
     }
 
-    // 2. Attach cart items to order
-    order.setItems(new ArrayList<>(cart));
+    // 2. Discounts
+    double discountAmount = 0.0;
+
+    // Coupon
+    if (order.getUsedCouponId() != null) {
+        discountAmount += discountService.applyCoupon(
+                order.getUsedCouponId(),
+                subtotal
+        );
+    }
+
+    // Loyalty
+    long completedOrdersCount =
+            orderDAO.findOrdersByCustomerId(order.getCustomerId())
+                    .stream()
+                    .filter(o -> o.getStatus() == Order.Status.COMPLETED)
+                    .count();
+
+    discountAmount += discountService.applyLoyaltyDiscount(
+            (int) completedOrdersCount,
+            subtotal
+    );
+
+    double discountedTotal = subtotal - discountAmount;
+
+    // 3. VAT 18%
+    double finalTotal = discountedTotal * 1.18;
+
+    order.setTotalCost(finalTotal);
     order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
     order.setStatus(Order.Status.AVAILABLE);
+    order.setItems(new ArrayList<>(cart));
 
-    // 3. Calculate FINAL price (coupon + loyalty + threshold + VAT)
-    double finalTotal = discountService.calculateFinalPrice(order);
-    order.setTotalCost(finalTotal);
+    // 4. PDF Invoice Generation 
+    String invoiceBase64 = PDFGenerator.generateInvoicePDF(order);
+    order.setInvoice(invoiceBase64);
 
-    // 4. Generate invoice (TEXT – PDF later)
-    String invoice = generateInvoiceText(order);
-    order.setInvoice(invoice);
-
-    // 5. Create order (DB)
+    // 5. Create order in DB
     boolean created = orderDAO.createOrder(order);
+
     if (!created) {
-        throw new IllegalStateException("Order creation failed.");
+        throw new IllegalStateException("Order could not be created.");
     }
 
     // 6. Decrease stock AFTER successful order creation
     for (CartItem item : cart) {
-         Product product = productDAO.findById(item.getProduct().getId());
-         
-         if (product != null) {
-            double newStock = product.getStock() - item.getQuantity();
-            product.setStock(newStock);
-            productDAO.update(product);
-    }
+        productDAO.updateStock(
+                item.getProduct().getId(),
+                -item.getQuantity()
+        );
     }
 
     // 7. Clear cart
     cart.clear();
-        
+    
     }
 
 
