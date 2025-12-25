@@ -1,17 +1,20 @@
 /* Global Styles */
 .root {
     -fx-font-family: "Segoe UI", sans-serif;
+
     /* ===============================
    ROOT & GENERAL
 ================================ */
+
 .root {
     -fx-font-family: "Segoe UI", "Arial";
-    -fx-background-color: #EAF7EA; /* Açık yeşil (manav teması) */
+    -fx-background-color: #EAF7EA; 
 }
 
 /* ===============================
    HEADERS & TITLES
 ================================ */
+
 .header {
     -fx-background-color: #66BB6A;
     -fx-padding: 12;
@@ -26,8 +29,9 @@
 /* ===============================
    BUTTONS
 ================================ */
+
 .button {
-    -fx-background-color: #F9D648; /* Sarı */
+    -fx-background-color: #F9D648; 
     -fx-text-fill: #2E2E2E;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -37,7 +41,7 @@
 }
 
 .button:hover {
-    -fx-background-color: #FBC02D; /* Koyu sarı */
+    -fx-background-color: #FBC02D; 
 }
 
 .button:pressed {
@@ -47,6 +51,7 @@
 /* ===============================
    TEXT INPUTS
 ================================ */
+
 .text-field, .password-field, .text-area {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
@@ -61,6 +66,7 @@
 /* ===============================
    MESSAGE / ALERT TEXTS
 ================================ */
+
 .success-message {
     -fx-text-fill: #2E7D32;
     -fx-font-weight: bold;
@@ -78,6 +84,7 @@
 /* ===============================
    LISTS & TABLES
 ================================ */
+
 .list-view, .table-view {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
@@ -99,6 +106,7 @@
 /* ===============================
    PRODUCT CARDS
 ================================ */
+
 .product-card {
     -fx-background-color: white;
     -fx-background-radius: 10;
@@ -127,6 +135,7 @@
 /* ===============================
    JAVAFX CHARTS (OWNER REPORTS)
 ================================ */
+
 .chart-series-line {
     -fx-stroke: #66BB6A;
 }
@@ -143,6 +152,7 @@
 /* ===============================
    FOOTER
 ================================ */
+
 .footer-text {
     -fx-text-fill: #7F8C8D;
     -fx-font-size: 11px;
