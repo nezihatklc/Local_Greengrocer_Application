@@ -15,12 +15,12 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         try {
             // Load the Login View
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group01/greengrocer/fxml/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Parent root = loader.load();
             
             Scene scene = new Scene(root);
             // Link CSS
-            scene.getStylesheets().add(getClass().getResource("/com/group01/greengrocer/css/style.css").toExternalForm());
+            //scene.getStylesheets().add(getClass().getResource("/com/group01/greengrocer/css/style.css").toExternalForm());
             
             primaryStage.setTitle("CMPE343 Greengrocer Login");
             primaryStage.setScene(scene);
