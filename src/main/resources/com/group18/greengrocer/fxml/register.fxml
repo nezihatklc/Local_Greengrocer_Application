@@ -14,7 +14,7 @@
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
            fx:controller="com.group18.greengrocer.controller.RegisterController"
            prefHeight="540.0" prefWidth="960.0" 
-           style="-fx-background-color: #f4f4f4;">
+           stylesheets="@../css/style.css">
     
     <children>
         <VBox alignment="CENTER" maxWidth="500.0" spacing="15.0" 
@@ -49,8 +49,7 @@
                 </VBox>
                 
                 <Button text="Register" onAction="#handleRegister" defaultButton="true" 
-                        maxWidth="Infinity" 
-                        style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10; -fx-cursor: hand;">
+                        maxWidth="Infinity">
                     <VBox.margin>
                         <Insets top="10.0" />
                     </VBox.margin>
