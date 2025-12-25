@@ -168,41 +168,17 @@ public class OrderService {
         subtotal += price * item.getQuantity();
     }
 
-    // 2. Discounts
-    double discountAmount = 0.0;
-
-    // Coupon
-    if (order.getUsedCouponId() != null) {
-        discountAmount += discountService.applyCoupon(
-                order.getUsedCouponId(),
-                subtotal
-        );
-    }
-
-    // Loyalty
-    long completedOrdersCount =
-            orderDAO.findOrdersByCustomerId(order.getCustomerId())
-                    .stream()
-                    .filter(o -> o.getStatus() == Order.Status.COMPLETED)
-                    .count();
-
-    discountAmount += discountService.applyLoyaltyDiscount(
-            (int) completedOrdersCount,
-            subtotal
-    );
-
-    double discountedTotal = subtotal - discountAmount;
-
-    // 3. VAT 18%
-    double finalTotal = discountedTotal * 1.18;
-
+    // 2. Calculate Final Price (Delegated to DiscountService for centralized logic)
+    // This handles Thresholds, Coupons, Loyalty, and VAT internally.
+    double finalTotal = discountService.calculateFinalPrice(order);
+    
     order.setTotalCost(finalTotal);
     order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
     order.setStatus(Order.Status.AVAILABLE);
     order.setItems(new ArrayList<>(cart));
 
     // 4. PDF Invoice Generation 
-    String invoiceBase64 = PDFGenerator.generateInvoicePDF(order);
+    String invoiceBase64 = PDFGenerator.generateInvoice(order);
     order.setInvoice(invoiceBase64);
 
     // 5. Create order in DB
@@ -214,10 +190,12 @@ public class OrderService {
 
     // 6. Decrease stock AFTER successful order creation
     for (CartItem item : cart) {
-        productDAO.updateStock(
-                item.getProduct().getId(),
-                -item.getQuantity()
-        );
+        Product p = productDAO.findById(item.getProduct().getId());
+        if (p != null) {
+            double newStock = p.getStock() - item.getQuantity();
+            p.setStock(newStock);
+            productDAO.update(p);
+        }
     }
 
     // 7. Clear cart

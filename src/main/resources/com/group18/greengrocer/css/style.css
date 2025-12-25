@@ -1,14 +1,12 @@
 /* Global Styles */
-.root {
-    -fx-font-family: "Segoe UI", sans-serif;
 
-    /* ===============================
+/* ===============================
    ROOT & GENERAL
 ================================ */
 
 .root {
     -fx-font-family: "Segoe UI", "Arial";
-    -fx-background-color: #EAF7EA; 
+    -fx-background-color: #EAF7EA;
 }
 
 /* ===============================
@@ -31,7 +29,7 @@
 ================================ */
 
 .button {
-    -fx-background-color: #F9D648; 
+    -fx-background-color: #F9D648;
     -fx-text-fill: #2E2E2E;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -41,7 +39,7 @@
 }
 
 .button:hover {
-    -fx-background-color: #FBC02D; 
+    -fx-background-color: #FBC02D;
 }
 
 .button:pressed {
@@ -52,14 +50,17 @@
    TEXT INPUTS
 ================================ */
 
-.text-field, .password-field, .text-area {
+.text-field,
+.password-field,
+.text-area {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-border-color: #A5D6A7;
     -fx-padding: 6;
 }
 
-.text-field:focused, .text-area:focused {
+.text-field:focused,
+.text-area:focused {
     -fx-border-color: #66BB6A;
 }
 
@@ -85,7 +86,8 @@
    LISTS & TABLES
 ================================ */
 
-.list-view, .table-view {
+.list-view,
+.table-view {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-border-color: #C8E6C9;
@@ -111,7 +113,7 @@
     -fx-background-color: white;
     -fx-background-radius: 10;
     -fx-padding: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 5);
 }
 
 .product-name {
@@ -156,6 +158,4 @@
 .footer-text {
     -fx-text-fill: #7F8C8D;
     -fx-font-size: 11px;
-}
-
 }
