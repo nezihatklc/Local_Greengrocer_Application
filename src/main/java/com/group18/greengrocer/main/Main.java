@@ -15,7 +15,13 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         try {
             // Load the Login View
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            java.net.URL url = getClass().getResource("/com/group18/greengrocer/fxml/login.fxml");
+            if (url == null) {
+                System.err.println("Error: FXML file not found at /com/group18/greengrocer/fxml/login.fxml");
+            } else {
+                System.out.println("FXML found: " + url);
+            }
+            FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
