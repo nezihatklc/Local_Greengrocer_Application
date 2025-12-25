@@ -141,13 +141,28 @@ public class MessageService {
 
      public void markMessageAsRead(int messageId) {
 
-        if (!sessionManager.isOwner() && !sessionManager.isCustomer()) {
-            throw new IllegalStateException("Unauthorized access.");
-        }
-
-        boolean success = messageDAO.markAsRead(messageId);
-        if (!success) {
-            throw new IllegalStateException("Message could not be marked as read.");
-        }
+    if (!sessionManager.isOwner() && !sessionManager.isCustomer()) {
+        throw new IllegalStateException("Unauthorized access.");
     }
+
+    User currentUser = sessionManager.getCurrentUser();
+
+    Message msg = messageDAO.getMessageById(messageId);
+    if (msg == null) {
+        throw new IllegalArgumentException("Message not found.");
+    }
+
+    if (msg.getReceiverId() != currentUser.getId()) {
+        throw new IllegalStateException("Access denied: You can only mark your own messages as read.");
+    }
+
+    boolean success = messageDAO.markAsRead(messageId);
+    if (!success) {
+        throw new IllegalStateException("Message could not be marked as read.");
+      }
+
+    }
+
+    
+
 }
