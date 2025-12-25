@@ -2,14 +2,14 @@ package com.group18.greengrocer.service;
 
 import com.group18.greengrocer.dao.CarrierRatingDAO;
 import com.group18.greengrocer.dao.OrderDAO;
+import com.group18.greengrocer.dao.ProductDAO;
 import com.group18.greengrocer.model.CarrierRating;
 import com.group18.greengrocer.model.CartItem;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
-import com.group18.greengrocer.dao.ProductDAO;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 public class OrderService {
@@ -202,7 +202,7 @@ public class OrderService {
      */
     // ASSIGNED TO: Carrier
     public List<Order> getPendingOrders() {
-        return null;
+        return orderDAO.findAvailableOrders();
     }
 
     /**
@@ -214,6 +214,12 @@ public class OrderService {
      */
     // ASSIGNED TO: Carrier
     public void assignOrderToCarrier(int orderId, int carrierId) {
+        boolean success = orderDAO.selectOrder(orderId, carrierId);
+
+    if (!success) {
+        throw new IllegalStateException("Order is no longer available or already selected by another carrier.");
+      }
+        
     }
 
     /**
@@ -225,6 +231,26 @@ public class OrderService {
      */
     // ASSIGNED TO: Carrier
     public void completeOrder(int orderId, Date deliveryDate) {
+        Order order = orderDAO.findOrderById(orderId);
+
+    if (order == null) {
+        throw new IllegalArgumentException("Order not found.");
+    }
+     
+
+    if (order.getStatus() != Order.Status.SELECTED) {
+        throw new IllegalStateException(
+            "Only selected orders can be completed.");
+    }
+
+    java.sql.Timestamp deliveryTimestamp =
+            new java.sql.Timestamp(deliveryDate.getTime());
+
+    boolean success = orderDAO.completeOrder(orderId, deliveryTimestamp);
+
+    if (!success) {
+        throw new IllegalStateException("Failed to complete the order.");
+      }
     }
 
     /**
@@ -334,7 +360,8 @@ public class OrderService {
      */
     // ASSIGNED TO: Carrier
     public List<Order> getOrdersByCarrier(int carrierId) {
-        return null;
+        return orderDAO.findOrdersByCarrierId(carrierId);
+   
     }
 
     /**
@@ -346,7 +373,14 @@ public class OrderService {
      */
     // ASSIGNED TO: Carrier (Documentation Specialist)
     public String getInvoice(int orderId) {
-        return null;
+        Order order = orderDAO.findOrderById(orderId);
+
+    if (order == null) {
+        throw new IllegalArgumentException("Order not found.");
+    }
+
+    return order.getInvoice();
+       
     }
 
     private String generateInvoiceText(Order order) {
