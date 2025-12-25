@@ -156,14 +156,13 @@ public class OrderService {
         if (product == null || product.getStock() < item.getQuantity()) {
             throw new IllegalStateException("Stock changed. Please review your cart.");
         }
+        
+        // Ensure DiscountService uses fresh product data (current stock)
+        item.setProduct(product);
 
         double price = product.getPrice();
 
-        // Threshold rule
-        if (product.getStock() <= product.getThreshold()) {
-            price *= 2;
-        }
-
+        // Threshold check is delegated to DiscountService to avoid double application (quadrupling price)
         item.setPriceAtPurchase(price);
         subtotal += price * item.getQuantity();
     }
