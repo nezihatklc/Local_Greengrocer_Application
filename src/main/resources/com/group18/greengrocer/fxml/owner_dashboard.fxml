@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.BorderPane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -27,8 +25,8 @@
         <VBox spacing="10" padding="10">
             <Label text="Add / Update Product" />
         </VBox>
-    </SplitPane>
-</center>
+  
+
 <VBox spacing="10" padding="10">
     <Label text="All Products (Owner View)" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
 
@@ -53,4 +51,6 @@
         <Label fx:id="effectivePriceLabel" text="-" />
     </HBox>
 </VBox>
+  </SplitPane>
+        </center>
 </BorderPane>
