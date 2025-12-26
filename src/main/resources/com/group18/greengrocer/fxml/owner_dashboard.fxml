@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
@@ -14,4 +17,40 @@
         </HBox>
     </top>
 
+
+<center>
+    <SplitPane dividerPositions="0.60">
+        <VBox spacing="10" padding="10">
+            <Label text="All Products" />
+        </VBox>
+
+        <VBox spacing="10" padding="10">
+            <Label text="Add / Update Product" />
+        </VBox>
+    </SplitPane>
+</center>
+<VBox spacing="10" padding="10">
+    <Label text="All Products (Owner View)" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+
+    <TableView fx:id="productTable" prefHeight="420">
+        <columns>
+            <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="nameCol" text="Name" prefWidth="150"/>
+            <TableColumn fx:id="categoryCol" text="Category" prefWidth="110"/>
+            <TableColumn fx:id="typeCol" text="Type" prefWidth="120"/>
+            <TableColumn fx:id="unitCol" text="Unit" prefWidth="70"/>
+            <TableColumn fx:id="priceCol" text="Price" prefWidth="90"/>
+            <TableColumn fx:id="stockCol" text="Stock" prefWidth="90"/>
+            <TableColumn fx:id="thresholdCol" text="Threshold" prefWidth="100"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10">
+        <Button text="Refresh" onAction="#handleRefresh"/>
+        <Button text="Delete Selected" onAction="#handleDelete"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Effective Price:"/>
+        <Label fx:id="effectivePriceLabel" text="-" />
+    </HBox>
+</VBox>
 </BorderPane>
