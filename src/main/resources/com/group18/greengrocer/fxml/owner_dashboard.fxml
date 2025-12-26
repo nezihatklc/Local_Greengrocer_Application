@@ -1,56 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+ 
+  Purpose:
+  - Base OWNER screen layout.
+  - Left side lists products in a TableView (Week11: TableView).
+  - Right side will contain the Add/Update form (next step).
+
+  Week11 Concepts Used:
+  - fx:controller  -> binds this FXML to the controller class.
+  - fx:id          -> binds UI nodes to @FXML fields in the controller.
+  - onAction       -> binds button events to controller methods (#handleX).
+  - BorderPane     -> region-based layout (top/center).
+  - SplitPane      -> splits the screen into two resizable panels.
+
+  Project Rules Reminder (rules.md):
+  - Controllers must NOT run SQL.
+  - Controllers call Service methods.
+  - Business logic is in Service; raw DB work is in DAO.
+-->
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.group18.greengrocer.controller.OwnerController">
-  <top>
+
+    <!-- TOP: Header bar -->
+    <top>
         <HBox spacing="10" padding="10">
-            <Label text="Owner Dashboard" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Label text="Owner Dashboard"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+            <!-- Spacer: pushes username to the right -->
             <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- Logged-in user info (filled by Controller using SessionManager later) -->
             <Label text="User:"/>
             <Label fx:id="usernameLabel" text="-" />
         </HBox>
     </top>
 
+    <!-- CENTER: Main content -->
+    <center>
+        <SplitPane dividerPositions="0.60">
 
-<center>
-    <SplitPane dividerPositions="0.60">
-        <VBox spacing="10" padding="10">
-            <Label text="All Products" />
-        </VBox>
+            <!-- LEFT: Product list (TableView) -->
+            <VBox spacing="10" padding="10">
+                <Label text="All Products (Owner View)"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
 
-        <VBox spacing="10" padding="10">
-            <Label text="Add / Update Product" />
-        </VBox>
-  
+                <!--
+                  TableView rows will be loaded in OwnerController using ProductService.
+                  Columns will be bound to Product fields in the controller (PropertyValueFactory).
+                -->
+                <TableView fx:id="productTable" prefHeight="420">
+                    <columns>
+                        <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="nameCol" text="Name" prefWidth="150"/>
+                        <TableColumn fx:id="categoryCol" text="Category" prefWidth="110"/>
+                        <TableColumn fx:id="typeCol" text="Type" prefWidth="120"/>
+                        <TableColumn fx:id="unitCol" text="Unit" prefWidth="70"/>
+                        <TableColumn fx:id="priceCol" text="Price" prefWidth="90"/>
+                        <TableColumn fx:id="stockCol" text="Stock" prefWidth="90"/>
+                        <TableColumn fx:id="thresholdCol" text="Threshold" prefWidth="100"/>
+                    </columns>
+                </TableView>
 
-<VBox spacing="10" padding="10">
-    <Label text="All Products (Owner View)" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <!-- Action buttons -->
+                <HBox spacing="10">
+                    <!-- Week11: onAction -> calls OwnerController.handleRefresh() -->
+                    <Button text="Refresh" onAction="#handleRefresh"/>
 
-    <TableView fx:id="productTable" prefHeight="420">
-        <columns>
-            <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="nameCol" text="Name" prefWidth="150"/>
-            <TableColumn fx:id="categoryCol" text="Category" prefWidth="110"/>
-            <TableColumn fx:id="typeCol" text="Type" prefWidth="120"/>
-            <TableColumn fx:id="unitCol" text="Unit" prefWidth="70"/>
-            <TableColumn fx:id="priceCol" text="Price" prefWidth="90"/>
-            <TableColumn fx:id="stockCol" text="Stock" prefWidth="90"/>
-            <TableColumn fx:id="thresholdCol" text="Threshold" prefWidth="100"/>
-        </columns>
-    </TableView>
+                    <!-- Week11: onAction -> calls OwnerController.handleDelete() -->
+                    <Button text="Delete Selected" onAction="#handleDelete"/>
 
-    <HBox spacing="10">
-        <Button text="Refresh" onAction="#handleRefresh"/>
-        <Button text="Delete Selected" onAction="#handleDelete"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label text="Effective Price:"/>
-        <Label fx:id="effectivePriceLabel" text="-" />
-    </HBox>
-</VBox>
-  </SplitPane>
-        </center>
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <!-- Shows the computed effective price (threshold rule) -->
+                    <Label text="Effective Price:"/>
+                    <Label fx:id="effectivePriceLabel" text="-" />
+                </HBox>
+            </VBox>
+
+            <!-- RIGHT: Placeholder for the product form (next step) -->
+            <VBox spacing="10" padding="10">
+                <Label text="Add / Update Product"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <!-- Next push: add GridPane form fields + Add/Update/Clear buttons here -->
+            </VBox>
+
+        </SplitPane>
+    </center>
+
 </BorderPane>
