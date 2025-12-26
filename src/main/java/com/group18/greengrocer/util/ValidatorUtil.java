@@ -2,6 +2,8 @@ package com.group18.greengrocer.util;
 
 import java.util.regex.Pattern;
 
+import com.group18.greengrocer.service.ValidationException;
+
 /**
  * Utility class for common validation logic.
  * Follows the Single Responsibility Principle for validation rules.
@@ -10,7 +12,7 @@ public class ValidatorUtil {
 
     // Regex Patterns
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{10,13}$"); 
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{10,13}$");
 
     /**
      * Checks if a string is null or empty.
@@ -23,7 +25,8 @@ public class ValidatorUtil {
      * Validates if the input string is a valid double.
      */
     public static boolean isNumeric(String input) {
-        if (isEmpty(input)) return false;
+        if (isEmpty(input))
+            return false;
         try {
             Double.parseDouble(input);
             return true;
@@ -36,7 +39,8 @@ public class ValidatorUtil {
      * Validates if the input string is a positive double.
      */
     public static boolean isPositive(String input) {
-        if (!isNumeric(input)) return false;
+        if (!isNumeric(input))
+            return false;
         return Double.parseDouble(input) > 0;
     }
 
@@ -45,7 +49,8 @@ public class ValidatorUtil {
      * Rule: At least 8 chars, 1 uppercase, 1 lowercase, 1 digit.
      */
     public static boolean isStrongPassword(String password) {
-        if (isEmpty(password)) return false;
+        if (isEmpty(password))
+            return false;
         boolean hasUpper = !password.equals(password.toLowerCase());
         boolean hasLower = !password.equals(password.toUpperCase());
         boolean hasDigit = password.chars().anyMatch(Character::isDigit);
@@ -58,7 +63,8 @@ public class ValidatorUtil {
      * Validates email format.
      */
     public static boolean isValidEmail(String email) {
-        if (isEmpty(email)) return false;
+        if (isEmpty(email))
+            return false;
         return EMAIL_PATTERN.matcher(email).matches();
     }
 
@@ -66,7 +72,86 @@ public class ValidatorUtil {
      * Validates phone number format.
      */
     public static boolean isValidPhoneNumber(String phone) {
-        if (isEmpty(phone)) return false;
+        if (isEmpty(phone))
+            return false;
         return PHONE_PATTERN.matcher(phone).matches();
+    }
+
+    public static void validateNotNull(Object object, String message) {
+        if (object == null) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a string is not null or empty.
+     */
+    public static void validateNotEmpty(String input, String message) {
+        if (isEmpty(input)) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a condition is true.
+     */
+    public static void validateTrue(boolean condition, String message) {
+        if (!condition) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a number is positive.
+     */
+    public static void validatePositive(double number, String message) {
+        if (number <= 0) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a number is positive.
+     */
+    public static void validatePositive(int number, String message) {
+        if (number <= 0) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates email format and throws exception if invalid.
+     */
+    public static void validateEmail(String email, String message) {
+        if (!isValidEmail(email)) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates phone number format and throws exception if invalid.
+     */
+    public static void validatePhoneNumber(String phone, String message) {
+        if (!isValidPhoneNumber(phone)) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates password strength and throws exception if weak.
+     */
+    public static void validatePassword(String password, String message) {
+        if (!isStrongPassword(password)) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a date is in the future.
+     */
+    public static void validateFutureDate(java.util.Date date, String message) {
+        if (date == null || !date.after(new java.util.Date())) {
+            throw new ValidationException(message);
+        }
     }
 }
