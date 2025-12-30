@@ -125,16 +125,8 @@ public class CarrierController {
                 .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus().toString()));
 
         colHistRating.setCellValueFactory(cellData -> {
-            double rating = userService.getCarrierRating(currentUser.getId());
-            // Ideally we'd want rating per order, but our Service/DAO structure
-            // currently exposes an average rating or would require a specific lookup per
-            // order.
-            // For now, let's leave it as a placeholder or implement specific logic if DAO
-            // supports it.
-            // Since the column is "Rating" for specific order, we might need a fetch.
-            // But existing code doesn't have `getRatingForOrder`.
-            // Leaving as "-" for now to avoid N+1 queries without tailored Service method.
-            return new SimpleStringProperty("-");
+            int rating = userService.getRatingForOrder(cellData.getValue().getId());
+            return new SimpleStringProperty(rating > 0 ? String.valueOf(rating) : "Not Rated");
         });
     }
 

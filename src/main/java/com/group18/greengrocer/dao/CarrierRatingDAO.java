@@ -127,6 +127,29 @@ public class CarrierRatingDAO {
         return false;
     }
     
+    /**
+     * Retrieves the rating given for a specific order.
+     * 
+     * @param orderId The ID of the order.
+     * @return The rating value (1-5), or 0 if not found.
+     */
+    public int getRatingByOrderId(int orderId) {
+        String sql = "SELECT rating FROM CarrierRatings WHERE order_id = ?";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("rating");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     private CarrierRating mapRating(ResultSet rs) throws SQLException {
         CarrierRating r = new CarrierRating();
         r.setId(rs.getInt("id"));

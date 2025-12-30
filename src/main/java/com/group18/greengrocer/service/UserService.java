@@ -215,6 +215,13 @@ public class UserService {
         return carrierRatingDAO.getAverageRatingForCarrier(carrierId);
     }
 
+    /** Returns the specific rating for a completed order. Returns 0 if not rated. */
+    // ASSIGNED TO: Carrier
+    public int getRatingForOrder(int orderId) {
+        if (orderId <= 0) return 0;
+        return carrierRatingDAO.getRatingByOrderId(orderId);
+    }
+
     // -------------------------
     // Helpers
     // -------------------------
