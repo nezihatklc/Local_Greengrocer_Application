@@ -22,6 +22,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -29,7 +30,10 @@
 
     <!-- TOP: Header bar -->
     <top>
-        <HBox spacing="10" padding="10">
+        <HBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
             <Label text="Owner Dashboard"
                    style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
@@ -47,7 +51,10 @@
         <SplitPane dividerPositions="0.60">
 
             <!-- LEFT: Product list (TableView) -->
-            <VBox spacing="10" padding="10">
+            <VBox spacing="10">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
                 <Label text="All Products (Owner View)"
                        style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
 
@@ -85,7 +92,10 @@
             </VBox>
 
             <!-- RIGHT: Placeholder for the product form (next step) -->
-            <VBox spacing="10" padding="10">
+            <VBox spacing="10">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
                 <Label text="Add / Update Product"
                        style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <!-- Next push: add GridPane form fields + Add/Update/Clear buttons here -->
