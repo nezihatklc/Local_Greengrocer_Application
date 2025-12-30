@@ -91,4 +91,33 @@ public class ReportDAO {
         }
         return data;
     }
+
+    public List<ReportData> getDailySales(int days) {
+        List<ReportData> data = new ArrayList<>();
+        String sql =
+            "SELECT DATE(ordertime) AS day, SUM(totalcost) AS total " +
+            "FROM OrderInfo " +
+            "WHERE ordertime >= (NOW() - INTERVAL ? DAY) " +
+            "AND status = 'COMPLETED' " +
+            "GROUP BY DATE(ordertime) " +
+            "ORDER BY day";
+
+        try (Connection conn = DatabaseAdapter.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, days);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    java.sql.Date day = rs.getDate("day");
+                    double total = rs.getDouble("total");
+                    // Assuming ReportData label is String, convert Date to String
+                    data.add(new ReportData(String.valueOf(day), total));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
 }
