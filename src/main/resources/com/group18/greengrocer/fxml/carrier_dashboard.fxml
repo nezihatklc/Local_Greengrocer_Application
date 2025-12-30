@@ -1,142 +1,132 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.group18.greengrocer.controller.CarrierController">
-   <top>
-      <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #2c3e50; -fx-padding: 10;" BorderPane.alignment="CENTER">
-         <children>
-            <Label text="Group18 GreenGrocer - Carrier Dashboard" textFill="WHITE">
-               <font>
-                  <Font name="System Bold" size="18.0" />
-               </font>
-            </Label>
-            <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="usernameLabel" text="Carrier Name" textFill="WHITE" />
-            <Button fx:id="logoutButton" mnemonicParsing="false" onAction="#handleLogout" text="Logout" />
-         </children>
-      </HBox>
-   </top>
-   <center>
-      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-        <tabs>
-          <Tab text="Available Orders">
-               <content>
-                  <VBox spacing="10.0">
-                     <children>
+<BorderPane prefHeight="540.0" prefWidth="960.0"
+            xmlns="http://javafx.com/javafx/19"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.group18.greengrocer.controller.CarrierController"
+            stylesheets="@../css/styles.css"
+            styleClass="root">
+
+    <!-- ===== HEADER ===== -->
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              spacing="10"
+              styleClass="header">
+            <children>
+                <Label text="Group18 GreenGrocer - Carrier Dashboard"
+                       styleClass="header-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="usernameLabel"
+                       styleClass="header-label"/>
+                <Button fx:id="logoutButton"
+                        text="Logout"/>
+            </children>
+        </HBox>
+    </top>
+
+    <!-- ===== CENTER ===== -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE">
+
+            <!-- ===== AVAILABLE ORDERS ===== -->
+            <Tab text="Available Orders">
+                <content>
+                    <VBox spacing="10" padding="10">
                         <Label text="Orders Waiting for Delivery">
-                           <font>
-                              <Font size="16.0" />
-                           </font>
+                            <font>
+                                <Font size="16"/>
+                            </font>
                         </Label>
-                        <TableView fx:id="availableOrdersTable" VBox.vgrow="ALWAYS">
-                          <columns>
-                            <TableColumn fx:id="colOrderId" prefWidth="75.0" text="Order ID" />
-                            <TableColumn fx:id="colCustomerName" prefWidth="150.0" text="Customer" />
-                              <TableColumn fx:id="colAddress" prefWidth="300.0" text="Address" />
-                              <TableColumn fx:id="colTotalPrice" prefWidth="100.0" text="Total Price" />
-                          </columns>
+
+                        <TableView fx:id="availableOrdersTable"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="70"/>
+                                <TableColumn fx:id="colCustomerName" text="Customer" prefWidth="120"/>
+                                <TableColumn fx:id="colAddress" text="Address" prefWidth="200"/>
+                                <TableColumn fx:id="colProducts" text="Products" prefWidth="220"/>
+                                <TableColumn fx:id="colRequestedDate" text="Requested Date" prefWidth="140"/>
+                                <TableColumn fx:id="colTotalPrice" text="Total" prefWidth="90"/>
+                            </columns>
                         </TableView>
+
                         <HBox alignment="CENTER_RIGHT">
-                           <children>
-                              <Button fx:id="acceptOrderButton" mnemonicParsing="false" onAction="#handleAcceptOrder" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Take Selected Order">
-                                 <font>
-                                    <Font name="System Bold" size="14.0" />
-                                 </font>
-                              </Button>
-                           </children>
+                            <Button fx:id="acceptOrderButton"
+                                    text="Take Selected Order"/>
                         </HBox>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
-          </Tab>
-          <Tab text="My Current Order">
-               <content>
-                  <VBox spacing="20.0">
-                     <children>
-                        <Label text="Current Delivery Assignment">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
-                        </Label>
-                        <VBox spacing="5.0" style="-fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-padding: 15;">
-                           <children>
-                              <Label text="Order Details" underline="true">
-                                 <font>
-                                    <Font size="14.0" />
-                                 </font>
-                              </Label>
-                              <Label fx:id="currentOrderDetailsLabel" text="No active order selected." wrapText="true" />
-                           </children>
-                        </VBox>
-                        <HBox alignment="CENTER_LEFT" spacing="15.0">
-                           <children>
-                              <Label text="Delivery Date:" />
-                              <DatePicker fx:id="deliveryDatePicker" promptText="Select Delivery Date" />
-                           </children>
-                        </HBox>
-                        <Button fx:id="completeDeliveryButton" mnemonicParsing="false" onAction="#handleCompleteDelivery" style="-fx-background-color: #2980b9; -fx-text-fill: white;" text="Mark as Delivered">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Button>
-                     </children>
-                     <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </padding>
-                  </VBox>
-               </content>
-          </Tab>
-            <Tab text="History">
-               <content>
-                  <VBox spacing="10.0">
-                     <children>
-                        <Label text="Completed Deliveries">
-                           <font>
-                              <Font size="16.0" />
-                           </font>
-                        </Label>
-                        <TableView fx:id="completedOrdersTable" VBox.vgrow="ALWAYS">
-                           <columns>
-                              <TableColumn fx:id="colHistOrderId" prefWidth="75.0" text="Order ID" />
-                              <TableColumn fx:id="colHistDate" prefWidth="150.0" text="Delivery Date" />
-                              <TableColumn fx:id="colHistStatus" prefWidth="100.0" text="Status" />
-                              <TableColumn fx:id="colHistRating" prefWidth="100.0" text="Rating" />
-                           </columns>
-                        </TableView>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
+                    </VBox>
+                </content>
             </Tab>
-        </tabs>
-      </TabPane>
-   </center>
-   <bottom>
-      <HBox alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
-         <padding>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-         </padding>
-         <children>
-            <Label text="CMPE343 - Group 18" textFill="#7f8c8d" />
-         </children>
-      </HBox>
-   </bottom>
+
+            <!-- ===== MY CURRENT ORDERS ===== -->
+            <Tab text="My Current Orders">
+                <content>
+                    <VBox spacing="10" padding="10">
+                        <Label text="Selected / Active Deliveries">
+                            <font>
+                                <Font name="System Bold" size="16"/>
+                            </font>
+                        </Label>
+
+                        <TableView fx:id="currentOrdersTable"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colCurOrderId" text="Order ID" prefWidth="80"/>
+                                <TableColumn fx:id="colCurCustomer" text="Customer" prefWidth="150"/>
+                                <TableColumn fx:id="colCurAddress" text="Address" prefWidth="250"/>
+                                <TableColumn fx:id="colCurTotal" text="Total" prefWidth="100"/>
+                                <TableColumn fx:id="colCurStatus" text="Status" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="Delivery Date:"/>
+                            <DatePicker fx:id="deliveryDatePicker"/>
+                            <Button fx:id="completeDeliveryButton"
+                                    text="Mark as Delivered"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </Tab>
+
+            <!-- ===== HISTORY ===== -->
+            <Tab text="History">
+                <content>
+                    <VBox spacing="10" padding="10">
+                        <Label text="Completed Deliveries">
+                            <font>
+                                <Font size="16"/>
+                            </font>
+                        </Label>
+
+                        <TableView fx:id="completedOrdersTable"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colHistOrderId" text="Order ID" prefWidth="80"/>
+                                <TableColumn fx:id="colHistDate" text="Delivery Date" prefWidth="150"/>
+                                <TableColumn fx:id="colHistStatus" text="Status" prefWidth="120"/>
+                                <TableColumn fx:id="colHistRating" text="Rating" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </content>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- ===== FOOTER ===== -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" padding="5">
+            <Label text="CMPE343 - Group 18"
+                   styleClass="footer-text"/>
+        </HBox>
+    </bottom>
+
 </BorderPane>
+
