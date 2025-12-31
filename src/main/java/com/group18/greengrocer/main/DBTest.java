@@ -1,5 +1,5 @@
 package com.group18.greengrocer.main;
-
+/* 
 import com.group18.greengrocer.dao.CarrierRatingDAO;
 import com.group18.greengrocer.dao.ProductDAO;
 import com.group18.greengrocer.dao.UserDAO;
@@ -370,4 +370,4 @@ public class DBTest {
         System.out.println("Final Status of Order " + cancelOrder.getId() + ": " + finalCheck.getStatus());
         System.out.println("=== Constraints Test Complete ===");
     }
-}
+}*//

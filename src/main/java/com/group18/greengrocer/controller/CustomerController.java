@@ -2,6 +2,7 @@ package com.group18.greengrocer.controller;
 
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
+import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
 
@@ -28,7 +29,18 @@ public class CustomerController {
     private OrderService orderService;
 
     // Normally comes from LoginController
-    private int customerId = 1;
+    private User currentUser;
+    private int customerId;
+
+    public void initData(User user) {
+        this.currentUser = user;
+        if (currentUser != null) {
+            this.customerId = currentUser.getId();
+            usernameLabel.setText("Customer: " + currentUser.getUsername());
+            loadProducts();
+            // Refresh other data if needed
+        }
+    }
 
     // =====================
     // FXML COMPONENTS

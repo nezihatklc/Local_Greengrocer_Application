@@ -5,7 +5,19 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import com.group18.greengrocer.model.User;
+
 public class OwnerController {
+
+    private User currentUser;
+
+    public void initData(User user) {
+        this.currentUser = user;
+        if (currentUser != null) {
+            usernameLabel.setText("Owner: " + currentUser.getUsername());
+            // loadOwnerData();
+        }
+    }
     
     // Services
     // private ProductService productService;
