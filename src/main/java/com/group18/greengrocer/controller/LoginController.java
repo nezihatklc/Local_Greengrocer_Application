@@ -97,9 +97,11 @@ public class LoginController {
 
             if (controller instanceof CarrierController) {
                 ((CarrierController) controller).initData(currentUser);
-            } 
-            // Add other controllers here as needed (e.g. CustomerController, OwnerController)
-            // else if (controller instanceof CustomerController) ...
+            } else if (controller instanceof CustomerController) {
+                ((CustomerController) controller).initData(currentUser);
+            } else if (controller instanceof OwnerController) {
+                ((OwnerController) controller).initData(currentUser);
+            }
 
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.getScene().setRoot(root);
