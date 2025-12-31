@@ -115,10 +115,11 @@ public class CustomerController {
             imageView.setFitWidth(120);
             imageView.setFitHeight(100);
             imageView.setPreserveRatio(true);
+            imageView.setStyle("-fx-border-color: red;");
             box.getChildren().add(imageView);
         }
     } catch (Exception e) {
-        // deliberately ignore → ekran açılmalı
+        // deliberately ignore
     }
          
         
