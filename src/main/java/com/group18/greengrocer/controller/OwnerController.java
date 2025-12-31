@@ -1,21 +1,35 @@
 package com.group18.greengrocer.controller;
 
 import com.group18.greengrocer.model.Product;
+import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.List;
+import java.util.Optional;
 
+/**
+ * OwnerController
+ * Controller for the Owner dashboard UI.
+ *
+ * Responsibilities (Rules.md):
+ * - Handles UI events (buttons, selection changes).
+ * - MUST NOT contain SQL or complex business rules.
+ * - Calls Service layer for business logic.
+ */
 public class OwnerController {
 
+    private User currentUser;
+    private final ProductService productService;
+
+    // FXML Fields
     @FXML private Label usernameLabel;
 
     @FXML private TableView<Product> productTable;
@@ -28,37 +42,109 @@ public class OwnerController {
     @FXML private TableColumn<Product, Double> stockCol;
     @FXML private TableColumn<Product, Double> thresholdCol;
 
-    private final ProductService productService = new ProductService();
-    private final ObservableList<Product> productList = FXCollections.observableArrayList();
+    @FXML private Label effectivePriceLabel;
 
+    public OwnerController() {
+        this.productService = new ProductService();
+    }
+
+    /**
+     * Optional init method if you navigate with FXMLLoader.getController().
+     * If not called, controller will still work by reading SessionManager in initialize().
+     *
+     * @param user logged-in user (OWNER)
+     */
+    public void initData(User user) {
+        this.currentUser = user;
+        if (usernameLabel != null && currentUser != null) {
+            usernameLabel.setText("Owner: " + currentUser.getUsername());
+        }
+        loadOwnerData();
+    }
+
+    /**
+     * JavaFX lifecycle method.
+     * Called automatically after FXML is loaded and @FXML fields are injected.
+     */
     @FXML
     public void initialize() {
-        // Header username
-        if (SessionManager.getInstance().getCurrentUser() != null) {
-            usernameLabel.setText(SessionManager.getInstance().getCurrentUser().getUsername());
+        // ---- Table column bindings (Week11: TableView + binding) ----
+        idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
+
+        // FIX: Null-safe category (prevents NullPointerException)
+        categoryCol.setCellValueFactory(cell -> {
+            Product p = cell.getValue();
+            String cat = (p.getCategory() == null) ? "-" : p.getCategory().name();
+            return new SimpleStringProperty(cat);
+        });
+
+        typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
+        unitCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUnit()));
+        priceCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPrice()));
+        stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
+        thresholdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getThreshold()));
+
+        // ---- Selection listener (Week11: ChangeListener/Listener) ----
+        productTable.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((obs, oldVal, newVal) -> showProductDetails(newVal));
+
+        // FIX: initData() çağrılmasa bile user adını set etmeye çalış
+        if (this.currentUser == null) {
+            this.currentUser = SessionManager.getInstance().getCurrentUser();
+        }
+        if (usernameLabel != null && currentUser != null) {
+            usernameLabel.setText("Owner: " + currentUser.getUsername());
         }
 
-        // Table column bindings (Week11: TableView + PropertyValueFactory)
-        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
-        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-        unitCol.setCellValueFactory(new PropertyValueFactory<>("unit"));
-        priceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
-        stockCol.setCellValueFactory(new PropertyValueFactory<>("stock"));
-        thresholdCol.setCellValueFactory(new PropertyValueFactory<>("threshold"));
-
-        productTable.setItems(productList);
-
-        // Load data
-        loadProducts();
+        // FIX: initData() hiç çağrılmasa bile tablo dolsun
+        loadOwnerData();
     }
 
+    /**
+     * Loads all products for owner view (including out-of-stock).
+     * Controller does not query DB directly: service handles it.
+     */
+    private void loadOwnerData() {
+        if (productTable == null) return;
+        productTable.getItems().setAll(productService.getAllProductsForOwner());
+    }
+
+    /**
+     * Updates UI labels based on selected product.
+     * Shows effective price computed by threshold rule in ProductService.
+     *
+     * @param product selected product or null
+     */
+    private void showProductDetails(Product product) {
+        if (effectivePriceLabel == null) return;
+
+        if (product == null) {
+            effectivePriceLabel.setText("-");
+            return;
+        }
+
+        try {
+            double effectivePrice = productService.getEffectivePrice(product);
+            effectivePriceLabel.setText(String.format("%.2f ₺", effectivePrice));
+        } catch (Exception e) {
+            effectivePriceLabel.setText("-");
+        }
+    }
+
+    /**
+     * Refresh button handler.
+     */
     @FXML
     private void handleRefresh() {
-        loadProducts();
+        loadOwnerData();
+        AlertUtil.showInfo("Refreshed", "Product list refreshed.");
     }
 
+    /**
+     * Delete selected product handler.
+     */
     @FXML
     private void handleDelete() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
@@ -67,21 +153,19 @@ public class OwnerController {
             return;
         }
 
-        try {
-            productService.removeProduct(selected.getId());
-            loadProducts();
-            AlertUtil.showInfo("Deleted", "Product deleted successfully.");
-        } catch (Exception e) {
-            AlertUtil.showError("Delete Failed", e.getMessage());
-        }
-    }
+        Optional<ButtonType> result = AlertUtil.showConfirmation(
+                "Delete Product",
+                "Are you sure you want to delete " + selected.getName() + "?"
+        );
 
-    private void loadProducts() {
-        try {
-            List<Product> all = productService.getAllProductsForOwner(); // IMPORTANT
-            productList.setAll(all);
-        } catch (Exception e) {
-            AlertUtil.showError("Load Failed", "Could not load products: " + e.getMessage());
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                productService.removeProduct(selected.getId());
+                AlertUtil.showInfo("Success", "Product deleted successfully.");
+                loadOwnerData();
+            } catch (Exception e) {
+                AlertUtil.showError("Error", "Could not delete product: " + e.getMessage());
+            }
         }
     }
 }
