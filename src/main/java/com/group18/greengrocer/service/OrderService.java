@@ -21,6 +21,10 @@ public class OrderService {
 
     private final List<CartItem> cart;
 
+    // === CUSTOMER CART STORAGE (USER-BASED) ===
+    private final java.util.Map<Integer, Order> userCarts = new java.util.HashMap<>();
+
+
     public OrderService() {
         this.orderDAO = new OrderDAO();
         this.productDAO = new ProductDAO();
@@ -37,12 +41,14 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public Order getCart(int userId) {
-        Order cartOrder = new Order();
-        cartOrder.setCustomerId(userId);
-        cartOrder.setItems(cart);
-
-        return cartOrder;
+        return userCarts.computeIfAbsent(userId, id -> {
+            Order cartOrder = new Order();
+            cartOrder.setCustomerId(id);
+            cartOrder.setItems(new ArrayList<>());
+            return cartOrder;
+        });
     }
+
 
     /**
      * Adds a product to the user's shopping cart.
@@ -54,14 +60,16 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void addToCart(int userId, int productId, double amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero.");
-        }
 
+        if (amount <= 0)
+            throw new IllegalArgumentException("Amount must be greater than zero.");
+        
         Product product = productDAO.findById(productId);
-        if (product == null) {
+        if (product == null)
             throw new IllegalArgumentException("Product not found.");
-        }
+            
+        Order cartOrder = getCart(userId);
+        List<CartItem> cart = cartOrder.getItems();
 
         double alreadyInCart = 0;
         for (CartItem item : cart) {
@@ -71,10 +79,9 @@ public class OrderService {
             }
         }
 
-        if (product.getStock() < alreadyInCart + amount) {
+        if (product.getStock() < alreadyInCart + amount)
             throw new IllegalStateException("Insufficient stock.");
-        }
-
+        
         for (CartItem item : cart) {
             if (item.getProduct().getId() == productId) {
                 item.setQuantity(item.getQuantity() + amount);
@@ -85,6 +92,7 @@ public class OrderService {
         cart.add(new CartItem(product, amount));
     }
 
+
     /**
      * Removes a specific product from the cart.
      * 
@@ -93,8 +101,13 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void removeFromCart(int userId, int productId) {
-        cart.removeIf(item -> item.getProduct() != null && item.getProduct().getId() == productId);
+        Order cartOrder = getCart(userId);
+        cartOrder.getItems().removeIf(
+            item -> item.getProduct() != null &&
+                    item.getProduct().getId() == productId
+        );
     }
+
 
     /**
      * Updates the quantity of a product in the cart.
@@ -105,26 +118,28 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void updateCartItem(int userId, int productId, double amount) {
-        if (amount <= 0) {
+        
+        if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero.");
-        }
 
         Product product = productDAO.findById(productId);
-        if (product == null) {
+        if (product == null)
             throw new IllegalArgumentException("Product not found.");
-        }
 
-        if (product.getStock() < amount) {
+        if (product.getStock() < amount)
             throw new IllegalStateException("Insufficient stock.");
-        }
 
-        for (CartItem item : cart) {
+        Order cartOrder = getCart(userId);
+
+        for (CartItem item : cartOrder.getItems()) {
             if (item.getProduct().getId() == productId) {
                 item.setQuantity(amount);
                 return;
             }
         }
     }
+
+
 
     /**
      * Finalizes the order.
@@ -135,14 +150,15 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void checkout(Order order) {
-        if (cart.isEmpty()) {
+
+        if (order == null || order.getItems().isEmpty())
             throw new IllegalStateException("Cart is empty.");
-        }
+
+        List<CartItem> cart = order.getItems();
 
         // 1. Validation & Price Calculation
         // Note: DiscountService handles price logic, but we must ensure we are using
         // fresh data.
-        double subtotal = 0.0;
         for (CartItem item : cart) {
             Product product = productDAO.findById(item.getProduct().getId());
             if (product == null) {
@@ -211,7 +227,7 @@ public class OrderService {
         }
 
         // 7. Clear Cart
-        cart.clear();
+        userCarts.remove(order.getCustomerId());
     }
 
     /**
