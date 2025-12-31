@@ -1,5 +1,6 @@
 package com.group18.greengrocer.controller;
 
+import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
@@ -13,8 +14,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -28,19 +29,8 @@ public class CustomerController {
     private ProductService productService;
     private OrderService orderService;
 
-    // Normally comes from LoginController
+    // Logged-in user
     private User currentUser;
-    private int customerId;
-
-    public void initData(User user) {
-        this.currentUser = user;
-        if (currentUser != null) {
-            this.customerId = currentUser.getId();
-            usernameLabel.setText("Customer: " + currentUser.getUsername());
-            loadProducts();
-            // Refresh other data if needed
-        }
-    }
 
     // =====================
     // FXML COMPONENTS
@@ -57,12 +47,6 @@ public class CustomerController {
     @FXML
     private TilePane vegetablePane;
 
-    @FXML
-    private TextField productIdField;
-
-    @FXML
-    private TextField quantityField;
-
     // =====================
     // INITIALIZE
     // =====================
@@ -70,50 +54,79 @@ public class CustomerController {
     public void initialize() {
         productService = new ProductService();
         orderService = new OrderService();
+    }
 
-        loadProducts();
+    // =====================
+    // USER FROM LOGIN
+    // =====================
+    public void initData(User user) {
+        this.currentUser = user;
+
+        if (currentUser != null) {
+            usernameLabel.setText("Customer: " + currentUser.getUsername());
+            loadProducts();
+        }
     }
 
     // =====================
     // PRODUCT LIST
     // =====================
     private void loadProducts() {
+        fruitPane.getChildren().clear();
+        vegetablePane.getChildren().clear();
+
         List<Product> products = productService.getAllProducts();
 
-    }
+        for (Product product : products) {
+            VBox card = createProductCard(product);
 
-    // =====================
-    // CART OPERATIONS
-    // =====================
-    @FXML
-    private void handleAddToCart() {
-        try {
-            int productId = Integer.parseInt(productIdField.getText());
-            double quantity = Double.parseDouble(quantityField.getText());
-
-            orderService.addToCart(customerId, productId, quantity);
-            showInfo("Product added to cart.");
-
-        } catch (Exception e) {
-            showError(e.getMessage());
+            // ✅ ENUM comparison (DOĞRU OLAN)
+            if (product.getCategory() == Category.FRUIT) {
+                fruitPane.getChildren().add(card);
+            } else if (product.getCategory() == Category.VEGETABLE) {
+                vegetablePane.getChildren().add(card);
+            }
         }
     }
 
+    private VBox createProductCard(Product product) {
+        Label nameLabel = new Label(product.getName());
+        Label priceLabel = new Label("Price: " + product.getPrice() + " ₺ / " + product.getUnit());
+        Label stockLabel = new Label("Stock: " + product.getStock());
+
+        Button addButton = new Button("Add to Cart");
+        addButton.setOnAction(e -> {
+            try {
+                orderService.addToCart(
+                        currentUser.getId(),
+                        product.getId(),
+                        1.0   // default 1 kg
+                );
+                showInfo(product.getName() + " added to cart.");
+            } catch (Exception ex) {
+                showError(ex.getMessage());
+            }
+        });
+
+        VBox box = new VBox(6);
+        box.getChildren().addAll(nameLabel, priceLabel, stockLabel, addButton);
+        box.setStyle("""
+                -fx-padding: 10;
+                -fx-border-color: lightgray;
+                -fx-border-radius: 5;
+                -fx-background-radius: 5;
+                """);
+
+        return box;
+    }
+
+    // =====================
+    // CART
+    // =====================
     @FXML
     private void handleViewCart() {
-        Order cart = orderService.getCart(customerId);
+        Order cart = orderService.getCart(currentUser.getId());
         showInfo("Cart has " + cart.getItems().size() + " items.");
-    }
-
-    @FXML
-    private void handleRemoveFromCart() {
-        try {
-            int productId = Integer.parseInt(productIdField.getText());
-            orderService.removeFromCart(customerId, productId);
-            showInfo("Product removed from cart.");
-        } catch (Exception e) {
-            showError(e.getMessage());
-        }
     }
 
     // =====================
@@ -122,7 +135,7 @@ public class CustomerController {
     @FXML
     private void handleCheckout() {
         try {
-            Order cart = orderService.getCart(customerId);
+            Order cart = orderService.getCart(currentUser.getId());
             orderService.checkout(cart);
             showInfo("Order completed successfully.");
         } catch (Exception e) {
@@ -135,19 +148,23 @@ public class CustomerController {
     // =====================
     @FXML
     private void handleMyOrders() {
-        List<Order> orders = orderService.getOrdersByCustomer(customerId);
+        List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
         showInfo("You have " + orders.size() + " past orders.");
     }
 
+    // =====================
+    // LOGOUT
+    // =====================
     @FXML
     private void handleLogout() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            Parent root = FXMLLoader.load(
+                    getClass().getResource("/com/group18/greengrocer/fxml/login.fxml")
+            );
             Stage stage = (Stage) cartButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
         } catch (IOException e) {
-            e.printStackTrace();
             showError("Could not go back to login: " + e.getMessage());
         }
     }
