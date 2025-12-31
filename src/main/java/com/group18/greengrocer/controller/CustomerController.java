@@ -54,6 +54,9 @@ public class CustomerController {
     public void initialize() {
         productService = new ProductService();
         orderService = new OrderService();
+
+        // Default cart label
+        cartButton.setText("Cart (0)");
     }
 
     // =====================
@@ -80,7 +83,6 @@ public class CustomerController {
         for (Product product : products) {
             VBox card = createProductCard(product);
 
-            // ✅ ENUM comparison (DOĞRU OLAN)
             if (product.getCategory() == Category.FRUIT) {
                 fruitPane.getChildren().add(card);
             } else if (product.getCategory() == Category.VEGETABLE) {
@@ -91,7 +93,9 @@ public class CustomerController {
 
     private VBox createProductCard(Product product) {
         Label nameLabel = new Label(product.getName());
-        Label priceLabel = new Label("Price: " + product.getPrice() + " ₺ / " + product.getUnit());
+        Label priceLabel = new Label(
+                "Price: " + product.getPrice() + " ₺ / " + product.getUnit()
+        );
         Label stockLabel = new Label("Stock: " + product.getStock());
 
         Button addButton = new Button("Add to Cart");
@@ -102,6 +106,11 @@ public class CustomerController {
                         product.getId(),
                         1.0   // default 1 kg
                 );
+
+                // ✅ UPDATE CART COUNT
+                Order cart = orderService.getCart(currentUser.getId());
+                cartButton.setText("Cart (" + cart.getItems().size() + ")");
+
                 showInfo(product.getName() + " added to cart.");
             } catch (Exception ex) {
                 showError(ex.getMessage());
@@ -109,7 +118,12 @@ public class CustomerController {
         });
 
         VBox box = new VBox(6);
-        box.getChildren().addAll(nameLabel, priceLabel, stockLabel, addButton);
+        box.getChildren().addAll(
+                nameLabel,
+                priceLabel,
+                stockLabel,
+                addButton
+        );
         box.setStyle("""
                 -fx-padding: 10;
                 -fx-border-color: lightgray;
@@ -126,18 +140,43 @@ public class CustomerController {
     @FXML
     private void handleViewCart() {
         Order cart = orderService.getCart(currentUser.getId());
-        showInfo("Cart has " + cart.getItems().size() + " items.");
+
+        if (cart.getItems().isEmpty()) {
+            showInfo("Your cart is empty.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/group18/greengrocer/fxml/cart.fxml")
+            );
+            Parent root = loader.load();
+
+            CartController controller = loader.getController();
+            controller.initData(currentUser, cart);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Your Cart");
+            stage.show();
+
+        } catch (IOException e) {
+            showError("Could not open cart: " + e.getMessage());
+        }
     }
 
     // =====================
-    // CHECKOUT
+    // CHECKOUT (OPTIONAL SHORTCUT)
     // =====================
     @FXML
     private void handleCheckout() {
         try {
             Order cart = orderService.getCart(currentUser.getId());
             orderService.checkout(cart);
+
+            cartButton.setText("Cart (0)");
             showInfo("Order completed successfully.");
+
         } catch (Exception e) {
             showError(e.getMessage());
         }
