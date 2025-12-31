@@ -3,6 +3,7 @@ package com.group18.greengrocer.service;
 import com.group18.greengrocer.dao.CarrierRatingDAO;
 import com.group18.greengrocer.dao.OrderDAO;
 import com.group18.greengrocer.dao.ProductDAO;
+import com.group18.greengrocer.dao.ReportDAO;
 import com.group18.greengrocer.dao.UserDAO;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.ReportData;
@@ -25,12 +26,14 @@ public class ReportService {
 
     private static final int SALES_REPORT_DAYS = 30;
 
+    private final ReportDAO reportDAO;
     private final OrderDAO orderDAO;
     private final ProductDAO productDAO;
     private final CarrierRatingDAO carrierRatingDAO;
     private final UserDAO userDAO;
 
     public ReportService() {
+        this.reportDAO = ReportDAO.getInstance(); // Singleton instance
         this.orderDAO = new OrderDAO();
         this.productDAO = new ProductDAO();
         this.carrierRatingDAO = new CarrierRatingDAO();
@@ -43,8 +46,8 @@ public class ReportService {
      * @return list of daily sales data points
      */
     public List<ReportData> generateSalesReport() {
-        // NOTE: This requires OrderDAO.getDailySales(int days).
-        return orderDAO.getDailySales(SALES_REPORT_DAYS);
+        // Correctly using ReportDAO for sales data
+        return reportDAO.getDailySales(SALES_REPORT_DAYS);
     }
 
     /**
