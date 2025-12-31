@@ -17,6 +17,10 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+
 
 import java.io.IOException;
 import java.util.List;
@@ -92,6 +96,34 @@ public class CustomerController {
     }
 
     private VBox createProductCard(Product product) {
+
+         VBox box = new VBox(6);
+
+        // =====================
+        // SAFE IMAGE LOAD
+        // =====================
+
+        try {
+        String imageName = product.getName().toLowerCase() + ".png";
+        var stream = getClass().getResourceAsStream(
+            "/com/group18/greengrocer/images/products/" + imageName
+        );
+
+        if (stream != null) {
+            Image image = new Image(stream);
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(120);
+            imageView.setFitHeight(100);
+            imageView.setPreserveRatio(true);
+            box.getChildren().add(imageView);
+        }
+    } catch (Exception e) {
+        // deliberately ignore → ekran açılmalı
+    }
+         
+        
+
+
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label(
                 "Price: " + product.getPrice() + " ₺ / " + product.getUnit()
@@ -107,7 +139,7 @@ public class CustomerController {
                         1.0   // default 1 kg
                 );
 
-                // ✅ UPDATE CART COUNT
+                // UPDATE CART COUNT
                 Order cart = orderService.getCart(currentUser.getId());
                 cartButton.setText("Cart (" + cart.getItems().size() + ")");
 
@@ -117,7 +149,6 @@ public class CustomerController {
             }
         });
 
-        VBox box = new VBox(6);
         box.getChildren().addAll(
                 nameLabel,
                 priceLabel,
@@ -129,6 +160,7 @@ public class CustomerController {
                 -fx-border-color: lightgray;
                 -fx-border-radius: 5;
                 -fx-background-radius: 5;
+                -fx-alignment: center;
                 """);
 
         return box;
