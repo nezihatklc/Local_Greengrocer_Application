@@ -78,6 +78,12 @@ public class Order {
     private Timestamp deliveryTime;
 
     /**
+     * The requested delivery date by the customer.
+     * Corresponds to 'requested_delivery_date'.
+     */
+    private Timestamp requestedDeliveryDate;
+
+    /**
      * The current status of the order.
      * Corresponds to 'status'.
      */
@@ -197,6 +203,14 @@ public class Order {
 
     public void setDeliveryTime(Timestamp deliveryTime) {
         this.deliveryTime = deliveryTime;
+    }
+
+    public Timestamp getRequestedDeliveryDate() {
+        return requestedDeliveryDate;
+    }
+
+    public void setRequestedDeliveryDate(Timestamp requestedDeliveryDate) {
+        this.requestedDeliveryDate = requestedDeliveryDate;
     }
 
     public Status getStatus() {

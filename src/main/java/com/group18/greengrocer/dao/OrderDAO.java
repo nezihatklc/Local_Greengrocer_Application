@@ -35,8 +35,8 @@ public class OrderDAO {
      */
     // ASSIGNED TO: Customer (Places Order)
     public boolean createOrder(Order order) {
-        String insertOrderSql = "INSERT INTO OrderInfo (customer_id, carrier_id, ordertime, deliverytime, status, totalcost, used_coupon_id, invoice) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertOrderSql = "INSERT INTO OrderInfo (customer_id, carrier_id, ordertime, deliverytime, requested_delivery_date, status, totalcost, used_coupon_id, invoice) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertItemSql = "INSERT INTO OrderItems (order_id, product_id, quantity, price_at_purchase) VALUES (?, ?, ?, ?)";
 
         Connection conn = null;
@@ -60,16 +60,17 @@ public class OrderDAO {
             
             orderStmt.setTimestamp(3, order.getOrderTime());
             orderStmt.setTimestamp(4, order.getDeliveryTime());
-            orderStmt.setString(5, order.getStatus().name());
-            orderStmt.setDouble(6, order.getTotalCost());
+            orderStmt.setTimestamp(5, order.getRequestedDeliveryDate());
+            orderStmt.setString(6, order.getStatus().name());
+            orderStmt.setDouble(7, order.getTotalCost());
             
             if (order.getUsedCouponId() != null) {
-                orderStmt.setInt(7, order.getUsedCouponId());
+                orderStmt.setInt(8, order.getUsedCouponId());
             } else {
-                orderStmt.setNull(7, Types.INTEGER);
+                orderStmt.setNull(8, Types.INTEGER);
             }
             
-            orderStmt.setString(8, order.getInvoice());
+            orderStmt.setString(9, order.getInvoice());
 
             int affectedRows = orderStmt.executeUpdate();
             if (affectedRows == 0) {
@@ -216,17 +217,20 @@ public class OrderDAO {
     public List<Order> findAvailableOrders() {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM OrderInfo WHERE status = 'AVAILABLE' ORDER BY ordertime ASC";
+        System.out.println("DEBUG DAO: Executing SQL: " + sql);
 
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
+                System.out.println("DEBUG DAO: Found Order ID " + rs.getInt("id"));
                 Order order = mapOrder(rs);
                 loadOrderItems(order, conn);
                 orders.add(order);
             }
         } catch (SQLException e) {
+            System.err.println("DEBUG DAO: SQL Error in findAvailableOrders:");
             e.printStackTrace();
         }
         return orders;
@@ -369,6 +373,7 @@ public class OrderDAO {
         
         order.setOrderTime(rs.getTimestamp("ordertime"));
         order.setDeliveryTime(rs.getTimestamp("deliverytime"));
+        order.setRequestedDeliveryDate(rs.getTimestamp("requested_delivery_date"));
         
         try {
             order.setStatus(Order.Status.valueOf(rs.getString("status")));

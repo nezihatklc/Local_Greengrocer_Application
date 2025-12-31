@@ -24,7 +24,6 @@ CREATE TABLE UserInfo (
 );
 
 -- 3. Create ProductInfo Table
--- Changed price/stock/threshold to DECIMAL for precision
 CREATE TABLE ProductInfo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -49,26 +48,25 @@ CREATE TABLE Coupons (
 
 
 -- 4. Create OrderInfo Table
--- Changed totalcost to DECIMAL
 CREATE TABLE OrderInfo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_id INT NOT NULL,  
     carrier_id INT,            
     ordertime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     deliverytime TIMESTAMP NULL, 
+    
     -- Status Enum Updated:
-    -- AVAILABLE: Purchased, waiting for carrier (Pending)
-    -- SELECTED: Carrier took the order (Current)
-    -- COMPLETED: Delivered
-    -- CANCELLED: Order cancelled
     status ENUM('AVAILABLE', 'SELECTED', 'COMPLETED', 'CANCELLED') DEFAULT 'AVAILABLE',
     
     totalcost DECIMAL(10, 2) NOT NULL, 
     
-    -- Track used coupon (Line 40)
+    -- Customer's requested delivery time (NEW FIELD)
+    requested_delivery_date TIMESTAMP NULL,
+
+    -- Track used coupon
     used_coupon_id INT DEFAULT NULL,
     
-    -- Invoice stored as CLOB (LONGTEXT) as per Line 69
+    -- Invoice stored as CLOB (LONGTEXT)
     invoice LONGTEXT, 
     
     FOREIGN KEY (customer_id) REFERENCES UserInfo(id),
@@ -77,7 +75,6 @@ CREATE TABLE OrderInfo (
 );
 
 -- 5. Create OrderItems Table 
--- Added UNIQUE Key to prevent duplicate product lines in same order
 CREATE TABLE OrderItems (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -102,7 +99,6 @@ CREATE TABLE Messages (
 );
 
 -- 8. Create CarrierRatings Table 
--- Added UNIQUE Key on order_id to ensure one rating per order
 CREATE TABLE CarrierRatings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -125,7 +121,6 @@ INSERT INTO UserInfo (username, password, role, address, phone_number) VALUES
 ('own', 'own', 'OWNER', 'HQ Address', '555-0000'),       
 ('carr', 'carr', 'CARRIER', 'Carrier Hub 1', '555-0001'), 
 ('cust', 'cust', 'CUSTOMER', 'Customer Address 1', '555-1001'), 
-
 ('carrier2', '1234', 'CARRIER', 'Carrier Hub 2', '555-0002'),
 ('alice', '1234', 'CUSTOMER', 'Wonderland St.', '555-1002'),
 ('bob', '1234', 'CUSTOMER', 'Builder Ave.', '555-1003'),
@@ -178,18 +173,34 @@ INSERT INTO ProductInfo (name, category, type, price, stock, threshold) VALUES
 ('Pineapple', 'FRUIT', 'Gold', 55.0, 35.0, 5.0),
 ('Mango', 'FRUIT', 'Tommy', 70.0, 20.0, 3.0);
 
-INSERT INTO OrderInfo (customer_id, carrier_id, status, totalcost) VALUES
-(4, 2, 'COMPLETED', 150.00), (5, 2, 'COMPLETED', 200.00), (6, NULL, 'AVAILABLE', 50.00),
-(7, NULL, 'AVAILABLE', 80.00), (8, 2, 'SELECTED', 120.00), (9, 3, 'COMPLETED', 300.00),
-(10, NULL, 'AVAILABLE', 45.00), (11, 2, 'COMPLETED', 90.00), (12, 3, 'SELECTED', 110.00),
-(13, NULL, 'AVAILABLE', 60.00), (14, 2, 'COMPLETED', 75.00), (15, 3, 'COMPLETED', 180.00),
-(16, NULL, 'AVAILABLE', 55.00), (17, NULL, 'AVAILABLE', 130.00), (18, 2, 'SELECTED', 160.00),
-(19, 3, 'COMPLETED', 220.00), (20, NULL, 'AVAILABLE', 40.00), (21, 2, 'COMPLETED', 95.00),
-(22, 3, 'SELECTED', 115.00), (23, NULL, 'AVAILABLE', 65.00), (24, 2, 'COMPLETED', 85.00),
-(25, 3, 'COMPLETED', 190.00), (4, NULL, 'AVAILABLE', 70.00), (5, NULL, 'AVAILABLE', 140.00),
-(6, 2, 'SELECTED', 170.00);
+-- Updated OrderInfo inserts with requested_delivery_date
+INSERT INTO OrderInfo (customer_id, carrier_id, status, totalcost, requested_delivery_date) VALUES
+(4, 2, 'COMPLETED', 150.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(5, 2, 'COMPLETED', 200.00, DATE_ADD(NOW(), INTERVAL 2 DAY)), 
+(6, NULL, 'AVAILABLE', 50.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(7, NULL, 'AVAILABLE', 80.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(8, 2, 'SELECTED', 120.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(9, 3, 'COMPLETED', 300.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(10, NULL, 'AVAILABLE', 45.00, DATE_ADD(NOW(), INTERVAL 2 DAY)), 
+(11, 2, 'COMPLETED', 90.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(12, 3, 'SELECTED', 110.00, DATE_ADD(NOW(), INTERVAL 2 DAY)),
+(13, NULL, 'AVAILABLE', 60.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(14, 2, 'COMPLETED', 75.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(15, 3, 'COMPLETED', 180.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(16, NULL, 'AVAILABLE', 55.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(17, NULL, 'AVAILABLE', 130.00, DATE_ADD(NOW(), INTERVAL 2 DAY)), 
+(18, 2, 'SELECTED', 160.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(19, 3, 'COMPLETED', 220.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(20, NULL, 'AVAILABLE', 40.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(21, 2, 'COMPLETED', 95.00, DATE_ADD(NOW(), INTERVAL 3 DAY)),
+(22, 3, 'SELECTED', 115.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(23, NULL, 'AVAILABLE', 65.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(24, 2, 'COMPLETED', 85.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(25, 3, 'COMPLETED', 190.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(4, NULL, 'AVAILABLE', 70.00, DATE_ADD(NOW(), INTERVAL 1 DAY)), 
+(5, NULL, 'AVAILABLE', 140.00, DATE_ADD(NOW(), INTERVAL 1 DAY)),
+(6, 2, 'SELECTED', 170.00, DATE_ADD(NOW(), INTERVAL 1 DAY));
 
 INSERT INTO CarrierRatings (order_id, customer_id, carrier_id, rating, comment) VALUES
 (1, 4, 2, 5, 'Great!'), (2, 5, 2, 4, 'Good'), (6, 9, 3, 3, 'Average'),
 (8, 11, 2, 5, 'Fast'), (11, 14, 2, 4, 'Nice'), (12, 15, 3, 5, 'Perfect');
-

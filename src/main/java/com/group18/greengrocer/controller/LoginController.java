@@ -88,11 +88,24 @@ public class LoginController {
 
     private void redirectToDashboard(String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            // Pass user data to the controller if supported
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            Object controller = loader.getController();
+
+            if (controller instanceof CarrierController) {
+                ((CarrierController) controller).initData(currentUser);
+            } 
+            // Add other controllers here as needed (e.g. CustomerController, OwnerController)
+            // else if (controller instanceof CustomerController) ...
+
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.getScene().setRoot(root);
-            stage.setTitle("Group18 GreenGrocer - " + SessionManager.getInstance().getCurrentUser().getUsername());
+            stage.setTitle("Group18 GreenGrocer - " + currentUser.getUsername());
         } catch (IOException e) {
+             System.err.println("Error loading dashboard: " + fxmlPath);
             e.printStackTrace();
             AlertUtil.showError("Navigation Error", "Could not load dashboard: " + e.getMessage());
         }
