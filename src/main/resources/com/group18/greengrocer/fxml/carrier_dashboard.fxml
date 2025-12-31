@@ -46,18 +46,19 @@
                         <TableView fx:id="availableOrdersTable"
                                    VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="70"/>
-                                <TableColumn fx:id="colCustomerName" text="Customer" prefWidth="120"/>
-                                <TableColumn fx:id="colAddress" text="Address" prefWidth="200"/>
-                                <TableColumn fx:id="colProducts" text="Products" prefWidth="220"/>
-                                <TableColumn fx:id="colRequestedDate" text="Requested Date" prefWidth="140"/>
-                                <TableColumn fx:id="colTotalPrice" text="Total" prefWidth="90"/>
+                                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="50"/>
+                                <TableColumn fx:id="colCustomerName" text="Customer" prefWidth="100"/>
+                                <TableColumn fx:id="colAddress" text="Address" prefWidth="180"/>
+                                <TableColumn fx:id="colAvProducts" text="Products" prefWidth="250"/>
+                                <TableColumn fx:id="colAvDate" text="Order Date" prefWidth="120"/>
+                                <TableColumn fx:id="colTotalPrice" text="Total" prefWidth="80"/>
                             </columns>
                         </TableView>
 
                         <HBox alignment="CENTER_RIGHT">
                             <Button fx:id="acceptOrderButton"
-                                    text="Take Selected Order"/>
+                                    text="Take Selected Order"
+                                    onAction="#handleAcceptOrder"/>
                         </HBox>
                     </VBox>
                 </content>
@@ -73,22 +74,28 @@
                             </font>
                         </Label>
 
+                        <Label text="Select an order from the list and mark it as delivered." textFill="gray"/>
+
                         <TableView fx:id="currentOrdersTable"
                                    VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colCurOrderId" text="Order ID" prefWidth="80"/>
-                                <TableColumn fx:id="colCurCustomer" text="Customer" prefWidth="150"/>
-                                <TableColumn fx:id="colCurAddress" text="Address" prefWidth="250"/>
-                                <TableColumn fx:id="colCurTotal" text="Total" prefWidth="100"/>
-                                <TableColumn fx:id="colCurStatus" text="Status" prefWidth="120"/>
+                                <TableColumn fx:id="colCurOrderId" text="Order ID" prefWidth="60"/>
+                                <TableColumn fx:id="colCurCustomer" text="Customer" prefWidth="100"/>
+                                <TableColumn fx:id="colCurAddress" text="Address" prefWidth="200"/>
+                                <TableColumn fx:id="colCurProducts" text="Products" prefWidth="220"/>
+                                <TableColumn fx:id="colCurTotal" text="Total" prefWidth="80"/>
+                                <TableColumn fx:id="colCurStatus" text="Status" prefWidth="100"/>
                             </columns>
                         </TableView>
 
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="Delivery Date:"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-border-color: #ddd; -fx-padding: 10; -fx-background-color: #f9f9f9;">
+                            <Label text="Delivery Action:" style="-fx-font-weight: bold;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="Date:"/>
                             <DatePicker fx:id="deliveryDatePicker"/>
                             <Button fx:id="completeDeliveryButton"
-                                    text="Mark as Delivered"/>
+                                    text="Deliver Selected"
+                                    onAction="#handleCompleteDelivery"/>
                         </HBox>
                     </VBox>
                 </content>
