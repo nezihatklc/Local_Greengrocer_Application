@@ -16,11 +16,9 @@ import javafx.stage.Stage;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
+import com.group18.greengrocer.util.Constants;
+
 public class CartController {
-
-    private static final double VAT_RATE = 0.10;
-    private static final double MIN_CART_VALUE = 100.0;
-
 
     // =====================
     // FXML COMPONENTS
@@ -69,27 +67,19 @@ public class CartController {
 
         productNameColumn.setCellValueFactory(
                 data -> new SimpleStringProperty(
-                        data.getValue().getProduct().getName()
-                )
-        );
+                        data.getValue().getProduct().getName()));
 
         quantityColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getQuantity()
-                )
-        );
+                        data.getValue().getQuantity()));
 
         priceColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getPriceAtPurchase()
-                )
-        );
+                        data.getValue().getPriceAtPurchase()));
 
         totalColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getTotalPrice()
-                )
-        );
+                        data.getValue().getTotalPrice()));
     }
 
     // =====================
@@ -121,8 +111,7 @@ public class CartController {
 
         orderService.removeFromCart(
                 currentUser.getId(),
-                selectedItem.getProduct().getId()
-        );
+                selectedItem.getProduct().getId());
 
         cartItems.remove(selectedItem);
         updateTotalPriceLabel();
@@ -136,21 +125,18 @@ public class CartController {
     @FXML
     private void handleCheckout() {
 
-         double totalWithVat = calculateTotalWithVat();
+        double totalWithVat = calculateTotalWithVat();
 
         // MINIMUM CART CHECK
-        if (totalWithVat < MIN_CART_VALUE) {
+        if (totalWithVat < Constants.MIN_CART_VALUE) {
             showAlert(
                     "Minimum Cart Value",
                     String.format(
                             "Minimum cart value is %.2f TL.\nYour current total is %.2f TL.",
-                            MIN_CART_VALUE,
-                            totalWithVat
-                    )
-            );
+                            Constants.MIN_CART_VALUE,
+                            totalWithVat));
             return;
         }
-
 
         LocalDate deliveryDate = deliveryDatePicker.getValue();
         if (deliveryDate == null) {
@@ -168,10 +154,19 @@ public class CartController {
             return;
         }
 
+        // CONFIRMATION DIALOG
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Purchase");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Are you sure you want to complete the order?");
+
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
         try {
             cartOrder.setRequestedDeliveryDate(
-                Timestamp.valueOf(deliveryDate.atStartOfDay())
-            );
+                    Timestamp.valueOf(deliveryDate.atStartOfDay()));
             orderService.checkout(cartOrder);
             showAlert("Success", "Order placed successfully!");
             closeStage();
@@ -188,8 +183,6 @@ public class CartController {
         closeStage();
     }
 
-
-
     // =====================
     // PRICE CALCULATIONS
     // =====================
@@ -200,7 +193,7 @@ public class CartController {
     }
 
     private double calculateVat(double subtotal) {
-        return subtotal * VAT_RATE;
+        return subtotal * Constants.VAT_RATE;
     }
 
     private double calculateTotalWithVat() {
@@ -212,19 +205,17 @@ public class CartController {
         double subtotal = cartItems.stream()
                 .mapToDouble(CartItem::getTotalPrice)
                 .sum();
-            
-        double vatRate = 0.10; // %10 VAT
+
+        double vatRate = Constants.VAT_RATE;
         double vatAmount = subtotal * vatRate;
         double totalWithVat = subtotal + vatAmount;
 
         totalPriceLabel.setText(
-            String.format(
-                    "Subtotal: %.2f TL | VAT (10%%): %.2f TL | Total: %.2f TL",
-                    subtotal,
-                    vatAmount,
-                    totalWithVat
-                )
-        );
+                String.format(
+                        "Subtotal: %.2f TL | VAT (10%%): %.2f TL | Total: %.2f TL",
+                        subtotal,
+                        vatAmount,
+                        totalWithVat));
     }
 
     // =====================
