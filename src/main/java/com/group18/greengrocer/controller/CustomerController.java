@@ -30,8 +30,6 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-
-
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -65,8 +63,6 @@ public class CustomerController {
     @FXML
     private TextField searchField;
 
-
-
     // =====================
     // INITIALIZE
     // =====================
@@ -83,7 +79,6 @@ public class CustomerController {
     private void handleSearch() {
         loadProducts();
     }
-
 
     // =====================
     // USER FROM LOGIN
@@ -118,7 +113,7 @@ public class CustomerController {
 
         for (Product product : products) {
 
-            //FILTER BY NAME
+            // FILTER BY NAME
             if (!product.getName().toLowerCase().contains(keyword)) {
                 continue;
             }
@@ -135,40 +130,34 @@ public class CustomerController {
 
     private VBox createProductCard(Product product) {
 
-         VBox box = new VBox(6);
+        VBox box = new VBox(6);
 
         // =====================
         // SAFE IMAGE LOAD
         // =====================
 
         try {
-        String imageName = product.getName().toLowerCase() + ".png";
-        var stream = getClass().getResourceAsStream(
-            "/com/group18/greengrocer/images/products/" + imageName
-        );
+            String imageName = product.getName().toLowerCase() + ".png";
+            var stream = getClass().getResourceAsStream(
+                    "/com/group18/greengrocer/images/products/" + imageName);
 
-        if (stream != null) {
-            Image image = new Image(stream);
-            ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(120);
-            imageView.setFitHeight(100);
-            imageView.setPreserveRatio(true);
-            imageView.setStyle("-fx-border-color: red;");
-            box.getChildren().add(imageView);
+            if (stream != null) {
+                Image image = new Image(stream);
+                ImageView imageView = new ImageView(image);
+                imageView.setFitWidth(120);
+                imageView.setFitHeight(100);
+                imageView.setPreserveRatio(true);
+                imageView.setStyle("-fx-border-color: red;");
+                box.getChildren().add(imageView);
+            }
+        } catch (Exception e) {
+            // deliberately ignore
         }
-    } catch (Exception e) {
-        // deliberately ignore
-    }
-         
-        
-
 
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label(
-                "Price: " + product.getPrice() + " ₺ / " + product.getUnit()
-        );
+                "Price: " + product.getPrice() + " ₺ / " + product.getUnit());
         Label stockLabel = new Label("Stock: " + product.getStock());
-
 
         // AMOUNT INPUT
         TextField amountField = new TextField();
@@ -184,7 +173,7 @@ public class CustomerController {
                     showError("Please enter amount in kg.");
                     return;
                 }
-                
+
                 double amount = Double.parseDouble(input);
 
                 if (amount <= 0) {
@@ -192,24 +181,19 @@ public class CustomerController {
                     return;
                 }
 
-
-        
                 // =====================
                 // STOCK CHECK (IMPORTANT)
                 // =====================
                 if (amount > product.getStock()) {
                     showError(
-                        "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " kg"
-                    );
+                            "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " kg");
                     return;
                 }
 
-
                 orderService.addToCart(
-                    currentUser.getId(),
-                    product.getId(),
-                    amount
-                );
+                        currentUser.getId(),
+                        product.getId(),
+                        amount);
 
                 Order cart = orderService.getCart(currentUser.getId());
                 cartButton.setText("Cart (" + cart.getItems().size() + ")");
@@ -218,8 +202,8 @@ public class CustomerController {
                 amountField.clear();
 
             } catch (NumberFormatException ex) {
-                 showError("Please enter a valid number.");
-            } catch (Exception ex){
+                showError("Please enter a valid number.");
+            } catch (Exception ex) {
                 showError(ex.getMessage());
             }
         });
@@ -229,8 +213,7 @@ public class CustomerController {
                 priceLabel,
                 stockLabel,
                 amountField,
-                addButton
-        );
+                addButton);
         box.setStyle("""
                 -fx-padding: 10;
                 -fx-border-color: lightgray;
@@ -256,8 +239,7 @@ public class CustomerController {
 
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/group18/greengrocer/fxml/cart.fxml")
-            );
+                    getClass().getResource("/com/group18/greengrocer/fxml/cart.fxml"));
             Parent root = loader.load();
 
             CartController controller = loader.getController();
@@ -297,30 +279,27 @@ public class CustomerController {
 
     private void handleMyOrders() {
         try {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/com/group18/greengrocer/fxml/order_history.fxml")
-        );
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/group18/greengrocer/fxml/order_history.fxml"));
 
-        Parent root = loader.load();
+            Parent root = loader.load();
 
-        OrderHistoryController controller = loader.getController();
-        controller.initData(currentUser);
+            OrderHistoryController controller = loader.getController();
+            controller.initData(currentUser);
 
-        Stage stage = new Stage();
-        stage.setTitle("Order History");
-        stage.setScene(new Scene(root));
-        stage.show();
+            Stage stage = new Stage();
+            stage.setTitle("Order History");
+            stage.setScene(new Scene(root));
+            stage.show();
 
-    } catch (Exception e) {
-        e.printStackTrace(); 
-        showError("Could not load order history.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Could not load order history: " + e.getMessage() + "\n" + e.toString());
+        }
     }
-}
-
-
 
     // =====================
-    // CARRIER RATING 
+    // CARRIER RATING
     // =====================
 
     @FXML
@@ -334,68 +313,56 @@ public class CustomerController {
                 .filter(o -> o.getStatus() == Order.Status.COMPLETED)
                 .toList();
 
-                if (deliveredOrders.isEmpty()) {       
-                    showInfo("You have no delivered orders to rate.");       
-                    return; 
-                }
+        if (deliveredOrders.isEmpty()) {
+            showInfo("You have no delivered orders to rate.");
+            return;
+        }
 
-    
-         // 2 Order seçimi   
-         ChoiceDialog<Order> orderDialog =
-            
+        // 2 Order seçimi
+        ChoiceDialog<Order> orderDialog =
+
                 new ChoiceDialog<>(deliveredOrders.get(0), deliveredOrders);
 
-   
         orderDialog.setTitle("Rate Carrier");
         orderDialog.setHeaderText("Select an order to rate");
         orderDialog.setContentText("Order:");
 
         orderDialog.showAndWait().ifPresent(selectedOrder -> {
-       
-            // 3 Rating dialog      
-            ChoiceDialog<Integer> ratingDialog =
-                    new ChoiceDialog<>(5, List.of(1, 2, 3, 4, 5));
 
-        
+            // 3 Rating dialog
+            ChoiceDialog<Integer> ratingDialog = new ChoiceDialog<>(5, List.of(1, 2, 3, 4, 5));
+
             ratingDialog.setTitle("Rate Carrier");
             ratingDialog.setHeaderText("Rate the carrier (1–5)");
             ratingDialog.setContentText("Rating:");
 
             ratingDialog.showAndWait().ifPresent(rating -> {
 
-            
                 System.out.println(
                         "Customer " + currentUser.getId()
-                        + " rated carrier "
-                        + selectedOrder.getCarrierId()
-                        + " with " + rating + " stars."
-                );
+                                + " rated carrier "
+                                + selectedOrder.getCarrierId()
+                                + " with " + rating + " stars.");
 
                 showInfo("Thank you! Carrier rated successfully.");
             });
         });
     }
 
+    // =====================
+    // PROFILE UPDATE
+    // =====================
 
-
-
-     // =====================
-     // PROFILE UPDATE
-     // =====================
-
-     @FXML
-     private void handleEditProfile() {
+    @FXML
+    private void handleEditProfile() {
 
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Edit Profile");
 
-        ButtonType saveButtonType =
-                 new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes()
-                 .addAll(saveButtonType, ButtonType.CANCEL);
+                .addAll(saveButtonType, ButtonType.CANCEL);
 
-
-    
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -422,34 +389,30 @@ public class CustomerController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // SAVE BUTTON VALIDATION 
-        Button saveButton =
-                (Button) dialog.getDialogPane().lookupButton(saveButtonType);
+        // SAVE BUTTON VALIDATION
+        Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
 
         saveButton.addEventFilter(ActionEvent.ACTION, event -> {
             String phone = phoneField.getText();
 
             if (phone.length() != 10 && phone.length() != 11) {
                 showError("Phone number must be 10 or 11 digits.");
-                event.consume(); 
-        }
-    });
+                event.consume();
+            }
+        });
 
-    
-    // UPDATE + INFO 
-    dialog.setResultConverter(button -> {
-        if (button == saveButtonType) {
-            currentUser.setAddress(addressField.getText());
-            currentUser.setPhoneNumber(phoneField.getText());
-            showInfo("Profile updated successfully.");
-        }
-        return null;
-    });
+        // UPDATE + INFO
+        dialog.setResultConverter(button -> {
+            if (button == saveButtonType) {
+                currentUser.setAddress(addressField.getText());
+                currentUser.setPhoneNumber(phoneField.getText());
+                showInfo("Profile updated successfully.");
+            }
+            return null;
+        });
 
-    dialog.showAndWait();
-}
-
-
+        dialog.showAndWait();
+    }
 
     // =====================
     // LOGOUT
@@ -458,8 +421,7 @@ public class CustomerController {
     private void handleLogout() {
         try {
             Parent root = FXMLLoader.load(
-                    getClass().getResource("/com/group18/greengrocer/fxml/login.fxml")
-            );
+                    getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Stage stage = (Stage) cartButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
@@ -467,7 +429,6 @@ public class CustomerController {
             showError("Could not go back to login: " + e.getMessage());
         }
     }
-
 
     // =====================
     // MESSAGE OWNER
@@ -478,14 +439,11 @@ public class CustomerController {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Message to Owner");
 
-        ButtonType sendButtonType =
-                new ButtonType("Send", ButtonBar.ButtonData.OK_DONE);
+        ButtonType sendButtonType = new ButtonType("Send", ButtonBar.ButtonData.OK_DONE);
 
-    
         dialog.getDialogPane().getButtonTypes()
                 .addAll(sendButtonType, ButtonType.CANCEL);
 
-    
         TextArea messageArea = new TextArea();
         messageArea.setPromptText("Write your message to the owner...");
         messageArea.setWrapText(true);
@@ -501,22 +459,19 @@ public class CustomerController {
                 if (message == null || message.isBlank()) {
                     showError("Message cannot be empty.");
                     return null;
-            }
+                }
 
-            
                 System.out.println(
-                    "Message from customer " + currentUser.getId()
-                    + " to OWNER: " + message
-                );
+                        "Message from customer " + currentUser.getId()
+                                + " to OWNER: " + message);
 
                 showInfo("Message sent to owner.");
             }
             return null;
         });
 
-    dialog.showAndWait();
-}
-
+        dialog.showAndWait();
+    }
 
     // =====================
     // UTIL

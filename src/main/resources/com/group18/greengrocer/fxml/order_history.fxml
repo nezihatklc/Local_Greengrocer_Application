@@ -31,11 +31,16 @@
          ===================== -->
     <bottom>
         <HBox spacing="10"
-              alignment="CENTER"
-              padding="10">
+              alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
 
             <Button text="View Details"
                     onAction="#handleViewDetails"/>
+
+            <Button text="Cancel Order"
+                    onAction="#handleCancelOrder"/>
 
             <Button text="Close"
                     onAction="#handleClose"/>
