@@ -33,6 +33,7 @@ import javafx.scene.image.ImageView;
 
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 public class CustomerController {
@@ -104,6 +105,9 @@ public class CustomerController {
         vegetablePane.getChildren().clear();
 
         List<Product> products = productService.getAllProducts();
+
+        // SORT BY PRODUCT NAME
+        products.sort(Comparator.comparing(Product::getName));
 
         // SEARCH KEYWORD
         String keyword = "";

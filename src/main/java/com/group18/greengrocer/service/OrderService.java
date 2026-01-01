@@ -294,14 +294,30 @@ public class OrderService {
      * @param orderId The ID of the order.
      */
     // ASSIGNED TO: Customer
-    public void cancelOrder(int orderId) {
+    public void cancelOrder(int orderId, int customerId) {
         Order order = orderDAO.findOrderById(orderId);
 
         if (order == null) {
-            return;
+            throw new IllegalArgumentException("Order not found.");
         }
 
-        if (orderDAO.cancelOrder(orderId)) {
+        // CUSTOMER CHECK
+        if (order.getCustomerId() != customerId) {
+            throw new IllegalStateException("You cannot cancel this order.");
+        }
+
+        // STATUS CHECK
+        if (order.getStatus() == Order.Status.COMPLETED ||order.getStatus() == Order.Status.COMPLETED) {
+            throw new IllegalStateException("Delivered orders cannot be cancelled.");
+        }
+    
+        if (order.getStatus() == Order.Status.CANCELLED) {
+            throw new IllegalStateException("Order is already cancelled.");
+        }
+
+         // CANCEL ORDER
+         orderDAO.cancelOrder(orderId);
+         order.setStatus(Order.Status.CANCELLED);
 
             // RESTORE STOCK
             for (CartItem item : order.getItems()) {
@@ -311,13 +327,11 @@ public class OrderService {
                     continue;
                 }
 
-                double restoredStock = product.getStock() + item.getQuantity();
-                product.setStock(restoredStock);
-
+                product.setStock(product.getStock() + item.getQuantity());
                 productDAO.update(product);
             }
         }
-    }
+    
 
     /**
      * Retrieves all orders for administrative view.

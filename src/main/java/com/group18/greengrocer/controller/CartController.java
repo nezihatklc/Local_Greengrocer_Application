@@ -13,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 public class CartController {
@@ -144,6 +145,9 @@ public class CartController {
         }
 
         try {
+            cartOrder.setRequestedDeliveryDate(
+                Timestamp.valueOf(deliveryDate.atStartOfDay())
+            );
             orderService.checkout(cartOrder);
             showAlert("Success", "Order placed successfully!");
             closeStage();
