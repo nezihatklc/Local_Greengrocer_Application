@@ -7,14 +7,21 @@ import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -54,6 +61,8 @@ public class CustomerController {
 
     @FXML
     private TextField searchField;
+
+
 
     // =====================
     // INITIALIZE
@@ -107,7 +116,7 @@ public class CustomerController {
             if (!product.getName().toLowerCase().contains(keyword)) {
                 continue;
             }
-            
+
             VBox card = createProductCard(product);
 
             if (product.getCategory() == Category.FRUIT) {
@@ -270,6 +279,79 @@ public class CustomerController {
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
         showInfo("You have " + orders.size() + " past orders.");
     }
+
+
+     // =====================
+     // PROFILE UPDATE
+     // =====================
+
+     @FXML
+     private void handleEditProfile() {
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Edit Profile");
+
+        ButtonType saveButtonType =
+                 new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes()
+                 .addAll(saveButtonType, ButtonType.CANCEL);
+
+
+    
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        TextField addressField = new TextField(currentUser.getAddress());
+        TextField phoneField = new TextField();
+
+        String cleanPhone = currentUser.getPhoneNumber().replaceAll("\\D", "");
+        phoneField.setText(cleanPhone);
+
+        phoneField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("\\d*") && newText.length() <= 11) {
+                return change;
+            }
+            return null;
+        }));
+
+        grid.add(new Label("Address:"), 0, 0);
+        grid.add(addressField, 1, 0);
+        grid.add(new Label("Phone:"), 0, 1);
+        grid.add(phoneField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // SAVE BUTTON VALIDATION 
+        Button saveButton =
+                (Button) dialog.getDialogPane().lookupButton(saveButtonType);
+
+        saveButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String phone = phoneField.getText();
+
+            if (phone.length() != 10 && phone.length() != 11) {
+                showError("Phone number must be 10 or 11 digits.");
+                event.consume(); 
+        }
+    });
+
+    
+    // UPDATE + INFO 
+    dialog.setResultConverter(button -> {
+        if (button == saveButtonType) {
+            currentUser.setAddress(addressField.getText());
+            currentUser.setPhoneNumber(phoneField.getText());
+            showInfo("Profile updated successfully.");
+        }
+        return null;
+    });
+
+    dialog.showAndWait();
+}
+
+
 
     // =====================
     // LOGOUT

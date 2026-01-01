@@ -25,19 +25,32 @@
                     <Region HBox.hgrow="ALWAYS"/>
 
                     <Label fx:id="usernameLabel" textFill="WHITE"/>
-                    <Button text="My Orders" onAction="#handleMyOrders"/>
-                    <Button fx:id="cartButton" text="Cart (0)" onAction="#handleViewCart"/>
-                    <Button text="Logout" onAction="#handleLogout"
+
+                    <!-- EDIT PROFILE -->
+                    <Button text="Edit Profile"
+                            onAction="#handleEditProfile"/>
+
+                    <Button text="My Orders"
+                            onAction="#handleMyOrders"/>
+
+                    <Button fx:id="cartButton"
+                            text="Cart (0)"
+                            onAction="#handleViewCart"/>
+
+                    <Button text="Logout"
+                            onAction="#handleLogout"
                             style="-fx-background-color:#c62828;"
                             textFill="WHITE"/>
                 </children>
+
                 <padding>
                     <Insets top="10" bottom="10" left="20" right="20"/>
                 </padding>
             </HBox>
 
             <!-- ================= SEARCH BAR ================= -->
-            <HBox spacing="10" alignment="CENTER_LEFT"
+            <HBox spacing="10"
+                  alignment="CENTER_LEFT"
                   style="-fx-background-color:#eeeeee;">
                 <children>
                     <Label text="Search:"/>
@@ -46,6 +59,7 @@
                                onKeyReleased="#handleSearch"
                                prefWidth="300"/>
                 </children>
+
                 <padding>
                     <Insets top="8" bottom="8" left="20" right="20"/>
                 </padding>
@@ -58,6 +72,7 @@
         <TabPane tabClosingPolicy="UNAVAILABLE">
             <tabs>
 
+                <!-- FRUITS -->
                 <Tab text="Fruits">
                     <content>
                         <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
@@ -67,8 +82,10 @@
                                           hgap="15"
                                           vgap="15">
                                     <padding>
-                                        <Insets top="20" bottom="20"
-                                                left="20" right="20"/>
+                                        <Insets top="20"
+                                                bottom="20"
+                                                left="20"
+                                                right="20"/>
                                     </padding>
                                 </TilePane>
                             </content>
@@ -76,6 +93,7 @@
                     </content>
                 </Tab>
 
+                <!-- VEGETABLES -->
                 <Tab text="Vegetables">
                     <content>
                         <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
@@ -85,8 +103,10 @@
                                           hgap="15"
                                           vgap="15">
                                     <padding>
-                                        <Insets top="20" bottom="20"
-                                                left="20" right="20"/>
+                                        <Insets top="20"
+                                                bottom="20"
+                                                left="20"
+                                                right="20"/>
                                     </padding>
                                 </TilePane>
                             </content>
