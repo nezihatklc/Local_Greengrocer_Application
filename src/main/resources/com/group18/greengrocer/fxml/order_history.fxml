@@ -42,6 +42,9 @@
             <Button text="Cancel Order"
                     onAction="#handleCancelOrder"/>
 
+            <Button text="Download Invoice"
+                    onAction="#handleDownloadInvoice"/>
+
             <Button text="Close"
                     onAction="#handleClose"/>
 

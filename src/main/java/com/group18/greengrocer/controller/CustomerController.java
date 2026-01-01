@@ -4,9 +4,11 @@ import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
+import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
-
+import com.group18.greengrocer.service.MessageService;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,6 +43,7 @@ public class CustomerController {
     // =====================
     private ProductService productService;
     private OrderService orderService;
+    private MessageService messageService;
 
     // Logged-in user
     private User currentUser;
@@ -70,6 +73,7 @@ public class CustomerController {
     public void initialize() {
         productService = new ProductService();
         orderService = new OrderService();
+        messageService = new MessageService();
 
         // Default cart label
         cartButton.setText("Cart (0)");
@@ -338,12 +342,8 @@ public class CustomerController {
 
             ratingDialog.showAndWait().ifPresent(rating -> {
 
-                System.out.println(
-                        "Customer " + currentUser.getId()
-                                + " rated carrier "
-                                + selectedOrder.getCarrierId()
-                                + " with " + rating + " stars.");
-
+                // Call OrderService to save rating
+                orderService.rateOrder(selectedOrder.getId(), rating, "");
                 showInfo("Thank you! Carrier rated successfully.");
             });
         });
@@ -461,11 +461,21 @@ public class CustomerController {
                     return null;
                 }
 
-                System.out.println(
-                        "Message from customer " + currentUser.getId()
-                                + " to OWNER: " + message);
+                // Send message using MessageService
+                // Sender: currentUser.getId()
+                // Receiver: 1 (Owner) - Hardcoded/Assumed for now
+                try {
+                    Message msgObj = new Message();
+                    msgObj.setSenderId(currentUser.getId());
+                    msgObj.setReceiverId(1); // Owner
+                    msgObj.setContent(message);
+                    msgObj.setSentAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
-                showInfo("Message sent to owner.");
+                    messageService.sendMessage(msgObj);
+                    showInfo("Message sent to owner.");
+                } catch (Exception e) {
+                    showError("Failed to send message: " + e.getMessage());
+                }
             }
             return null;
         });

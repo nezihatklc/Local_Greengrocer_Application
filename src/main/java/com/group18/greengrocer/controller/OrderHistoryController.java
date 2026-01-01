@@ -6,6 +6,10 @@ import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.OrderService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Base64;
 import javafx.stage.Stage;
 
 public class OrderHistoryController {
@@ -140,13 +144,44 @@ public class OrderHistoryController {
 
                 try {
                         orderService.cancelOrder(selected.getId(), currentUser.getId());
-                        showAlert("Success", "Order #" + selected.getId() + " has been cancelled.");
-
-                        // Refresh table
-                        initData(currentUser);
-
+                        showAlert("Success", "Order cancelled successfully.");
+                        initData(currentUser); // Refresh table
                 } catch (Exception e) {
+                        e.printStackTrace();
                         showAlert("Error", "Could not cancel order: " + e.getMessage());
+                }
+        }
+
+        @FXML
+        private void handleDownloadInvoice() {
+                Order selected = ordersTable.getSelectionModel().getSelectedItem();
+                if (selected == null) {
+                        showAlert("Warning", "Please select an order.");
+                        return;
+                }
+
+                String invoiceBase64 = selected.getInvoice();
+                if (invoiceBase64 == null || invoiceBase64.isEmpty()) {
+                        showAlert("Info", "No invoice available for this order.");
+                        return;
+                }
+
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save Invoice");
+                fileChooser.setInitialFileName("Invoice_" + selected.getId() + ".pdf");
+                fileChooser.getExtensionFilters().add(
+                                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+                File file = fileChooser.showSaveDialog(ordersTable.getScene().getWindow());
+                if (file != null) {
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                                byte[] pdfBytes = Base64.getDecoder().decode(invoiceBase64);
+                                fos.write(pdfBytes);
+                                showAlert("Success", "Invoice saved to " + file.getAbsolutePath());
+                        } catch (Exception e) {
+                                e.printStackTrace();
+                                showAlert("Error", "Failed to save invoice: " + e.getMessage());
+                        }
                 }
         }
 
