@@ -252,7 +252,14 @@ public class CustomerController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Your Cart");
-            stage.show();
+            stage.showAndWait();
+
+            // 1. Refresh cart count (in case items removed)
+            Order updatedCart = orderService.getCart(currentUser.getId());
+            cartButton.setText("Cart (" + updatedCart.getItems().size() + ")");
+
+            // 2. Refresh product list (to show updated stock immediately)
+            loadProducts();
 
         } catch (IOException e) {
             showError("Could not open cart: " + e.getMessage());
