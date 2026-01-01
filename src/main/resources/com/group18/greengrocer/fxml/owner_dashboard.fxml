@@ -136,8 +136,8 @@
                             <Button text="Clear Form" onAction="#handleClear"/>
                         </HBox>
 
-                        <Label text="* Threshold Rule: If Stock <= Threshold, Price is doubled automatically." 
-                               wrapText="true" style="-fx-text-fill: gray; -fx-font-size: 10px;"/>
+                       <Label text="* Threshold Rule: If Stock &lt;= Threshold, Price is doubled automatically." 
+       wrapText="true" style="-fx-text-fill: gray; -fx-font-size: 10px;"/>
                     </VBox>
 
                 </SplitPane>
