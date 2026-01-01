@@ -52,6 +52,9 @@ public class CustomerController {
     @FXML
     private TilePane vegetablePane;
 
+    @FXML
+    private TextField searchField;
+
     // =====================
     // INITIALIZE
     // =====================
@@ -63,6 +66,12 @@ public class CustomerController {
         // Default cart label
         cartButton.setText("Cart (0)");
     }
+
+    @FXML
+    private void handleSearch() {
+        loadProducts();
+    }
+
 
     // =====================
     // USER FROM LOGIN
@@ -85,7 +94,20 @@ public class CustomerController {
 
         List<Product> products = productService.getAllProducts();
 
+        // SEARCH KEYWORD
+        String keyword = "";
+
+        if (searchField != null && searchField.getText() != null) {
+            keyword = searchField.getText().toLowerCase();
+        }
+
         for (Product product : products) {
+
+            //FILTER BY NAME
+            if (!product.getName().toLowerCase().contains(keyword)) {
+                continue;
+            }
+            
             VBox card = createProductCard(product);
 
             if (product.getCategory() == Category.FRUIT) {
