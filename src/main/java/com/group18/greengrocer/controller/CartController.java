@@ -13,7 +13,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+
+import com.group18.greengrocer.service.DiscountService;
+import com.group18.greengrocer.model.Coupon;
+import com.group18.greengrocer.util.Constants;
 
 public class CartController {
 
@@ -39,6 +44,12 @@ public class CartController {
     private Label totalPriceLabel;
 
     @FXML
+    private Label loyaltyLabel; // NEW
+
+    @FXML
+    private TextField couponField; // NEW
+
+    @FXML
     private DatePicker deliveryDatePicker;
 
     @FXML
@@ -55,6 +66,7 @@ public class CartController {
     private ObservableList<CartItem> cartItems;
 
     private final OrderService orderService = new OrderService();
+    private final DiscountService discountService = new DiscountService(); // NEW
 
     // =====================
     // INITIALIZE
@@ -64,27 +76,19 @@ public class CartController {
 
         productNameColumn.setCellValueFactory(
                 data -> new SimpleStringProperty(
-                        data.getValue().getProduct().getName()
-                )
-        );
+                        data.getValue().getProduct().getName()));
 
         quantityColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getQuantity()
-                )
-        );
+                        data.getValue().getQuantity()));
 
         priceColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getPriceAtPurchase()
-                )
-        );
+                        data.getValue().getPriceAtPurchase()));
 
         totalColumn.setCellValueFactory(
                 data -> new SimpleObjectProperty<>(
-                        data.getValue().getTotalPrice()
-                )
-        );
+                        data.getValue().getTotalPrice()));
     }
 
     // =====================
@@ -98,6 +102,8 @@ public class CartController {
         cartTable.setItems(cartItems);
 
         updateTotalPriceLabel();
+
+        checkoutButton.setDisable(cartItems.isEmpty());
     }
 
     // =====================
@@ -114,11 +120,34 @@ public class CartController {
 
         orderService.removeFromCart(
                 currentUser.getId(),
-                selectedItem.getProduct().getId()
-        );
+                selectedItem.getProduct().getId());
 
         cartItems.remove(selectedItem);
+
+        // Sync items for calculation
+        cartOrder.setItems(new java.util.ArrayList<>(cartItems));
+
         updateTotalPriceLabel();
+
+        checkoutButton.setDisable(cartItems.isEmpty());
+    }
+
+    @FXML
+    private void handleApplyCoupon() {
+        String code = couponField.getText();
+        if (code == null || code.trim().isEmpty()) {
+            showAlert("Warning", "Please enter a coupon code.");
+            return;
+        }
+
+        Coupon coupon = discountService.validateCoupon(code.trim());
+        if (coupon != null) {
+            cartOrder.setUsedCouponId(coupon.getId());
+            updateTotalPriceLabel();
+            showAlert("Success", "Coupon applied: " + coupon.getCode() + " (-" + coupon.getDiscountAmount() + " TL)");
+        } else {
+            showAlert("Error", "Invalid or expired coupon.");
+        }
     }
 
     // =====================
@@ -126,6 +155,21 @@ public class CartController {
     // =====================
     @FXML
     private void handleCheckout() {
+
+        // Sync items just in case
+        cartOrder.setItems(new java.util.ArrayList<>(cartItems));
+        double totalWithVat = discountService.calculateFinalPrice(cartOrder);
+
+        // MINIMUM CART CHECK
+        if (totalWithVat < Constants.MIN_CART_VALUE) {
+            showAlert(
+                    "Minimum Cart Value",
+                    String.format(
+                            "Minimum cart value is %.2f TL.\nYour current total is %.2f TL.",
+                            Constants.MIN_CART_VALUE,
+                            totalWithVat));
+            return;
+        }
 
         LocalDate deliveryDate = deliveryDatePicker.getValue();
         if (deliveryDate == null) {
@@ -143,7 +187,20 @@ public class CartController {
             return;
         }
 
+        // CONFIRMATION DIALOG
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Purchase");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Are you sure you want to complete the order?");
+
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
         try {
+            cartOrder.setRequestedDeliveryDate(
+                    Timestamp.valueOf(deliveryDate.atStartOfDay()));
+            // Price is recalculated in service, but we've verified it here.
             orderService.checkout(cartOrder);
             showAlert("Success", "Order placed successfully!");
             closeStage();
@@ -161,15 +218,47 @@ public class CartController {
     }
 
     // =====================
-    // UTIL
+    // PRICE CALCULATIONS
     // =====================
+
     private void updateTotalPriceLabel() {
-        double total = cartItems.stream()
-                .mapToDouble(CartItem::getTotalPrice)
-                .sum();
-        totalPriceLabel.setText(String.format("Total: %.2f TL", total));
+        if (cartOrder == null)
+            return;
+
+        // Sync
+        cartOrder.setItems(new java.util.ArrayList<>(cartItems));
+
+        double finalPrice = discountService.calculateFinalPrice(cartOrder);
+
+        // Loyalty Check
+        double loyaltyPercent = discountService.getLoyaltyDiscount(currentUser.getId());
+        if (loyaltyPercent > 0) {
+            loyaltyLabel.setText(String.format("Loyalty Active (%d+ orders): %.0f%% off",
+                    Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT, loyaltyPercent));
+        } else {
+            loyaltyLabel.setText(String.format("Loyalty: None (Need %d+ completed orders)",
+                    Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT));
+        }
+
+        totalPriceLabel.setText(
+                String.format("Total: %.2f TL", finalPrice));
+
+        // Calculate VAT for display
+        // FinalPrice = Base * (1 + VAT)
+        // Base = FinalPrice / (1 + VAT)
+        // VAT_Amount = FinalPrice - Base
+        double calculateVatRate = Constants.VAT_RATE;
+        double basePrice = finalPrice / (1.0 + calculateVatRate);
+        double vatAmount = finalPrice - basePrice;
+
+        totalPriceLabel.setText(
+                String.format("VAT (%.0f%%): %.2f TL | Total: %.2f TL",
+                        calculateVatRate * 100, vatAmount, finalPrice));
     }
 
+    // =====================
+    // UTIL
+    // =====================
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

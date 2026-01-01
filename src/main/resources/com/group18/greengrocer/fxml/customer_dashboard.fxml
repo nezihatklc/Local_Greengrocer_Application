@@ -29,6 +29,10 @@
                     <!-- EDIT PROFILE -->
                     <Button text="Edit Profile"
                             onAction="#handleEditProfile"/>
+                           
+                     <Button text="Rate Carrier"
+                            onAction="#handleRateCarrier"/>
+
 
                     <Button text="My Orders"
                             onAction="#handleMyOrders"/>
@@ -37,10 +41,14 @@
                             text="Cart (0)"
                             onAction="#handleViewCart"/>
 
+                     <Button text="Message Owner"
+                            onAction="#handleMessageOwner"/>
+
                     <Button text="Logout"
                             onAction="#handleLogout"
                             style="-fx-background-color:#c62828;"
                             textFill="WHITE"/>
+
                 </children>
 
                 <padding>
@@ -69,53 +77,44 @@
 
     <!-- ================= CENTER ================= -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
-            <tabs>
-
-                <!-- FRUITS -->
-                <Tab text="Fruits">
-                    <content>
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+            <content>
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </padding>
+                    <children>
+                        <!-- FRUITS -->
+                        <TitledPane text="Fruits" collapsible="true" expanded="true">
                             <content>
                                 <TilePane fx:id="fruitPane"
                                           prefColumns="4"
                                           hgap="15"
                                           vgap="15">
                                     <padding>
-                                        <Insets top="20"
-                                                bottom="20"
-                                                left="20"
-                                                right="20"/>
+                                        <Insets top="10" bottom="10" left="10" right="10"/>
                                     </padding>
                                 </TilePane>
                             </content>
-                        </ScrollPane>
-                    </content>
-                </Tab>
+                        </TitledPane>
 
-                <!-- VEGETABLES -->
-                <Tab text="Vegetables">
-                    <content>
-                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+                        <!-- VEGETABLES -->
+                        <TitledPane text="Vegetables" collapsible="true" expanded="true">
                             <content>
                                 <TilePane fx:id="vegetablePane"
                                           prefColumns="4"
                                           hgap="15"
                                           vgap="15">
                                     <padding>
-                                        <Insets top="20"
-                                                bottom="20"
-                                                left="20"
-                                                right="20"/>
+                                        <Insets top="10" bottom="10" left="10" right="10"/>
                                     </padding>
                                 </TilePane>
                             </content>
-                        </ScrollPane>
-                    </content>
-                </Tab>
-
-            </tabs>
-        </TabPane>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 
 </BorderPane>

@@ -36,7 +36,10 @@
             <!-- ===== AVAILABLE ORDERS ===== -->
             <Tab text="Available Orders">
                 <content>
-                    <VBox spacing="10" padding="10">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
                         <Label text="Orders Waiting for Delivery">
                             <font>
                                 <Font size="16"/>
@@ -67,7 +70,10 @@
             <!-- ===== MY CURRENT ORDERS ===== -->
             <Tab text="My Current Orders">
                 <content>
-                    <VBox spacing="10" padding="10">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
                         <Label text="Selected / Active Deliveries">
                             <font>
                                 <Font name="System Bold" size="16"/>
@@ -104,7 +110,10 @@
             <!-- ===== HISTORY ===== -->
             <Tab text="History">
                 <content>
-                    <VBox spacing="10" padding="10">
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
                         <Label text="Completed Deliveries">
                             <font>
                                 <Font size="16"/>

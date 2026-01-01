@@ -22,8 +22,7 @@ public class OrderService {
     private final List<CartItem> cart;
 
     // === CUSTOMER CART STORAGE (USER-BASED) ===
-    private final java.util.Map<Integer, Order> userCarts = new java.util.HashMap<>();
-
+    private static final java.util.Map<Integer, Order> userCarts = new java.util.HashMap<>();
 
     public OrderService() {
         this.orderDAO = new OrderDAO();
@@ -49,7 +48,6 @@ public class OrderService {
         });
     }
 
-
     /**
      * Adds a product to the user's shopping cart.
      * Handles stock checks and merges duplicate items.
@@ -63,11 +61,11 @@ public class OrderService {
 
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero.");
-        
+
         Product product = productDAO.findById(productId);
         if (product == null)
             throw new IllegalArgumentException("Product not found.");
-            
+
         Order cartOrder = getCart(userId);
         List<CartItem> cart = cartOrder.getItems();
 
@@ -81,7 +79,7 @@ public class OrderService {
 
         if (product.getStock() < alreadyInCart + amount)
             throw new IllegalStateException("Insufficient stock.");
-        
+
         for (CartItem item : cart) {
             if (item.getProduct().getId() == productId) {
                 item.setQuantity(item.getQuantity() + amount);
@@ -91,7 +89,6 @@ public class OrderService {
 
         cart.add(new CartItem(product, amount));
     }
-
 
     /**
      * Removes a specific product from the cart.
@@ -103,11 +100,9 @@ public class OrderService {
     public void removeFromCart(int userId, int productId) {
         Order cartOrder = getCart(userId);
         cartOrder.getItems().removeIf(
-            item -> item.getProduct() != null &&
-                    item.getProduct().getId() == productId
-        );
+                item -> item.getProduct() != null &&
+                        item.getProduct().getId() == productId);
     }
-
 
     /**
      * Updates the quantity of a product in the cart.
@@ -118,7 +113,7 @@ public class OrderService {
      */
     // ASSIGNED TO: Customer
     public void updateCartItem(int userId, int productId, double amount) {
-        
+
         if (amount <= 0)
             throw new IllegalArgumentException("Amount must be greater than zero.");
 
@@ -138,8 +133,6 @@ public class OrderService {
             }
         }
     }
-
-
 
     /**
      * Finalizes the order.
@@ -294,28 +287,41 @@ public class OrderService {
      * @param orderId The ID of the order.
      */
     // ASSIGNED TO: Customer
-    public void cancelOrder(int orderId) {
+    public void cancelOrder(int orderId, int customerId) {
         Order order = orderDAO.findOrderById(orderId);
 
         if (order == null) {
-            return;
+            throw new IllegalArgumentException("Order not found.");
         }
 
-        if (orderDAO.cancelOrder(orderId)) {
+        // CUSTOMER CHECK
+        if (order.getCustomerId() != customerId) {
+            throw new IllegalStateException("You cannot cancel this order.");
+        }
 
-            // RESTORE STOCK
-            for (CartItem item : order.getItems()) {
+        // STATUS CHECK
+        if (order.getStatus() == Order.Status.COMPLETED || order.getStatus() == Order.Status.COMPLETED) {
+            throw new IllegalStateException("Delivered orders cannot be cancelled.");
+        }
 
-                Product product = productDAO.findById(item.getProduct().getId());
-                if (product == null) {
-                    continue;
-                }
+        if (order.getStatus() == Order.Status.CANCELLED) {
+            throw new IllegalStateException("Order is already cancelled.");
+        }
 
-                double restoredStock = product.getStock() + item.getQuantity();
-                product.setStock(restoredStock);
+        // CANCEL ORDER
+        orderDAO.cancelOrder(orderId);
+        order.setStatus(Order.Status.CANCELLED);
 
-                productDAO.update(product);
+        // RESTORE STOCK
+        for (CartItem item : order.getItems()) {
+
+            Product product = productDAO.findById(item.getProduct().getId());
+            if (product == null) {
+                continue;
             }
+
+            product.setStock(product.getStock() + item.getQuantity());
+            productDAO.update(product);
         }
     }
 
