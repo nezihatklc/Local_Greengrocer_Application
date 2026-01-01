@@ -43,6 +43,9 @@
             <!-- Logged-in user info (filled by Controller using SessionManager later) -->
             <Label text="User:"/>
             <Label fx:id="usernameLabel" text="-" />
+            <Button fx:id="backButton" text="Back" onAction="#handleBack"/>
+<Button fx:id="logoutButton" text="Logout" onAction="#handleLogout"/>
+
         </HBox>
     </top>
 
