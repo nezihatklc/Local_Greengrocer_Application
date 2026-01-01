@@ -44,7 +44,7 @@
             <Label text="User:"/>
             <Label fx:id="usernameLabel" text="-" />
             <Button fx:id="backButton" text="Back" onAction="#handleBack"/>
-<Button fx:id="logoutButton" text="Logout" onAction="#handleLogout"/>
+            <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout"/>
 
         </HBox>
     </top>

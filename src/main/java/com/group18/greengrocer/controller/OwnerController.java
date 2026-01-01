@@ -12,6 +12,12 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.fxml.FXMLLoader;
+import java.io.IOException;
 
 import java.util.Optional;
 
@@ -30,19 +36,34 @@ public class OwnerController {
     private final ProductService productService;
 
     // FXML Fields
-    @FXML private Label usernameLabel;
+    @FXML
+    private Label usernameLabel;
+    @FXML
+    private Button backButton;
+    @FXML
+    private Button logoutButton;
 
-    @FXML private TableView<Product> productTable;
-    @FXML private TableColumn<Product, Integer> idCol;
-    @FXML private TableColumn<Product, String> nameCol;
-    @FXML private TableColumn<Product, String> categoryCol;
-    @FXML private TableColumn<Product, String> typeCol;
-    @FXML private TableColumn<Product, String> unitCol;
-    @FXML private TableColumn<Product, Double> priceCol;
-    @FXML private TableColumn<Product, Double> stockCol;
-    @FXML private TableColumn<Product, Double> thresholdCol;
+    @FXML
+    private TableView<Product> productTable;
+    @FXML
+    private TableColumn<Product, Integer> idCol;
+    @FXML
+    private TableColumn<Product, String> nameCol;
+    @FXML
+    private TableColumn<Product, String> categoryCol;
+    @FXML
+    private TableColumn<Product, String> typeCol;
+    @FXML
+    private TableColumn<Product, String> unitCol;
+    @FXML
+    private TableColumn<Product, Double> priceCol;
+    @FXML
+    private TableColumn<Product, Double> stockCol;
+    @FXML
+    private TableColumn<Product, Double> thresholdCol;
 
-    @FXML private Label effectivePriceLabel;
+    @FXML
+    private Label effectivePriceLabel;
 
     public OwnerController() {
         this.productService = new ProductService();
@@ -50,7 +71,8 @@ public class OwnerController {
 
     /**
      * Optional init method if you navigate with FXMLLoader.getController().
-     * If not called, controller will still work by reading SessionManager in initialize().
+     * If not called, controller will still work by reading SessionManager in
+     * initialize().
      *
      * @param user logged-in user (OWNER)
      */
@@ -107,7 +129,8 @@ public class OwnerController {
      * Controller does not query DB directly: service handles it.
      */
     private void loadOwnerData() {
-        if (productTable == null) return;
+        if (productTable == null)
+            return;
         productTable.getItems().setAll(productService.getAllProductsForOwner());
     }
 
@@ -118,7 +141,8 @@ public class OwnerController {
      * @param product selected product or null
      */
     private void showProductDetails(Product product) {
-        if (effectivePriceLabel == null) return;
+        if (effectivePriceLabel == null)
+            return;
 
         if (product == null) {
             effectivePriceLabel.setText("-");
@@ -143,6 +167,40 @@ public class OwnerController {
     }
 
     /**
+     * Handles the Back button action.
+     * Delegates to handleLogout for now.
+     */
+    @FXML
+    private void handleBack() {
+        // In the current flow, Back from Owner Dashboard goes to Login (Logout)
+        handleLogout();
+    }
+
+    /**
+     * Handles the Logout button action.
+     * Clears session and navigates to Login screen.
+     */
+    @FXML
+    private void handleLogout() {
+        try {
+            SessionManager.getInstance().logout();
+
+            // Load Login FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            Parent root = loader.load();
+
+            // Navigate
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Group18 GreenGrocer - Login");
+            stage.show();
+
+        } catch (IOException e) {
+            AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());
+        }
+    }
+
+    /**
      * Delete selected product handler.
      */
     @FXML
@@ -155,8 +213,7 @@ public class OwnerController {
 
         Optional<ButtonType> result = AlertUtil.showConfirmation(
                 "Delete Product",
-                "Are you sure you want to delete " + selected.getName() + "?"
-        );
+                "Are you sure you want to delete " + selected.getName() + "?");
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
