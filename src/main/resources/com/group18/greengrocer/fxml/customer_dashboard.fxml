@@ -37,10 +37,14 @@
                             text="Cart (0)"
                             onAction="#handleViewCart"/>
 
+                     <Button text="Message Owner"
+                            onAction="#handleMessageOwner"/>
+
                     <Button text="Logout"
                             onAction="#handleLogout"
                             style="-fx-background-color:#c62828;"
                             textFill="WHITE"/>
+
                 </children>
 
                 <padding>

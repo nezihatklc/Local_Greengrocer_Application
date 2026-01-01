@@ -19,6 +19,7 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
@@ -369,6 +370,56 @@ public class CustomerController {
             showError("Could not go back to login: " + e.getMessage());
         }
     }
+
+
+    // =====================
+    // MESSAGE OWNER
+    // =====================
+    @FXML
+    private void handleMessageOwner() {
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Message to Owner");
+
+        ButtonType sendButtonType =
+                new ButtonType("Send", ButtonBar.ButtonData.OK_DONE);
+
+    
+        dialog.getDialogPane().getButtonTypes()
+                .addAll(sendButtonType, ButtonType.CANCEL);
+
+    
+        TextArea messageArea = new TextArea();
+        messageArea.setPromptText("Write your message to the owner...");
+        messageArea.setWrapText(true);
+        messageArea.setPrefHeight(150);
+
+        dialog.getDialogPane().setContent(messageArea);
+
+        dialog.setResultConverter(button -> {
+            if (button == sendButtonType) {
+
+                String message = messageArea.getText();
+
+                if (message == null || message.isBlank()) {
+                    showError("Message cannot be empty.");
+                    return null;
+            }
+
+            
+                System.out.println(
+                    "Message from customer " + currentUser.getId()
+                    + " to OWNER: " + message
+                );
+
+                showInfo("Message sent to owner.");
+            }
+            return null;
+        });
+
+    dialog.showAndWait();
+}
+
 
     // =====================
     // UTIL
