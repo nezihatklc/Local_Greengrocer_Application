@@ -325,14 +325,13 @@ public class OrderService {
         }
     }
 
-    /**
-     * Retrieves all orders for administrative view.
-     * 
-     * @return List of all orders in the system.
-     */
+    
     // ASSIGNED TO: Owner
-    public List<Order> getAllOrders() {
-        return null;
+   /**
+     * Retrieves all orders for administrative view (Owner).
+     */
+    public List<Order> getAllOrdersForOwner() { // İsmini Controller ile uyumlu yaptım
+        return orderDAO.findAllOrders();
     }
 
     /**
