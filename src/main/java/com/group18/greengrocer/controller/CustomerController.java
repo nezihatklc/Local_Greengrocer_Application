@@ -301,7 +301,10 @@ public class CustomerController {
             Stage stage = new Stage();
             stage.setTitle("Order History");
             stage.setScene(new Scene(root));
-            stage.show();
+            stage.showAndWait();
+
+            // Re-load products to reflect stock changes if an order was cancelled
+            loadProducts();
 
         } catch (Exception e) {
             e.printStackTrace();

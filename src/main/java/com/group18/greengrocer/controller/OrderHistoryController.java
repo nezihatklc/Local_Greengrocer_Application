@@ -145,7 +145,11 @@ public class OrderHistoryController {
                 try {
                         orderService.cancelOrder(selected.getId(), currentUser.getId());
                         showAlert("Success", "Order cancelled successfully.");
-                        initData(currentUser); // Refresh table
+
+                        // Force refresh
+                        ordersTable.getItems().clear();
+                        initData(currentUser);
+                        ordersTable.refresh();
                 } catch (Exception e) {
                         e.printStackTrace();
                         showAlert("Error", "Could not cancel order: " + e.getMessage());
