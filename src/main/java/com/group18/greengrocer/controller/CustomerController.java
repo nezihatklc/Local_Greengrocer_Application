@@ -294,10 +294,29 @@ public class CustomerController {
     // ORDER HISTORY
     // =====================
     @FXML
+
     private void handleMyOrders() {
-        List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
-        showInfo("You have " + orders.size() + " past orders.");
+        try {
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/group18/greengrocer/fxml/order_history.fxml")
+        );
+
+        Parent root = loader.load();
+
+        OrderHistoryController controller = loader.getController();
+        controller.initData(currentUser);
+
+        Stage stage = new Stage();
+        stage.setTitle("Order History");
+        stage.setScene(new Scene(root));
+        stage.show();
+
+    } catch (Exception e) {
+        e.printStackTrace(); 
+        showError("Could not load order history.");
     }
+}
+
 
 
     // =====================

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.group18.greengrocer.controller.OrderHistoryController"
+            prefWidth="700"
+            prefHeight="450">
+
+    <!-- =====================
+         CENTER : ORDER LIST
+         ===================== -->
+    <center>
+        <TableView fx:id="ordersTable">
+
+            <columns>
+                <TableColumn fx:id="idColumn" text="Order ID" prefWidth="80"/>
+                <TableColumn fx:id="dateColumn" text="Order Date" prefWidth="180"/>
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="150"/>
+                <TableColumn fx:id="totalColumn" text="Total (TL)" prefWidth="120"/>
+            </columns>
+
+        </TableView>
+    </center>
+
+    <!-- =====================
+         BOTTOM : ACTIONS
+         ===================== -->
+    <bottom>
+        <HBox spacing="10"
+              alignment="CENTER"
+              padding="10">
+
+            <Button text="View Details"
+                    onAction="#handleViewDetails"/>
+
+            <Button text="Close"
+                    onAction="#handleClose"/>
+
+        </HBox>
+    </bottom>
+
+</BorderPane>
