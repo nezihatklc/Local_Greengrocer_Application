@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
@@ -48,6 +49,21 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
+                  <!-- DISCOUNTS SECTION -->
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0" style="-fx-background-color: #fce4ec; -fx-padding: 10;">
+                      <children>
+                          <Label fx:id="loyaltyLabel" text="Loyalty Status: ..." textFill="#c2185b">
+                              <font>
+                                  <Font size="14.0"/>
+                              </font>
+                          </Label>
+                          <Region HBox.hgrow="ALWAYS"/>
+                          <Label text="Coupon:"/>
+                          <TextField fx:id="couponField" promptText="Enter Code"/>
+                          <Button text="Apply" onAction="#handleApplyCoupon"/>
+                      </children>
+                  </HBox>
+
                   <HBox alignment="CENTER_RIGHT" spacing="10.0">
                      <children>
                         <Button fx:id="removeButton" mnemonicParsing="false" onAction="#handleRemoveItem" style="-fx-background-color: #c62828;" text="Remove Selected" textFill="WHITE" />
