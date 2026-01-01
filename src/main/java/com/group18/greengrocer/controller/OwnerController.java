@@ -3,6 +3,7 @@ package com.group18.greengrocer.controller;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.ProductService;
+import com.group18.greengrocer.service.UserService;
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,6 +20,8 @@ import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextArea;
 import java.io.IOException;
 import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.util.ValidatorUtil;
@@ -38,6 +41,7 @@ public class OwnerController {
 
     private User currentUser;
     private final ProductService productService;
+    private final UserService userService;
 
     // FXML Fields
     @FXML
@@ -85,8 +89,30 @@ public class OwnerController {
     @FXML
     private Label effectivePriceLabel;
 
+    // -- CARRIER FIELDS --
+    @FXML
+    private TableView<User> carrierTable;
+    @FXML
+    private TableColumn<User, Integer> carrierIdCol;
+    @FXML
+    private TableColumn<User, String> carrierNameCol;
+    @FXML
+    private TableColumn<User, String> carrierPhoneCol;
+    @FXML
+    private TableColumn<User, String> carrierAddressCol;
+
+    @FXML
+    private TextField carrierUsernameField;
+    @FXML
+    private PasswordField carrierPasswordField;
+    @FXML
+    private TextField carrierPhoneField;
+    @FXML
+    private TextArea carrierAddressArea;
+
     public OwnerController() {
         this.productService = new ProductService();
+        this.userService = new UserService();
     }
 
     /**
@@ -127,6 +153,14 @@ public class OwnerController {
         stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
         thresholdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getThreshold()));
 
+        // ---- Carrier Table Bindings ----
+        if (carrierTable != null) {
+            carrierIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+            carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
+            carrierPhoneCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPhoneNumber()));
+            carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
+        }
+
         // ---- Selection listener (Week11: ChangeListener/Listener) ----
         productTable.getSelectionModel()
                 .selectedItemProperty()
@@ -147,6 +181,7 @@ public class OwnerController {
 
         // FIX: initData() hiç çağrılmasa bile tablo dolsun
         loadOwnerData();
+        loadCarrierData();
     }
 
     /**
@@ -359,5 +394,80 @@ public class OwnerController {
             return false;
         }
         return true;
+    }
+
+    // ==========================================
+    // CARRIER MANAGEMENT
+    // ==========================================
+
+    private void loadCarrierData() {
+        if (carrierTable == null)
+            return;
+        carrierTable.getItems().setAll(userService.getAllCarriers());
+    }
+
+    @FXML
+    private void handleRefreshCarriers() {
+        loadCarrierData();
+        AlertUtil.showInfo("Refreshed", "Carrier list refreshed.");
+    }
+
+    @FXML
+    private void handleHireCarrier() {
+        String u = carrierUsernameField.getText();
+        String p = carrierPasswordField.getText();
+        String ph = carrierPhoneField.getText();
+        String ad = carrierAddressArea.getText();
+
+        if (ValidatorUtil.isEmpty(u) || ValidatorUtil.isEmpty(p) ||
+                ValidatorUtil.isEmpty(ph) || ValidatorUtil.isEmpty(ad)) {
+            AlertUtil.showWarning("Validation", "All fields are required.");
+            return;
+        }
+
+        try {
+            User carrier = new User();
+            carrier.setUsername(u);
+            carrier.setPassword(p);
+            carrier.setPhoneNumber(ph);
+            carrier.setAddress(ad);
+            // Role set in Service
+
+            userService.addCarrier(carrier);
+            AlertUtil.showInfo("Success", "New Carrier hired: " + u);
+
+            // Clear inputs
+            carrierUsernameField.clear();
+            carrierPasswordField.clear();
+            carrierPhoneField.clear();
+            carrierAddressArea.clear();
+
+            loadCarrierData();
+
+        } catch (Exception e) {
+            AlertUtil.showError("Hire Error", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleFireCarrier() {
+        User selected = carrierTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("No Selection", "Select a carrier to fire.");
+            return;
+        }
+
+        Optional<ButtonType> res = AlertUtil.showConfirmation("Fire Carrier",
+                "Are you sure you want to fire " + selected.getUsername() + "?");
+
+        if (res.isPresent() && res.get() == ButtonType.OK) {
+            try {
+                userService.removeCarrier(selected.getId());
+                AlertUtil.showInfo("Success", "Carrier fired.");
+                loadCarrierData();
+            } catch (Exception e) {
+                AlertUtil.showError("Fire Error", e.getMessage());
+            }
+        }
     }
 }

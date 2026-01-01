@@ -143,12 +143,55 @@
                 </SplitPane>
             </Tab>
 
-            <!-- TAB 2: Carriers (Next Step) -->
+            <!-- TAB 2: Carrier Management -->
             <Tab text="Carriers">
-                <VBox spacing="10"> 
-                     <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                     <Label text="Carrier Management (Coming Soon)" />
-                </VBox>
+                <SplitPane dividerPositions="0.65">
+                    
+                    <!-- LEFT: Carrier List -->
+                    <VBox spacing="10">
+                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                        <Label text="Employees (Carriers)" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        
+                        <TableView fx:id="carrierTable" prefHeight="400">
+                            <columns>
+                                <TableColumn fx:id="carrierIdCol" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="carrierNameCol" text="Username" prefWidth="120"/>
+                                <TableColumn fx:id="carrierPhoneCol" text="Phone" prefWidth="120"/>
+                                <TableColumn fx:id="carrierAddressCol" text="Address" prefWidth="150"/>
+                                <!-- Optional: Rating Column if needed later -->
+                            </columns>
+                        </TableView>
+
+                        <HBox spacing="10">
+                            <Button text="Refresh List" onAction="#handleRefreshCarriers"/>
+                            <Button text="Fire Selected" onAction="#handleFireCarrier" style="-fx-text-fill: red;"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- RIGHT: Hire New Carrier Form -->
+                    <VBox spacing="10">
+                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                        <Label text="Hire New Carrier" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        
+                        <Label text="Username:"/>
+                        <TextField fx:id="carrierUsernameField" promptText="Login username"/>
+
+                        <Label text="Password:"/>
+                        <PasswordField fx:id="carrierPasswordField" promptText="Strong password"/>
+
+                        <Label text="Phone:"/>
+                        <TextField fx:id="carrierPhoneField" promptText="10-13 digits"/>
+
+                        <Label text="Address:"/>
+                        <TextArea fx:id="carrierAddressArea" prefRowCount="3" wrapText="true" promptText="Full address"/>
+
+                        <Button text="Hire (Register)" onAction="#handleHireCarrier" 
+                                style="-fx-base: #4CAF50; -fx-font-weight: bold;" maxWidth="Infinity"/>
+                        
+                        <Label text="* Default role will be CARRIER." style="-fx-text-fill: gray;"/>
+                    </VBox>
+
+                </SplitPane>
             </Tab>
 
         </TabPane>
