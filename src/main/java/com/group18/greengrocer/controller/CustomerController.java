@@ -14,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -131,21 +132,44 @@ public class CustomerController {
         );
         Label stockLabel = new Label("Stock: " + product.getStock());
 
+
+        // AMOUNT INPUT
+        TextField amountField = new TextField();
+        amountField.setPromptText("kg");
+        amountField.setMaxWidth(80);
+
         Button addButton = new Button("Add to Cart");
         addButton.setOnAction(e -> {
             try {
+                String input = amountField.getText();
+
+                if (input == null || input.isBlank()) {
+                    showError("Please enter amount in kg.");
+                    return;
+                }
+                
+                double amount = Double.parseDouble(input);
+
+                if (amount <= 0) {
+                    showError("Amount must be greater than 0.");
+                    return;
+                }
+
                 orderService.addToCart(
-                        currentUser.getId(),
-                        product.getId(),
-                        1.0   // default 1 kg
+                    currentUser.getId(),
+                    product.getId(),
+                    amount
                 );
 
-                // UPDATE CART COUNT
                 Order cart = orderService.getCart(currentUser.getId());
                 cartButton.setText("Cart (" + cart.getItems().size() + ")");
 
-                showInfo(product.getName() + " added to cart.");
-            } catch (Exception ex) {
+                showInfo(amount + " kg of " + product.getName() + " added to cart.");
+                amountField.clear();
+
+            } catch (NumberFormatException ex) {
+                 showError("Please enter a valid number.");
+            } catch (Exception ex){
                 showError(ex.getMessage());
             }
         });
@@ -154,6 +178,7 @@ public class CustomerController {
                 nameLabel,
                 priceLabel,
                 stockLabel,
+                amountField,
                 addButton
         );
         box.setStyle("""
