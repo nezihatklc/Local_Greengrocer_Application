@@ -125,7 +125,7 @@ public class OrderHistoryController {
                 }
 
                 if (selected.getStatus() == Order.Status.CANCELLED) {
-                        showAlert("Error", "This order is already cancelled.");
+                        showAlert("Error", "You cannot cancel a cancelled order.");
                         return;
                 }
 
