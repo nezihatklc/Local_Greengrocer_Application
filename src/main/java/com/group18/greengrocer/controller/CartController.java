@@ -18,6 +18,10 @@ import java.time.LocalDate;
 
 public class CartController {
 
+    private static final double VAT_RATE = 0.10;
+    private static final double MIN_CART_VALUE = 100.0;
+
+
     // =====================
     // FXML COMPONENTS
     // =====================
@@ -99,6 +103,8 @@ public class CartController {
         cartTable.setItems(cartItems);
 
         updateTotalPriceLabel();
+
+        checkoutButton.setDisable(cartItems.isEmpty());
     }
 
     // =====================
@@ -120,6 +126,8 @@ public class CartController {
 
         cartItems.remove(selectedItem);
         updateTotalPriceLabel();
+
+        checkoutButton.setDisable(cartItems.isEmpty());
     }
 
     // =====================
@@ -127,6 +135,22 @@ public class CartController {
     // =====================
     @FXML
     private void handleCheckout() {
+
+         double totalWithVat = calculateTotalWithVat();
+
+        // MINIMUM CART CHECK
+        if (totalWithVat < MIN_CART_VALUE) {
+            showAlert(
+                    "Minimum Cart Value",
+                    String.format(
+                            "Minimum cart value is %.2f TL.\nYour current total is %.2f TL.",
+                            MIN_CART_VALUE,
+                            totalWithVat
+                    )
+            );
+            return;
+        }
+
 
         LocalDate deliveryDate = deliveryDatePicker.getValue();
         if (deliveryDate == null) {
@@ -164,16 +188,48 @@ public class CartController {
         closeStage();
     }
 
+
+
+    // =====================
+    // PRICE CALCULATIONS
+    // =====================
+    private double calculateSubtotal() {
+        return cartItems.stream()
+                .mapToDouble(CartItem::getTotalPrice)
+                .sum();
+    }
+
+    private double calculateVat(double subtotal) {
+        return subtotal * VAT_RATE;
+    }
+
+    private double calculateTotalWithVat() {
+        double subtotal = calculateSubtotal();
+        return subtotal + calculateVat(subtotal);
+    }
+
+    private void updateTotalPriceLabel() {
+        double subtotal = cartItems.stream()
+                .mapToDouble(CartItem::getTotalPrice)
+                .sum();
+            
+        double vatRate = 0.10; // %10 VAT
+        double vatAmount = subtotal * vatRate;
+        double totalWithVat = subtotal + vatAmount;
+
+        totalPriceLabel.setText(
+            String.format(
+                    "Subtotal: %.2f TL | VAT (10%%): %.2f TL | Total: %.2f TL",
+                    subtotal,
+                    vatAmount,
+                    totalWithVat
+                )
+        );
+    }
+
     // =====================
     // UTIL
     // =====================
-    private void updateTotalPriceLabel() {
-        double total = cartItems.stream()
-                .mapToDouble(CartItem::getTotalPrice)
-                .sum();
-        totalPriceLabel.setText(String.format("Total: %.2f TL", total));
-    }
-
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

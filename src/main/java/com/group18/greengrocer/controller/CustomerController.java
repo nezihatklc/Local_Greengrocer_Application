@@ -192,6 +192,19 @@ public class CustomerController {
                     return;
                 }
 
+
+        
+                // =====================
+                // STOCK CHECK (IMPORTANT)
+                // =====================
+                if (amount > product.getStock()) {
+                    showError(
+                        "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " kg"
+                    );
+                    return;
+                }
+
+
                 orderService.addToCart(
                     currentUser.getId(),
                     product.getId(),
