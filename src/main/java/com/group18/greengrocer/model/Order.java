@@ -298,4 +298,5 @@ public class Order {
     public int hashCode() {
         return Integer.hashCode(id);
     }
+
 }

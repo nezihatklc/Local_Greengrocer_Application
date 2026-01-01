@@ -17,6 +17,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -280,6 +281,66 @@ public class CustomerController {
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
         showInfo("You have " + orders.size() + " past orders.");
     }
+
+
+    // =====================
+    // CARRIER RATING 
+    // =====================
+
+    @FXML
+    private void handleRateCarrier() {
+
+        // 1 Customer orders
+        List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
+
+        // only those that have been DELIVERED
+        List<Order> deliveredOrders = orders.stream()
+                .filter(o -> o.getStatus() == Order.Status.COMPLETED)
+                .toList();
+
+                if (deliveredOrders.isEmpty()) {       
+                    showInfo("You have no delivered orders to rate.");       
+                    return; 
+                }
+
+    
+         // 2 Order seçimi   
+         ChoiceDialog<Order> orderDialog =
+            
+                new ChoiceDialog<>(deliveredOrders.get(0), deliveredOrders);
+
+   
+        orderDialog.setTitle("Rate Carrier");
+        orderDialog.setHeaderText("Select an order to rate");
+        orderDialog.setContentText("Order:");
+
+        orderDialog.showAndWait().ifPresent(selectedOrder -> {
+       
+            // 3 Rating dialog      
+            ChoiceDialog<Integer> ratingDialog =
+                    new ChoiceDialog<>(5, List.of(1, 2, 3, 4, 5));
+
+        
+            ratingDialog.setTitle("Rate Carrier");
+            ratingDialog.setHeaderText("Rate the carrier (1–5)");
+            ratingDialog.setContentText("Rating:");
+
+            ratingDialog.showAndWait().ifPresent(rating -> {
+
+            
+                System.out.println(
+                        "Customer " + currentUser.getId()
+                        + " rated carrier "
+                        + selectedOrder.getCarrierId()
+                        + " with " + rating + " stars."
+                );
+
+                showInfo("Thank you! Carrier rated successfully.");
+            });
+        });
+    }
+
+
 
 
      // =====================

@@ -29,6 +29,10 @@
                     <!-- EDIT PROFILE -->
                     <Button text="Edit Profile"
                             onAction="#handleEditProfile"/>
+                           
+                     <Button text="Rate Carrier"
+                            onAction="#handleRateCarrier"/>
+
 
                     <Button text="My Orders"
                             onAction="#handleMyOrders"/>
