@@ -186,6 +186,7 @@ public class OwnerController {
 
         loadOwnerData();
         loadCarrierData();
+        handleRefreshReports(); // Load charts automatically
     }
 
     private void loadOwnerData() {
@@ -547,5 +548,48 @@ public class OwnerController {
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
         }
+    }
+
+    // Charts
+    @FXML
+    private javafx.scene.chart.PieChart categoryPieChart;
+    @FXML
+    private javafx.scene.chart.BarChart<String, Number> productSalesChart;
+    @FXML
+    private javafx.scene.chart.LineChart<String, Number> revenueChart;
+
+    @FXML
+    private void handleRefreshReports() {
+        if (categoryPieChart == null || productSalesChart == null || revenueChart == null)
+            return;
+
+        com.group18.greengrocer.service.OrderService orderService = new com.group18.greengrocer.service.OrderService();
+
+        // 1. Pie Chart
+        java.util.Map<String, Double> catData = orderService.getSalesByCategory();
+        categoryPieChart.getData().clear();
+        catData.forEach((cat, val) -> {
+            categoryPieChart.getData().add(new javafx.scene.chart.PieChart.Data(cat, val));
+        });
+
+        // 2. Bar Chart
+        java.util.Map<String, Double> prodData = orderService.getRevenueByProduct();
+        productSalesChart.getData().clear();
+        javafx.scene.chart.XYChart.Series<String, Number> seriesP = new javafx.scene.chart.XYChart.Series<>();
+        seriesP.setName("Revenue");
+        prodData.forEach((prod, val) -> {
+            seriesP.getData().add(new javafx.scene.chart.XYChart.Data<>(prod, val));
+        });
+        productSalesChart.getData().add(seriesP);
+
+        // 3. Line Chart
+        java.util.Map<String, Double> timeData = orderService.getRevenueOverTime();
+        revenueChart.getData().clear();
+        javafx.scene.chart.XYChart.Series<String, Number> seriesT = new javafx.scene.chart.XYChart.Series<>();
+        seriesT.setName("Total Sales");
+        timeData.forEach((date, val) -> {
+            seriesT.getData().add(new javafx.scene.chart.XYChart.Data<>(date, val));
+        });
+        revenueChart.getData().add(seriesT);
     }
 }

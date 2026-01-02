@@ -23,6 +23,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.chart.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -243,6 +245,46 @@
                                wrapText="true" style="-fx-text-fill: gray;"/>
                     </VBox>
                 </SplitPane>
+            </Tab>
+
+
+            
+            <!-- TAB 4: Reports & Analytics -->
+            <Tab text="Reports">
+                <ScrollPane fitToWidth="true">
+                    <VBox spacing="20" style="-fx-padding: 15; -fx-background-color: #F4F6F8;">
+                        <Label text="Business Analytics" styleClass="heading-2"/>
+
+                        <!-- ROW 1: Pie and Bar Charts -->
+                        <HBox spacing="15" VBox.vgrow="ALWAYS">
+                            <!-- Category Distribution -->
+                            <VBox styleClass="card" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15;">
+                                <Label text="Sales by Category" styleClass="subtitle"/>
+                                <PieChart fx:id="categoryPieChart" title="Revenue Share" legendSide="BOTTOM"/>
+                            </VBox>
+
+                            <!-- Top Products -->
+                            <VBox styleClass="card" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15;">
+                                <Label text="Revenue by Product" styleClass="subtitle"/>
+                                <BarChart fx:id="productSalesChart" title="Top Selling Products" legendSide="TOP">
+                                    <xAxis><CategoryAxis label="Product" /></xAxis>
+                                    <yAxis><NumberAxis label="Revenue (TL)" /></yAxis>
+                                </BarChart>
+                            </VBox>
+                        </HBox>
+
+                        <!-- ROW 2: Line Chart (Time) -->
+                        <VBox styleClass="card" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 15;">
+                            <Label text="Revenue Over Time" styleClass="subtitle"/>
+                            <LineChart fx:id="revenueChart" title="Daily Revenue">
+                                <xAxis><CategoryAxis label="Date" /></xAxis>
+                                <yAxis><NumberAxis label="Total Sales (TL)" /></yAxis>
+                            </LineChart>
+                        </VBox>
+                        
+                        <Button text="Refresh Reports" onAction="#handleRefreshReports" styleClass="button-primary"/>
+                    </VBox>
+                </ScrollPane>
             </Tab>
 
         </TabPane>

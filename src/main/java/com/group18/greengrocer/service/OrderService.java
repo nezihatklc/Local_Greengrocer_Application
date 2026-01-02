@@ -458,4 +458,79 @@ public class OrderService {
         return sb.toString();
     }
 
+    // ============================================
+    // REPORTING METHODS
+    // ============================================
+
+    /**
+     * Aggregates total revenue (quantity * price) per product.
+     * 
+     * @return Map<ProductName, TotalRevenue>
+     */
+    public java.util.Map<String, Double> getRevenueByProduct() {
+        List<Order> allOrders = orderDAO.findAllOrders();
+        java.util.Map<String, Double> map = new java.util.HashMap<>();
+
+        for (Order o : allOrders) {
+            if (o.getStatus() == Order.Status.CANCELLED)
+                continue; // Skip cancelled
+
+            for (CartItem item : o.getItems()) {
+                if (item.getProduct() != null) {
+                    String name = item.getProduct().getName();
+                    double revenue = item.getQuantity() * item.getPriceAtPurchase();
+                    map.put(name, map.getOrDefault(name, 0.0) + revenue);
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Aggregates total revenue per day.
+     * 
+     * @return Map<DateString, TotalRevenue> sorted by date
+     */
+    public java.util.Map<String, Double> getRevenueOverTime() {
+        List<Order> allOrders = orderDAO.findAllOrders();
+        java.util.TreeMap<String, Double> map = new java.util.TreeMap<>(); // Sorted by date string
+
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+
+        for (Order o : allOrders) {
+            if (o.getStatus() == Order.Status.CANCELLED)
+                continue; // Skip cancelled
+
+            if (o.getOrderTime() != null) {
+                String dateKey = sdf.format(o.getOrderTime());
+                map.put(dateKey, map.getOrDefault(dateKey, 0.0) + o.getTotalCost());
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Aggregates revenue by product category.
+     * 
+     * @return Map<CategoryName, TotalRevenue>
+     */
+    public java.util.Map<String, Double> getSalesByCategory() {
+        List<Order> allOrders = orderDAO.findAllOrders();
+        java.util.Map<String, Double> map = new java.util.HashMap<>();
+
+        for (Order o : allOrders) {
+            if (o.getStatus() == Order.Status.CANCELLED)
+                continue; // Skip cancelled
+
+            for (CartItem item : o.getItems()) {
+                if (item.getProduct() != null && item.getProduct().getCategory() != null) {
+                    String cleanName = item.getProduct().getCategory().name();
+                    double revenue = item.getQuantity() * item.getPriceAtPurchase();
+                    map.put(cleanName, map.getOrDefault(cleanName, 0.0) + revenue);
+                }
+            }
+        }
+        return map;
+    }
+
 }
