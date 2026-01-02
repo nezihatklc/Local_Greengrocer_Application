@@ -28,6 +28,9 @@
                      </children>
                   </Group>
 
+                  <!-- CONTAINER FOR ITEMS IN CART -->
+                  <Group fx:id="cartItemsGroup" layoutX="-250.0" layoutY="140.0" />
+
                   <!-- 2) FRUITS & VEGGIES (Middle Layer) -->
                   <!-- Positioned to be visible through the front grid -->
                   <Group fx:id="appleGroup" layoutX="490.0" layoutY="-100.0">

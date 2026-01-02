@@ -43,11 +43,22 @@ public class SplashController {
                                 tomatoGroup, extraCarrotGroup, extraStrawberryGroup
                 };
 
+                // 1920px genişlikteki ekranlar için güvenli başlangıç ve bitiş değerleri hesaplandı.
+                // Başlangıç: -600 (Ekranın tamamen solu)
+                // Hedef Orta: X=-600 + 1160 = 560 (Kullanıcının "ikisinin ortası" isteğine göre revize edildi)
+                // Çıkış: X=-600 + 2600 = 2000 (Ekranın tamamen sağı)
+
+                double startLayoutX = -600;
+                cartGroup.setLayoutX(startLayoutX);
+                cartBackGroup.setLayoutX(startLayoutX);
+                cartItemsGroup.setLayoutX(startLayoutX);
+                cartItemsGroup.setLayoutY(140); // Y sabir
+
                 // 🔹 Ürünleri sepetin içine taşı
                 for (Group item : items) {
-                        // Eğer daha önce eklenmemişse taşı (FXML loading güvenliği için)
-                        if (rootPane.getChildren().contains(item)) {
-                                rootPane.getChildren().remove(item);
+                        // Parent'tan ayırıp sepet grubuna ekle
+                        if (item.getParent() != null) {
+                                ((javafx.scene.layout.Pane) item.getParent()).getChildren().remove(item);
                                 cartItemsGroup.getChildren().add(item);
                         }
 
@@ -55,17 +66,17 @@ public class SplashController {
                         item.setLayoutX(45 + Math.random() * 80);
 
                         // Başlangıç konumu: Sepetin çok üstü
-                        // Local Y koordinatı. Sepetin altı +130, üstü +30.
-                        // -250'den başlatıyoruz.
                         item.setLayoutY(-250);
                 }
 
                 SequentialTransition mainTransition = new SequentialTransition();
 
                 // 1) Sepet giriş
+                // Hedef TranslateX = 1160. Sonuç Konum = -600 + 1160 = 560.
                 ParallelTransition cartSlideIn = new ParallelTransition(
-                                createSlide(cartGroup, 0, 650),
-                                createSlide(cartBackGroup, 0, 650));
+                                createSlide(cartGroup, 0, 1160),
+                                createSlide(cartBackGroup, 0, 1160),
+                                createSlide(cartItemsGroup, 0, 1160));
 
                 // 2) Ürün düşüşleri
                 // HESAPLAMA:
@@ -103,17 +114,14 @@ public class SplashController {
                 ParallelTransition drop5 = new ParallelTransition(
                                 createDrop(grapesGroup, 325),
                                 createDrop(extraCarrotGroup, 328),
-                                createDrop(extraStrawberryGroup, 330)); // 3) Sepet çıkış
-                ParallelTransition exit = new ParallelTransition(
-                                createSlide(cartGroup, 650, 1200),
-                                createSlide(cartBackGroup, 650, 1200));
+                                createDrop(extraStrawberryGroup, 330));
 
-                for (Group item : items) {
-                        TranslateTransition slideOut = new TranslateTransition(Duration.seconds(1.2), item);
-                        slideOut.setByX(550);
-                        slideOut.setInterpolator(Interpolator.EASE_IN);
-                        exit.getChildren().add(slideOut);
-                }
+                // 3) Sepet çıkış
+                // Hedef TranslateX = 2600. Sonuç Konum = -600 + 2600 = 2000.
+                ParallelTransition exit = new ParallelTransition(
+                                createSlide(cartGroup, 1160, 2600),
+                                createSlide(cartBackGroup, 1160, 2600),
+                                createSlide(cartItemsGroup, 1160, 2600));
 
                 mainTransition.getChildren().addAll(
                                 cartSlideIn,
