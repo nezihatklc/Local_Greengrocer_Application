@@ -748,11 +748,12 @@ public class CustomerController {
     private void handleLogout() {
         try {
             Parent root = FXMLLoader.load(
-                    getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+                    getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Stage stage = (Stage) cartButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showError("Could not go back to login: " + e.getMessage());
         }

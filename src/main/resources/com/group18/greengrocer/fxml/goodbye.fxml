@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="rootPane" prefHeight="540.0" prefWidth="960.0" style="-fx-background-color: linear-gradient(to bottom, #ffffff, #f1f8e9);" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.group18.greengrocer.controller.GoodbyeController">
+   <children>
+      <VBox alignment="CENTER" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <AnchorPane prefHeight="300.0" prefWidth="960.0">
+               <children>
+                  <!-- REALISTIC METAL SHOPPING CART (Consistency Update) -->
+                  <Group fx:id="cartGroup" layoutX="390.0" layoutY="80.0">
+                     <children>
+                        <!-- Handle -->
+                        <SVGPath content="M -10,10 L 10,10 Q 15,10 15,15 L 15,30" stroke="#78909C" strokeWidth="12" fill="TRANSPARENT" strokeLineCap="ROUND" />
+                        
+                        <!-- Realistic Wire Basket Frame -->
+                        <SVGPath content="M 40,30 L 170,30 L 155,130 L 45,130 Z" fill="TRANSPARENT" stroke="#90A4AE" strokeWidth="6" />
+                        
+                        <!-- Internal Wire Grid -->
+                        <Line startX="43" startY="50" endX="167" endY="50" stroke="#B0BEC5" strokeWidth="1.5" />
+                        <Line startX="46" startY="70" endX="164" endY="70" stroke="#B0BEC5" strokeWidth="1.5" />
+                        <Line startX="49" startY="90" endX="161" endY="90" stroke="#B0BEC5" strokeWidth="1.5" />
+                        <Line startX="52" startY="110" endX="158" endY="110" stroke="#B0BEC5" strokeWidth="1.5" />
+                        
+                        <Line startX="60" startY="30" endX="62" endY="130" stroke="#B0BEC5" strokeWidth="1.2" />
+                        <Line startX="100" startY="30" endX="100" endY="130" stroke="#B0BEC5" strokeWidth="1.2" />
+                        <Line startX="140" startY="30" endX="138" endY="130" stroke="#B0BEC5" strokeWidth="1.2" />
+                        
+                        <!-- Lower Frame -->
+                        <SVGPath content="M 40,35 L 20,35 L 50,150 L 160,150" fill="TRANSPARENT" stroke="#78909C" strokeWidth="8" strokeLineCap="ROUND" />
+                        
+                        <!-- Wheels Assembly -->
+                        <Circle radius="14" fill="#37474F" centerX="55" centerY="175" />
+                        <Circle radius="14" fill="#37474F" centerX="145" centerY="175" />
+                     </children>
+                  </Group>
+               </children>
+            </AnchorPane>
+            
+            <VBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Label text="Thank You!" textFill="#2e7d32">
+                     <font>
+                        <Font name="System Bold" size="48.0" />
+                     </font>
+                  </Label>
+                  <Label text="See you soon, stay fresh..." textFill="#546e7a">
+                     <font>
+                        <Font size="20.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

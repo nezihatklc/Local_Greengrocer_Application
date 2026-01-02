@@ -14,10 +14,10 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Load the Login View
-            java.net.URL url = getClass().getResource("/com/group18/greengrocer/fxml/login.fxml");
+            // Load the Splash View
+            java.net.URL url = getClass().getResource("/com/group18/greengrocer/fxml/splash.fxml");
             if (url == null) {
-                System.err.println("Error: FXML file not found at /com/group18/greengrocer/fxml/login.fxml");
+                System.err.println("Error: FXML file not found at /com/group18/greengrocer/fxml/splash.fxml");
             } else {
                 System.out.println("FXML found: " + url);
             }

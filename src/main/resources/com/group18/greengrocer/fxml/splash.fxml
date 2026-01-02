@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Polygon?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="rootPane" prefHeight="540.0" prefWidth="960.0" style="-fx-background-color: linear-gradient(to bottom, #f1f8e9, #ffffff);" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.group18.greengrocer.controller.SplashController">
+   <children>
+      <VBox alignment="CENTER" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <!-- Animation Container -->
+            <AnchorPane fx:id="animationContainer" prefHeight="350.0" prefWidth="960.0">
+               <children>
+                  <!-- 1) BACK FRAME (Behind items) -->
+                  <Group fx:id="cartBackGroup" layoutX="-250.0" layoutY="140.0">
+                     <children>
+                         <!-- Handle -->
+                         <SVGPath content="M -10,10 L 10,10 Q 15,10 15,15 L 15,40" stroke="#78909C" strokeWidth="12" fill="TRANSPARENT" strokeLineCap="ROUND" />
+                         <!-- Back side of frame -->
+                         <SVGPath content="M 40,35 L 20,35 L 50,150 L 160,150" fill="TRANSPARENT" stroke="#78909C" strokeWidth="8" strokeLineCap="ROUND" />
+                     </children>
+                  </Group>
+
+                  <!-- 2) FRUITS & VEGGIES (Middle Layer) -->
+                  <!-- Positioned to be visible through the front grid -->
+                  <Group fx:id="appleGroup" layoutX="490.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="18.0" fill="#E53935" />
+                        <Rectangle width="3.0" height="10.0" x="-1.5" y="-25.0" fill="#795548" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="bananaGroup" layoutX="480.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="15.0" fill="#FFEE58" scaleX="2.0" scaleY="0.4" rotate="-20" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="broccoliGroup" layoutX="500.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="13.0" fill="#2E7D32" />
+                        <Circle radius="9.0" fill="#2E7D32" centerX="-10.0" centerY="-3.0" />
+                        <Circle radius="9.0" fill="#2E7D32" centerX="10.0" centerY="-3.0" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="carrotGroup" layoutX="510.0" layoutY="-100.0">
+                     <children>
+                        <Polygon points="0,0, 14,0, 7,40" fill="#FB8C00" />
+                        <Circle radius="5.0" fill="#4CAF50" centerX="7.0" centerY="-3.0" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="pearGroup" layoutX="520.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="16.0" fill="#C0CA33" centerX="0" centerY="8.0" />
+                        <Circle radius="11.0" fill="#C0CA33" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="lettuceGroup" layoutX="535.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="20.0" fill="#4CAF50" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="strawberryGroup" layoutX="545.0" layoutY="-100.0">
+                     <children>
+                        <Polygon points="0,0, 20,0, 10,25" fill="#FF5252" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="grapesGroup" layoutX="470.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="9.0" fill="#7E57C2" />
+                        <Circle radius="9.0" fill="#7E57C2" centerX="8.0" />
+                        <Circle radius="9.0" fill="#7E57C2" centerX="4.0" centerY="8.0" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="orangeGroup" layoutX="525.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="19.0" fill="#FF9800" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="potatoGroup" layoutX="485.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="16.0" fill="#D7CCC8" scaleX="1.3" scaleY="0.9" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="greenAppleGroup" layoutX="505.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="19.0" fill="#8BC34A" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="lemonGroup" layoutX="540.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="15.0" fill="#FFEE58" scaleX="1.4" scaleY="0.7" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="tomatoGroup" layoutX="460.0" layoutY="-100.0">
+                     <children>
+                        <Circle radius="20.0" fill="#F44336" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="extraCarrotGroup" layoutX="515.0" layoutY="-100.0">
+                     <children>
+                        <Polygon points="0,0, 12,0, 6,35" fill="#FB8C00" rotate="15" />
+                     </children>
+                  </Group>
+
+                  <Group fx:id="extraStrawberryGroup" layoutX="495.0" layoutY="-100.0">
+                     <children>
+                        <Polygon points="0,0, 18,0, 9,22" fill="#FF5252" rotate="-10" />
+                     </children>
+                  </Group>
+
+                  <!-- 3) FRONT BASKET MESH (Drawn on top) -->
+                  <Group fx:id="cartGroup" layoutX="-250.0" layoutY="140.0">
+                     <children>
+                        <!-- Main Front Structure Outline -->
+                        <!-- Thick Border Like Image -->
+                        <SVGPath content="M 40,30 L 170,30 L 155,130 L 45,130 Z" fill="TRANSPARENT" stroke="#78909C" strokeWidth="8" />
+                        
+                        <!-- Internal Wire Grid (Matching the Image Style) -->
+                        <Line startX="45" startY="55" endX="165" endY="55" stroke="#78909C" strokeWidth="4" />
+                        <Line startX="45" startY="80" endX="165" endY="80" stroke="#78909C" strokeWidth="4" />
+                        <Line startX="45" startY="105" endX="165" endY="105" stroke="#78909C" strokeWidth="4" />
+                        
+                        <Line startX="72" startY="30" endX="72" endY="130" stroke="#78909C" strokeWidth="4" />
+                        <Line startX="105" startY="30" endX="105" endY="130" stroke="#78909C" strokeWidth="4" />
+                        <Line startX="138" startY="30" endX="138" endY="130" stroke="#78909C" strokeWidth="4" />
+
+                        <!-- Wheel Connections -->
+                        <Line startX="60" startY="130" endX="60" endY="150" stroke="#78909C" strokeWidth="8" />
+                        <Line startX="140" startY="130" endX="140" endY="150" stroke="#78909C" strokeWidth="8" />
+                        
+                        <!-- Wheels Assembly -->
+                        <Circle radius="18" fill="#37474F" centerX="60" centerY="175" />
+                        <Circle radius="18" fill="#37474F" centerX="140" centerY="175" />
+                        <Circle radius="7" fill="#B0BEC5" centerX="60" centerY="175" />
+                        <Circle radius="7" fill="#B0BEC5" centerX="140" centerY="175" />
+                     </children>
+                  </Group>
+               </children>
+            </AnchorPane>
+            
+            <VBox alignment="CENTER" spacing="5.0">
+               <children>
+                  <Label text="GreenGrocer" textFill="#2e7d32">
+                     <font>
+                        <Font name="System Bold" size="64.0" />
+                     </font>
+                  </Label>
+                  <Label text="Fresh products, delivered with care." textFill="#546e7a">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
