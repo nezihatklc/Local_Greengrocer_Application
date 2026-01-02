@@ -87,7 +87,14 @@ public class OrderService {
             }
         }
 
-        cart.add(new CartItem(product, amount));
+        double price = product.getPrice();
+        if (product.getStock() <= product.getThreshold()) {
+            price *= 2.0;
+        }
+
+        CartItem newItem = new CartItem(product, amount);
+        newItem.setPriceAtPurchase(price);
+        cart.add(newItem);
     }
 
     /**
@@ -161,14 +168,15 @@ public class OrderService {
                 throw new IllegalStateException("Insufficient stock for: " + product.getName());
             }
             // Update item with fresh product data for accurate pricing
-            item.setProduct(product);double currentPrice = product.getPrice();
-    
-    if (product.getStock() <= product.getThreshold()) {
-        currentPrice *= 2.0;
-    }
-    
-    item.setPriceAtPurchase(currentPrice);
-           
+            item.setProduct(product);
+            double currentPrice = product.getPrice();
+
+            if (product.getStock() <= product.getThreshold()) {
+                currentPrice *= 2.0;
+            }
+
+            item.setPriceAtPurchase(currentPrice);
+
         }
 
         // 2. Final Price Calculation (includes Coupon & Loyalty & Thresholds)
@@ -331,9 +339,8 @@ public class OrderService {
         }
     }
 
-    
     // ASSIGNED TO: Owner
-   /**
+    /**
      * Retrieves all orders for administrative view (Owner).
      */
     public List<Order> getAllOrdersForOwner() { // İsmini Controller ile uyumlu yaptım

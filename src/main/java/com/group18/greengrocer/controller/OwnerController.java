@@ -4,6 +4,7 @@ import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.UserService;
+import com.group18.greengrocer.service.DiscountService; // NEW
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -22,6 +23,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.DatePicker; // NEW
 import java.io.IOException;
 import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.util.ValidatorUtil;
@@ -31,17 +33,13 @@ import java.util.Optional;
 /**
  * OwnerController
  * Controller for the Owner dashboard UI.
- *
- * Responsibilities (Rules.md):
- * - Handles UI events (buttons, selection changes).
- * - MUST NOT contain SQL or complex business rules.
- * - Calls Service layer for business logic.
  */
 public class OwnerController {
 
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
+    private final DiscountService discountService; // NEW
 
     // FXML Fields
     @FXML
@@ -110,18 +108,25 @@ public class OwnerController {
     @FXML
     private TextArea carrierAddressArea;
 
+    // -- DISCOUNTS & LOYALTY FIELDS (NEW) --
+    @FXML
+    private TextField couponCodeField;
+    @FXML
+    private TextField couponAmountField;
+    @FXML
+    private DatePicker couponExpiryPicker;
+
+    @FXML
+    private TextField loyaltyMinOrderField;
+    @FXML
+    private TextField loyaltyRateField;
+
     public OwnerController() {
         this.productService = new ProductService();
         this.userService = new UserService();
+        this.discountService = new DiscountService(); // NEW
     }
 
-    /**
-     * Optional init method if you navigate with FXMLLoader.getController().
-     * If not called, controller will still work by reading SessionManager in
-     * initialize().
-     *
-     * @param user logged-in user (OWNER)
-     */
     public void initData(User user) {
         this.currentUser = user;
         if (usernameLabel != null && currentUser != null) {
@@ -130,17 +135,12 @@ public class OwnerController {
         loadOwnerData();
     }
 
-    /**
-     * JavaFX lifecycle method.
-     * Called automatically after FXML is loaded and @FXML fields are injected.
-     */
     @FXML
     public void initialize() {
-        // ---- Table column bindings (Week11: TableView + binding) ----
+        // ---- Table column bindings ----
         idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
         nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
 
-        // FIX: Null-safe category (prevents NullPointerException)
         categoryCol.setCellValueFactory(cell -> {
             Product p = cell.getValue();
             String cat = (p.getCategory() == null) ? "-" : p.getCategory().name();
@@ -161,12 +161,11 @@ public class OwnerController {
             carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
         }
 
-        // ---- Selection listener (Week11: ChangeListener/Listener) ----
+        // ---- Selection listener ----
         productTable.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((obs, oldVal, newVal) -> showProductDetails(newVal));
 
-        // FIX: initData() çağrılmasa bile user adını set etmeye çalış
         if (this.currentUser == null) {
             this.currentUser = SessionManager.getInstance().getCurrentUser();
         }
@@ -174,43 +173,30 @@ public class OwnerController {
             usernameLabel.setText("Owner: " + currentUser.getUsername());
         }
 
-        // Initialize Category Combo
         if (categoryCombo != null) {
             categoryCombo.getItems().setAll(Category.values());
         }
 
-        // FIX: initData() hiç çağrılmasa bile tablo dolsun
         loadOwnerData();
         loadCarrierData();
     }
 
-    /**
-     * Loads all products for owner view (including out-of-stock).
-     * Controller does not query DB directly: service handles it.
-     */
     private void loadOwnerData() {
         if (productTable == null)
             return;
         productTable.getItems().setAll(productService.getAllProductsForOwner());
     }
 
-    /**
-     * Updates UI labels based on selected product.
-     * Shows effective price computed by threshold rule in ProductService.
-     *
-     * @param product selected product or null
-     */
     private void showProductDetails(Product product) {
         if (effectivePriceLabel == null)
             return;
 
         if (product == null) {
             effectivePriceLabel.setText("-");
-            handleClear(); // Clear form when nothing selected
+            handleClear();
             return;
         }
 
-        // Populate Form
         nameField.setText(product.getName());
         categoryCombo.setValue(product.getCategory());
         typeField.setText(product.getType());
@@ -227,39 +213,25 @@ public class OwnerController {
         }
     }
 
-    /**
-     * Refresh button handler.
-     */
     @FXML
     private void handleRefresh() {
         loadOwnerData();
         AlertUtil.showInfo("Refreshed", "Product list refreshed.");
     }
 
-    /**
-     * Handles the Back button action.
-     * Delegates to handleLogout for now.
-     */
     @FXML
     private void handleBack() {
-        // In the current flow, Back from Owner Dashboard goes to Login (Logout)
         handleLogout();
     }
 
-    /**
-     * Handles the Logout button action.
-     * Clears session and navigates to Login screen.
-     */
     @FXML
     private void handleLogout() {
         try {
             SessionManager.getInstance().logout();
 
-            // Load Login FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Parent root = loader.load();
 
-            // Navigate
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
@@ -270,9 +242,6 @@ public class OwnerController {
         }
     }
 
-    /**
-     * Delete selected product handler.
-     */
     @FXML
     private void handleDelete() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
@@ -296,10 +265,6 @@ public class OwnerController {
         }
     }
 
-    // ==========================================
-    // ADD / UPDATE / CLEAR HANDLERS
-    // ==========================================
-
     @FXML
     private void handleAdd() {
         if (!validateForm())
@@ -307,7 +272,6 @@ public class OwnerController {
 
         try {
             Product newProduct = new Product();
-            // ID is auto-generated by DB or DAO (-1 placeholder)
             newProduct.setId(-1);
             newProduct.setName(nameField.getText().trim());
             newProduct.setCategory(categoryCombo.getValue());
@@ -342,7 +306,6 @@ public class OwnerController {
             return;
 
         try {
-            // Update selected object
             selected.setName(nameField.getText().trim());
             selected.setCategory(categoryCombo.getValue());
             selected.setType(typeField.getText().trim());
@@ -354,8 +317,15 @@ public class OwnerController {
             productService.updateProduct(selected);
 
             AlertUtil.showInfo("Success", "Product updated successfully.");
+
+            int selectedId = selected.getId();
             loadOwnerData();
-            // Keep selection? Or clear? Let's keep it to show updated data
+
+            productTable.getItems().stream()
+                    .filter(p -> p.getId() == selectedId)
+                    .findFirst()
+                    .ifPresent(p -> productTable.getSelectionModel().select(p));
+
             productTable.refresh();
 
         } catch (NumberFormatException e) {
@@ -396,10 +366,6 @@ public class OwnerController {
         return true;
     }
 
-    // ==========================================
-    // CARRIER MANAGEMENT
-    // ==========================================
-
     private void loadCarrierData() {
         if (carrierTable == null)
             return;
@@ -431,12 +397,10 @@ public class OwnerController {
             carrier.setPassword(p);
             carrier.setPhoneNumber(ph);
             carrier.setAddress(ad);
-            // Role set in Service
 
             userService.addCarrier(carrier);
             AlertUtil.showInfo("Success", "New Carrier hired: " + u);
 
-            // Clear inputs
             carrierUsernameField.clear();
             carrierPasswordField.clear();
             carrierPhoneField.clear();
@@ -468,6 +432,72 @@ public class OwnerController {
             } catch (Exception e) {
                 AlertUtil.showError("Fire Error", e.getMessage());
             }
+        }
+    }
+
+    // ==========================================
+    // DISCOUNTS & LOYALTY (NEW)
+    // ==========================================
+
+    @FXML
+    private void handleCreateCoupon() {
+        String code = couponCodeField.getText();
+        String amtStr = couponAmountField.getText();
+        java.time.LocalDate expiry = couponExpiryPicker.getValue();
+
+        if (ValidatorUtil.isEmpty(code) || ValidatorUtil.isEmpty(amtStr) || expiry == null) {
+            AlertUtil.showWarning("Validation", "All coupon fields are required.");
+            return;
+        }
+
+        try {
+            double amount = Double.parseDouble(amtStr);
+            if (amount <= 0) {
+                AlertUtil.showError("Error", "Discount amount must be positive.");
+                return;
+            }
+
+            com.group18.greengrocer.model.Coupon c = new com.group18.greengrocer.model.Coupon();
+            c.setCode(code.trim());
+            c.setDiscountAmount(amount);
+            c.setExpiryDate(java.sql.Date.valueOf(expiry));
+            c.setActive(true);
+
+            discountService.createCoupon(c);
+
+            AlertUtil.showInfo("Success", "Coupon created: " + code);
+            couponCodeField.clear();
+            couponAmountField.clear();
+            couponExpiryPicker.setValue(null);
+
+        } catch (NumberFormatException e) {
+            AlertUtil.showError("Error", "Amount must be a number.");
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to create coupon: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleUpdateLoyalty() {
+        String minStr = loyaltyMinOrderField.getText();
+        String rateStr = loyaltyRateField.getText();
+
+        if (ValidatorUtil.isEmpty(minStr) || ValidatorUtil.isEmpty(rateStr)) {
+            AlertUtil.showWarning("Validation", "Both loyalty fields are required.");
+            return;
+        }
+
+        try {
+            int minOrder = Integer.parseInt(minStr);
+            double rate = Double.parseDouble(rateStr);
+
+            discountService.updateLoyaltyRules(minOrder, rate);
+            AlertUtil.showInfo("Success", "Loyalty rules updated.");
+
+        } catch (NumberFormatException e) {
+            AlertUtil.showError("Error", "Please enter valid numbers.");
+        } catch (Exception e) {
+            AlertUtil.showError("Error", e.getMessage());
         }
     }
 }

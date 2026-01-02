@@ -194,6 +194,51 @@
                 </SplitPane>
             </Tab>
 
+            <!-- TAB 3: Discounts & Loyalty -->
+            <Tab text="Discounts">
+                <SplitPane dividerPositions="0.5">
+                    <!-- LEFT: Create Coupon -->
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
+                        <Label text="Create New Coupon" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        
+                        <Label text="Code:"/>
+                        <TextField fx:id="couponCodeField" promptText="e.g. SUMMER2026"/>
+                        
+                        <Label text="Discount Amount (TL):"/>
+                        <TextField fx:id="couponAmountField" promptText="e.g. 50.0"/>
+                        
+                        <Label text="Expiry Date:"/>
+                        <DatePicker fx:id="couponExpiryPicker" maxWidth="Infinity"/>
+                        
+                        <Button text="Create Coupon" onAction="#handleCreateCoupon"
+                                style="-fx-base: #FF9800; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- RIGHT: Loyalty Settings -->
+                    <VBox spacing="10">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
+                        <Label text="Loyalty Configuration" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                        
+                        <Label text="Requirement (Min. Orders):"/>
+                        <TextField fx:id="loyaltyMinOrderField" promptText="Default: 5"/>
+                        
+                        <Label text="Discount Rate (%):"/>
+                        <TextField fx:id="loyaltyRateField" promptText="Default: 10"/>
+                        
+                        <Button text="Update Rules" onAction="#handleUpdateLoyalty"
+                                style="-fx-base: #2196F3;"/>
+                                
+                        <Label text="* Loyalty applies to customers who completed enough orders." 
+                               wrapText="true" style="-fx-text-fill: gray;"/>
+                    </VBox>
+                </SplitPane>
+            </Tab>
+
         </TabPane>
     </center>
 
