@@ -431,7 +431,6 @@ public class CustomerController {
     // ORDER HISTORY
     // =====================
     @FXML
-
     private void handleMyOrders() {
         try {
             FXMLLoader loader = new FXMLLoader(
@@ -448,8 +447,10 @@ public class CustomerController {
             stage.setMaximized(true);
             stage.showAndWait();
 
-            // Re-load products to reflect stock changes if an order was cancelled
+            // Re-load products to reflect stock changes
             loadProducts();
+            // Refresh tracking in case an order was cancelled
+            refreshOrderTracking();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -463,20 +464,29 @@ public class CustomerController {
     @FXML
     private void handleRateCarrier() {
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
-        List<Order> deliveredOrders = orders.stream()
-                // Rate both DELIVERED (fresh) and COMPLETED (dismissed/archived)
-                .filter(o -> (o.getStatus() == Order.Status.DELIVERED || o.getStatus() == Order.Status.COMPLETED))
+
+        // Filter: Delivered/Completed AND Not fully rated
+        // "Fully Rated" defined as: Carrier is rated AND Products are rated.
+        List<Order> eligibleOrders = orders.stream()
+                .filter(o -> o.getStatus() == Order.Status.DELIVERED || o.getStatus() == Order.Status.COMPLETED)
+                .filter(o -> {
+                    boolean carrierDone = orderService.hasCarrierRating(o.getId());
+                    boolean productsDone = orderService.hasProductRating(o.getId());
+                    // Keep if NOT (both done) -> i.e. if at least one is missing
+                    return !(carrierDone && productsDone);
+                })
+                .sorted(Comparator.comparing(Order::getOrderTime).reversed()) // Newest first
                 .toList();
 
-        if (deliveredOrders.isEmpty()) {
-            AlertUtil.showInfo("Info", "You have no delivered orders to rate.");
+        if (eligibleOrders.isEmpty()) {
+            AlertUtil.showInfo("Info", "You have no orders to rate.");
             return;
         }
 
         Stage stage = new Stage();
         stage.setTitle("Rate Delivery");
 
-        showOrderSelection(stage, deliveredOrders);
+        showOrderSelection(stage, eligibleOrders);
     }
 
     // Step 1: Select Order
@@ -492,6 +502,23 @@ public class CustomerController {
         ComboBox<Order> orderBox = new ComboBox<>(FXCollections.observableArrayList(orders));
         orderBox.setMaxWidth(Double.MAX_VALUE);
         orderBox.setPromptText("Choose an order...");
+
+        // Format: "Order #5 - 2024-05-10 14:30"
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+        javafx.util.Callback<ListView<Order>, ListCell<Order>> cellFactory = param -> new ListCell<>() {
+            @Override
+            protected void updateItem(Order item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    String dateStr = (item.getOrderTime() != null) ? sdf.format(item.getOrderTime()) : "N/A";
+                    setText("Order #" + item.getId() + " - " + dateStr);
+                }
+            }
+        };
+        orderBox.setCellFactory(cellFactory);
+        orderBox.setButtonCell(cellFactory.call(null));
 
         Button nextBtn = new Button("Next");
         nextBtn.setMaxWidth(Double.MAX_VALUE);
@@ -534,18 +561,28 @@ public class CustomerController {
         Button rateCarrierBtn = new Button(carrierRated ? "Rate Carrier (Done)" : "Rate Carrier");
         rateCarrierBtn.setMaxWidth(Double.MAX_VALUE);
         rateCarrierBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
-        rateCarrierBtn.setOnAction(e -> showCarrierRatingForm(stage, order, allOrders));
-        rateCarrierBtn.setDisable(carrierRated);
+        rateCarrierBtn.setOnAction(e -> {
+            if (carrierRated) {
+                AlertUtil.showWarning("Warning", "You have already rated the carrier for this order.");
+            } else {
+                showCarrierRatingForm(stage, order, allOrders);
+            }
+        });
+        // rateCarrierBtn.setDisable(carrierRated); // Disabled to allow clicking for
+        // warning
 
         Button rateProductsBtn = new Button(productsRated ? "Rate Products (Done)" : "Rate Products");
         rateProductsBtn.setMaxWidth(Double.MAX_VALUE);
         rateProductsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
-        rateProductsBtn.setOnAction(e -> showProductRatingSelection(stage, order, allOrders));
-        rateProductsBtn.setDisable(productsRated);
-
-        if (carrierRated && productsRated) {
-            header.setText("Order #" + order.getId() + " (Fully Rated)");
-        }
+        rateProductsBtn.setOnAction(e -> {
+            if (productsRated) {
+                AlertUtil.showWarning("Warning", "You have already rated the products for this order.");
+            } else {
+                showProductRatingSelection(stage, order, allOrders);
+            }
+        });
+        // rateProductsBtn.setDisable(productsRated); // Disabled to allow clicking for
+        // warning
 
         Button backBtn = new Button("Back");
         backBtn.setMaxWidth(Double.MAX_VALUE);
@@ -593,8 +630,10 @@ public class CustomerController {
             int rating = (int) group.getSelectedToggle().getUserData();
             try {
                 orderService.rateOrder(order.getId(), rating, commentArea.getText());
-                stage.close();
                 AlertUtil.showInfo("Success", "Carrier rated successfully!");
+                // Refresh logic: Go back to selection, order list might shrink if fully rated
+                handleRateCarrier();
+                stage.close();
             } catch (Exception ex) {
                 AlertUtil.showError("Error", ex.getMessage());
             }
@@ -628,6 +667,21 @@ public class CustomerController {
         itemBox.setMaxWidth(Double.MAX_VALUE);
         itemBox.setPromptText("Select a product...");
 
+        // Format: Product Name only
+        javafx.util.Callback<ListView<com.group18.greengrocer.model.CartItem>, ListCell<com.group18.greengrocer.model.CartItem>> prodCellFactory = param -> new ListCell<>() {
+            @Override
+            protected void updateItem(com.group18.greengrocer.model.CartItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.getProduct() == null) {
+                    setText(null);
+                } else {
+                    setText(item.getProduct().getName());
+                }
+            }
+        };
+        itemBox.setCellFactory(prodCellFactory);
+        itemBox.setButtonCell(prodCellFactory.call(null));
+
         HBox ratingBox = new HBox(10);
         ToggleGroup group = new ToggleGroup();
         for (int i = 1; i <= 5; i++) {
@@ -655,8 +709,21 @@ public class CustomerController {
             try {
                 orderService.rateProduct(order.getId(), currentUser.getId(), item.getProduct().getId(), rating);
                 AlertUtil.showInfo("Success", "Product rated!");
-                // Optionally reset form
-                group.selectToggle(null);
+                // Refresh selection list or options?
+                // The user requirement says "product ... bi kere".
+                // Since our logic considers "Products Rated" as a whole block check, we treat
+                // it as done.
+                // Go back to main menu or step 2
+
+                // If the user wants to rate ANOTHER product in the same order, they can't if we
+                // lock it immediately.
+                // However, the rule "only once" often implies the whole action.
+                // Given the current checking structure (hasProductRating check on order), it
+                // locks the whole order.
+                // We will stick to that to satisfy "evaluate once".
+
+                handleRateCarrier(); // Refresh main list
+                stage.close();
             } catch (Exception ex) {
                 AlertUtil.showError("Error", ex.getMessage());
             }

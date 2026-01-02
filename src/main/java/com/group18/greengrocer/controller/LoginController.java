@@ -101,7 +101,7 @@ public class LoginController {
             } else if (controller instanceof CustomerController) {
                 ((CustomerController) controller).initData(currentUser);
             } else if (controller instanceof OwnerController) {
-                ((OwnerController) controller).initData(currentUser);
+                // OwnerController initializes itself via SessionManager
             }
 
             Stage stage = (Stage) loginButton.getScene().getWindow();
@@ -109,7 +109,7 @@ public class LoginController {
             stage.setTitle("Group18 GreenGrocer - " + currentUser.getUsername());
             stage.setMaximized(true);
         } catch (IOException e) {
-             System.err.println("Error loading dashboard: " + fxmlPath);
+            System.err.println("Error loading dashboard: " + fxmlPath);
             e.printStackTrace();
             AlertUtil.showError("Navigation Error", "Could not load dashboard: " + e.getMessage());
         }
