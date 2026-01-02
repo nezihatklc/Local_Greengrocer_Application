@@ -203,7 +203,31 @@
                 </SplitPane>
             </Tab>
 
-            <!-- TAB 3: Discounts & Loyalty -->
+            <!-- TAB 3: Orders (Approval) -->
+            <Tab text="Orders">
+                <SplitPane dividerPositions="0.6">
+                    <VBox spacing="10" style="-fx-padding: 10;">
+                        <Label text="Incoming Orders (Waiting Approval)" styleClass="heading-2"/>
+                        <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="orderIdCol" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="orderCustomerCol" text="Customer" prefWidth="120"/>
+                                <TableColumn fx:id="orderDateCol" text="Date" prefWidth="120"/>
+                                <TableColumn fx:id="orderTotalCol" text="Total" prefWidth="80"/>
+                                <TableColumn fx:id="orderStatusCol" text="Status" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Button text="Refresh Orders" onAction="#handleRefreshOrders" styleClass="button-secondary"/>
+                    </VBox>
+                    <VBox spacing="10" style="-fx-padding: 20;">
+                         <Label text="Order Details" styleClass="heading-2"/>
+                         <TextArea fx:id="orderDetailsArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                         <Button text="Approve Order" onAction="#handleApproveOrder" styleClass="button-primary" maxWidth="Infinity" style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                    </VBox>
+                </SplitPane>
+            </Tab>
+
+            <!-- TAB 4: Discounts & Loyalty -->
             <Tab text="Discounts">
                 <SplitPane dividerPositions="0.5">
                     <!-- LEFT: Create Coupon -->

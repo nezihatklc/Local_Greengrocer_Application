@@ -19,7 +19,7 @@
                 <Label text="Group18 GreenGrocer - Carrier Dashboard" styleClass="heading-2" style="-fx-text-fill: white; -fx-font-size: 20px;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="usernameLabel" styleClass="text-white" style="-fx-font-weight: bold;"/>
-                <Button fx:id="logoutButton" text="Logout" styleClass="button-danger"/>
+                <Button fx:id="logoutButton" text="Logout" styleClass="button-danger" onAction="#handleLogout"/>
             </children>
         </HBox>
     </top>

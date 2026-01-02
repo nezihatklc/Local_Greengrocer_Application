@@ -185,7 +185,7 @@ public class OrderService {
         double finalTotal = discountService.calculateFinalPrice(order);
         order.setTotalCost(finalTotal);
         order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
-        order.setStatus(Order.Status.AVAILABLE);
+        order.setStatus(Order.Status.RECEIVED);
         order.setItems(new ArrayList<>(cart));
 
         // 3. Coupon Consumption (Critical Step)
@@ -240,6 +240,26 @@ public class OrderService {
     }
 
     /**
+     * Approves an order (Owner Only).
+     * 
+     * @param orderId The ID of the order.
+     */
+    // ASSIGNED TO: Owner
+    public void approveOrder(int orderId) {
+        Order order = orderDAO.findOrderById(orderId);
+        if (order == null)
+            throw new IllegalArgumentException("Order not found");
+
+        if (order.getStatus() != Order.Status.RECEIVED) {
+            throw new IllegalStateException("Order must be in RECEIVED state to approve.");
+        }
+
+        boolean success = orderDAO.approveOrder(orderId);
+        if (!success)
+            throw new IllegalStateException("Could not approve order.");
+    }
+
+    /**
      * Retrieves all orders that are ready to be picked up by carriers.
      * Order status must be 'AVAILABLE'.
      * 
@@ -262,7 +282,8 @@ public class OrderService {
         boolean success = orderDAO.selectOrder(orderId, carrierId);
 
         if (!success) {
-            throw new IllegalStateException("Order is no longer available or already selected by another carrier.");
+            throw new IllegalStateException(
+                    "Order is no longer available (PREPARING) or already selected by another carrier.");
         }
 
     }
@@ -282,9 +303,9 @@ public class OrderService {
             throw new IllegalArgumentException("Order not found.");
         }
 
-        if (order.getStatus() != Order.Status.SELECTED) {
+        if (order.getStatus() != Order.Status.ON_THE_WAY) {
             throw new IllegalStateException(
-                    "Only selected orders can be completed.");
+                    "Only 'On the Way' orders can be completed.");
         }
 
         java.sql.Timestamp deliveryTimestamp = new java.sql.Timestamp(deliveryDate.getTime());
@@ -316,7 +337,7 @@ public class OrderService {
         }
 
         // STATUS CHECK
-        if (order.getStatus() == Order.Status.COMPLETED || order.getStatus() == Order.Status.COMPLETED) {
+        if (order.getStatus() == Order.Status.DELIVERED) {
             throw new IllegalStateException("Delivered orders cannot be cancelled.");
         }
 
@@ -365,7 +386,7 @@ public class OrderService {
         }
 
         // 2. Only COMPLETED orders can be rated
-        if (order.getStatus() != Order.Status.COMPLETED) {
+        if (order.getStatus() != Order.Status.DELIVERED) {
             return;
         }
 
