@@ -307,10 +307,9 @@ public class CarrierController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
-            boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
-            stage.setMaximized(wasMaximized);
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

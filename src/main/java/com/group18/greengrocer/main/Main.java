@@ -31,6 +31,7 @@ public class Main extends Application {
             primaryStage.setTitle("Group18 GreenGrocer");
             primaryStage.setScene(scene);
             primaryStage.centerOnScreen();
+            primaryStage.setMaximized(true);
             primaryStage.show();
 
         } catch (Exception e) {

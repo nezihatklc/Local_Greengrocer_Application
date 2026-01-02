@@ -106,6 +106,7 @@ public class LoginController {
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.getScene().setRoot(root);
             stage.setTitle("Group18 GreenGrocer - " + currentUser.getUsername());
+            stage.setMaximized(true);
         } catch (IOException e) {
              System.err.println("Error loading dashboard: " + fxmlPath);
             e.printStackTrace();

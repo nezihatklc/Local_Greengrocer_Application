@@ -50,17 +50,7 @@ import java.util.Optional;
 public class OwnerController {
 // --- Services ---
     
-    private final MessageService messageService;
 
-    // --- FXML Fields for Messages ---
-    @FXML private TableView<Message> messageTable; // Tablo
-    @FXML private TableColumn<Message, String> fromCol;
-    @FXML private TableColumn<Message, String> dateCol;
-    @FXML private TableColumn<Message, String> previewCol;
-    
-    @FXML private Label fromLabel;      // Gönderen kişi etiketi
-    @FXML private TextArea contentArea; // Mesaj içeriği
-    @FXML private TextArea replyField;  // Cevap alanı
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
@@ -560,11 +550,10 @@ public class OwnerController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
-            boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
-            stage.setMaximized(wasMaximized);
             stage.show();
+            stage.setMaximized(true);
         } catch (IOException e) {
             AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());
         }
@@ -657,7 +646,6 @@ public class OwnerController {
         VBox.setVgrow(reviewList, Priority.ALWAYS);
 
         // Fetch ratings from DB
-        com.group18.greengrocer.service.OrderService orderService = new com.group18.greengrocer.service.OrderService();
         java.util.List<com.group18.greengrocer.model.Order> carrierOrders = orderService
                 .getOrdersByCarrier(selectedCarrier.getId());
 
@@ -820,8 +808,6 @@ public class OwnerController {
         if (categoryPieChart == null || productSalesChart == null || revenueChart == null)
             return;
 
-        com.group18.greengrocer.service.OrderService orderService = new com.group18.greengrocer.service.OrderService();
-
         // 0. Summary Cards
         if (totalRevenueLabel != null) {
             double rev = orderService.getTotalRevenue();
@@ -920,40 +906,35 @@ public class OwnerController {
         }
     }
 
-  /**
+    /**
      * Handles the "Mark as Read" button action.
-     * <p>
-     * Validates that a message is selected, updates its status in the database,
-     * refreshes the table view, and clears the detail fields.
-     * Prevents system crash if no selection is made.
      */
     @FXML
     private void handleMarkAsRead() {
-        // 1. Validation: Check if a message is actually selected to prevent NullPointerException
-        Message selected = messageTable.getSelectionModel().getSelectedItem();
+        // 1. Validation
+        Message selected = messagesTable.getSelectionModel().getSelectedItem(); // Use messagesTable
         
         if (selected == null) {
             AlertUtil.showWarning("Selection Error", "Please select a message to mark as read.");
-            return; // Stop execution here if nothing is selected
+            return;
         }
 
         try {
-            // 2. Database Update: Call service to update status
-            messageService.markAsRead(selected.getId());
+            // 2. Database Update
+            messageService.markMessageAsRead(selected.getId());
             
-            // 3. User Feedback: Show success message
+            // 3. User Feedback
             AlertUtil.showInfo("Success", "Message marked as read.");
             
-            // 4. UI Refresh: Reload the table to reflect the new status (Unread -> Read)
-            loadMessages(); 
+            // 4. UI Refresh
+            handleRefreshMessages(); 
             
-            // 5. Cleanup: Clear the detail view fields
-            fromLabel.setText("");
-            contentArea.clear();
-            replyField.clear();
+            // 5. Cleanup
+            msgSenderField.clear();
+            msgReadArea.clear();
+            msgReplyArea.clear();
             
         } catch (Exception e) {
-            // Log the error and show it to the user gracefully
             e.printStackTrace();
             AlertUtil.showError("Operation Failed", "Could not mark message as read: " + e.getMessage());
         }
@@ -976,8 +957,7 @@ public class OwnerController {
         try {
             messageService.replyToMessage(selected.getId(), replyText);
 
-            // Replaced Alert with clearing and status update to prevent potential
-            // focus/stage issues
+            // Replaced Alert with clearing and status update
             msgReplyArea.clear();
             msgReplyArea.setPromptText("Reply sent successfully!");
 

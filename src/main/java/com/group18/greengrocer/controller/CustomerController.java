@@ -750,10 +750,9 @@ public class CustomerController {
             Parent root = FXMLLoader.load(
                     getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Stage stage = (Stage) cartButton.getScene().getWindow();
-            boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
-            stage.setMaximized(wasMaximized);
+            stage.setMaximized(true);
         } catch (IOException e) {
             showError("Could not go back to login: " + e.getMessage());
         }
