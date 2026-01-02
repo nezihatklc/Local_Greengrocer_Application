@@ -6,7 +6,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
+import java.io.InputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,6 +34,32 @@ public class PDFGenerator {
 
             PDPageContentStream content = new PDPageContentStream(document, page);
 
+            // Add Logo
+            // Add Logo
+            String logoPath = "/com/group18/greengrocer/images/logo.png";
+            System.out.println("Attempting to load logo from: " + logoPath);
+            try (InputStream logoStream = PDFGenerator.class.getResourceAsStream(logoPath)) {
+                if (logoStream != null) {
+                    ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = logoStream.read(buffer)) != -1) {
+                        imageBuffer.write(buffer, 0, len);
+                    }
+                    byte[] logoBytes = imageBuffer.toByteArray();
+                    
+                    PDImageXObject logoImage = PDImageXObject.createFromByteArray(document, logoBytes, "logo");
+                    // Draw at top right corner (A4 width ~595, height ~842)
+                    content.drawImage(logoImage, 450, 750, 100, 50);
+                    System.out.println("SUCCESS: Logo added to invoice PDF.");
+                } else {
+                    System.err.println("ERROR: Logo stream is null. File not found at resource path: " + logoPath);
+                }
+            } catch (Exception e) {
+                System.err.println("EXCEPTION: Could not load logo for invoice. " + e.getMessage());
+                e.printStackTrace();
+            }
+
             content.setFont(PDType1Font.HELVETICA_BOLD, 16);
             content.beginText();
             content.setLeading(18f);
@@ -45,6 +74,9 @@ public class PDFGenerator {
             content.newLine();
 
             content.showText("Customer ID: " + order.getCustomerId());
+            content.newLine();
+
+            content.showText("Status: " + sanitizeText(order.getStatus().toString()));
             content.newLine();
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -69,7 +101,7 @@ public class PDFGenerator {
                 subtotal += lineTotal;
 
                 content.showText(String.format("%-20s %-8.2f %-8.2f %-8.2f",
-                        item.getProduct().getName(),
+                        sanitizeText(item.getProduct().getName()),
                         item.getQuantity(),
                         item.getPriceAtPurchase(),
                         lineTotal));
@@ -108,5 +140,22 @@ public class PDFGenerator {
         } catch (IOException e) {
             throw new RuntimeException("Failed to generate invoice PDF", e);
         }
+    }
+
+
+    private static String sanitizeText(String input) {
+        if (input == null) return "";
+        return input.replace("ı", "i")
+                    .replace("İ", "I")
+                    .replace("ğ", "g")
+                    .replace("Ğ", "G")
+                    .replace("ü", "u")
+                    .replace("Ü", "U")
+                    .replace("ş", "s")
+                    .replace("Ş", "S")
+                    .replace("ö", "o")
+                    .replace("Ö", "O")
+                    .replace("ç", "c")
+                    .replace("Ç", "C");
     }
 }

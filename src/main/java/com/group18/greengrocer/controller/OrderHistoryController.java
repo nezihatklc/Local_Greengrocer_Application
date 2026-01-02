@@ -3,6 +3,7 @@ package com.group18.greengrocer.controller;
 import javafx.collections.FXCollections;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.User;
+import com.group18.greengrocer.model.CartItem;
 import com.group18.greengrocer.service.OrderService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -108,11 +109,40 @@ public class OrderHistoryController {
                         return;
                 }
 
-                showAlert(
-                                "Order Details",
-                                "Order ID: " + selected.getId()
-                                                + "\nStatus: " + selected.getStatus()
-                                                + "\nTotal: " + selected.getTotalCost() + " TL");
+                StringBuilder details = new StringBuilder();
+                details.append("Order ID: ").append(selected.getId()).append("\n");
+                details.append("Status: ").append(selected.getStatus()).append("\n");
+                if (selected.getOrderTime() != null) {
+                        details.append("Order Time: ").append(selected.getOrderTime()).append("\n");
+                }
+                if (selected.getRequestedDeliveryDate() != null) {
+                        details.append("Requested Delivery: ").append(selected.getRequestedDeliveryDate()).append("\n");
+                }
+                
+                details.append("\nProducts:\n");
+                details.append("--------------------------------------------------\n");
+
+                if (selected.getItems() == null || selected.getItems().isEmpty()) {
+                        details.append("No items found for this order.\n");
+                } else {
+                        for (CartItem item : selected.getItems()) {
+                                String unit = (item.getProduct() != null && item.getProduct().getUnit() != null) 
+                                                ? item.getProduct().getUnit() 
+                                                : "unit";
+                                String name = (item.getProduct() != null) ? item.getProduct().getName() : "Unknown Product";
+                                
+                                details.append(String.format("- %s (%.2f %s) x %.2f TL = %.2f TL\n",
+                                                name,
+                                                item.getQuantity(),
+                                                unit,
+                                                item.getPriceAtPurchase(),
+                                                item.getTotalPrice()));
+                        }
+                }
+                details.append("--------------------------------------------------\n");
+                details.append("Total: ").append(String.format("%.2f", selected.getTotalCost())).append(" TL");
+
+                showAlert("Order Details", details.toString());
         }
 
         @FXML
