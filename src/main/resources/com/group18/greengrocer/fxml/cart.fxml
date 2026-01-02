@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
@@ -78,10 +79,15 @@
             <HBox alignment="CENTER_RIGHT" prefHeight="80.0" spacing="20.0" styleClass="footer" BorderPane.alignment="CENTER">
                <children>
                   <VBox alignment="CENTER_LEFT">
-                      <Label text="Requested Delivery Date:" styleClass="label" style="-fx-font-weight: bold;"/>
-                      <Label text="(Select a date for delivery)" style="-fx-font-size: 11px; -fx-text-fill: #90A4AE;"/>
+                      <Label text="Requested Delivery:" styleClass="label" style="-fx-font-weight: bold;"/>
+                      <Label text="(Select date &amp; time)" style="-fx-font-size: 11px; -fx-text-fill: #90A4AE;"/>
                   </VBox>
                   <DatePicker fx:id="deliveryDatePicker" promptText="Select Date" />
+                   <HBox spacing="5" alignment="CENTER_LEFT">
+                       <ComboBox fx:id="deliveryHourCombo" prefWidth="70.0" promptText="HH" />
+                       <Label text=":" />
+                       <ComboBox fx:id="deliveryMinuteCombo" prefWidth="70.0" promptText="MM" />
+                   </HBox>
                   <Button fx:id="checkoutButton" mnemonicParsing="false" onAction="#handleCheckout" prefHeight="45.0" prefWidth="160.0" text="Secure Checkout" styleClass="button-accent">
                   </Button>
                </children>

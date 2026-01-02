@@ -8,10 +8,13 @@ import com.group18.greengrocer.service.UserService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +56,8 @@ public class CarrierController {
     @FXML private TableColumn<Order, String> colCurTotal;
     @FXML private TableColumn<Order, String> colCurStatus;
     @FXML private DatePicker deliveryDatePicker;
+    @FXML private ComboBox<Integer> deliveryHourCombo;
+    @FXML private ComboBox<Integer> deliveryMinuteCombo;
     @FXML private Button completeDeliveryButton;
 
     // ===== HISTORY =====
@@ -74,6 +79,17 @@ public class CarrierController {
         setupAvailableOrdersTable();
         setupCurrentOrdersTable();
         setupHistoryTable();
+
+        // Initialize Time Combos
+        ObservableList<Integer> hours = FXCollections.observableArrayList();
+        for (int i = 0; i < 24; i++) hours.add(i);
+        deliveryHourCombo.setItems(hours);
+        deliveryHourCombo.getSelectionModel().select(Integer.valueOf(12));
+
+        ObservableList<Integer> minutes = FXCollections.observableArrayList();
+        for (int i = 0; i < 60; i += 15) minutes.add(i);
+        deliveryMinuteCombo.setItems(minutes);
+        deliveryMinuteCombo.getSelectionModel().selectFirst();
     }
 
     // ===== TABLE SETUPS =====
@@ -231,9 +247,18 @@ public class CarrierController {
             return;
         }
 
+        Integer hour = deliveryHourCombo.getValue();
+        Integer minute = deliveryMinuteCombo.getValue();
+        
+        if (hour == null || minute == null) {
+            showAlert("Missing Time", "Please select a delivery time.");
+            return;
+        }
+
         Date deliveryDate = Date.from(
                 deliveryDatePicker.getValue()
-                        .atStartOfDay(ZoneId.systemDefault())
+                        .atTime(hour, minute)
+                        .atZone(ZoneId.systemDefault())
                         .toInstant()
         );
 
@@ -246,6 +271,11 @@ public class CarrierController {
         Date requested = selected.getRequestedDeliveryDate();
         if (requested != null && deliveryDate.before(requested)) {
             showAlert("Warning", "Delivery is earlier than requested date.");
+            // We allow this, as early delivery is usually OK, just a warning?
+            // Actually original code returned!
+            // "Delivery is earlier than requested date." implies failure.
+            // But carrier can deliver earlier if customer accepts.
+            // Let's keep original behavior: return.
             return;
         }
 

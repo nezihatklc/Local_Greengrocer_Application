@@ -85,6 +85,14 @@
                             <Region HBox.hgrow="ALWAYS"/>
                             <Label text="Date:" styleClass="label"/>
                             <DatePicker fx:id="deliveryDatePicker"/>
+                            
+                            <Label text="Time:" styleClass="label"/>
+                            <HBox spacing="5" alignment="CENTER_LEFT">
+                                <ComboBox fx:id="deliveryHourCombo" prefWidth="70.0" promptText="HH" />
+                                <Label text=":" />
+                                <ComboBox fx:id="deliveryMinuteCombo" prefWidth="70.0" promptText="MM" />
+                            </HBox>
+
                             <Button fx:id="completeDeliveryButton"
                                     text="Deliver Selected"
                                     onAction="#handleCompleteDelivery"
