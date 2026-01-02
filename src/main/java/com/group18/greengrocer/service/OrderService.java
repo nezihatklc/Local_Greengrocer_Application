@@ -519,8 +519,8 @@ public class OrderService {
             throw new IllegalArgumentException("Order not found.");
         }
 
-        return order.getInvoice();
-
+        // Regenerate invoice dynamically to reflect current status (e.g. Cancelled)
+        return PDFGenerator.generateInvoice(order);
     }
 
     private String generateInvoiceText(Order order) {

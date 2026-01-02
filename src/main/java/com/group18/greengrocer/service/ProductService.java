@@ -169,6 +169,14 @@ public class ProductService {
     public void removeProduct(int productId) {
         if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
 
+        // Check if product is in use to prevent FK Violation
+        if (productDAO.isProductInUse(productId)) {
+            // Soft delete (Archive) instead of throwing error
+            boolean ok = productDAO.softDelete(productId);
+            if (!ok) throw new IllegalStateException("Failed to archive product.");
+            return;
+        }
+
         boolean ok = productDAO.delete(productId);
         if (!ok) throw new IllegalStateException("Failed to remove product.");
     }

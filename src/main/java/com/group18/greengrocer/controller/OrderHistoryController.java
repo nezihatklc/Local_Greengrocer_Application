@@ -194,9 +194,17 @@ public class OrderHistoryController {
                         return;
                 }
 
-                String invoiceBase64 = selected.getInvoice();
+                // Fetch fresh invoice from service (regenerates if needed)
+                String invoiceBase64;
+                try {
+                        invoiceBase64 = orderService.getInvoice(selected.getId());
+                } catch (Exception e) {
+                        showAlert("Error", "Could not generate invoice: " + e.getMessage());
+                        return;
+                }
+
                 if (invoiceBase64 == null || invoiceBase64.isEmpty()) {
-                        showAlert("Info", "No invoice available for this order.");
+                        showAlert("Info", "No invoice generated.");
                         return;
                 }
 

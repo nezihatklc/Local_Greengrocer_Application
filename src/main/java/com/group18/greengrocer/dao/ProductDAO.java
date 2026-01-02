@@ -24,12 +24,14 @@ public class ProductDAO {
 
     /**
      * Retrieves all products sorted by name (Rule 4.1).
+     * Excludes soft-deleted products.
      * 
-     * @return List of all products.
+     * @return List of all active products.
      */
     public List<Product> findAll() {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM ProductInfo ORDER BY name ASC";
+        // Filter out soft-deleted items
+        String sql = "SELECT * FROM ProductInfo WHERE name NOT LIKE 'DELETED-%' ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -51,7 +53,7 @@ public class ProductDAO {
      */
     public List<Product> findAvailableProducts() {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM ProductInfo WHERE stock > 0 ORDER BY name ASC";
+        String sql = "SELECT * FROM ProductInfo WHERE stock > 0 AND name NOT LIKE 'DELETED-%' ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -65,6 +67,8 @@ public class ProductDAO {
         return products;
     }
 
+    // ... (searchByName and findByCategory should also ideally filter, but finding by ID usually returns exact)
+
     /**
      * Searches for products by name matching the keyword.
      * Case-insensitive search using LIKE %keyword%.
@@ -74,7 +78,7 @@ public class ProductDAO {
      */
     public List<Product> searchByName(String keyword) {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM ProductInfo WHERE name LIKE ? ORDER BY name ASC";
+        String sql = "SELECT * FROM ProductInfo WHERE name LIKE ? AND name NOT LIKE 'DELETED-%' ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -98,7 +102,7 @@ public class ProductDAO {
      */
     public List<Product> findByCategory(Category category) {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM ProductInfo WHERE category = ? ORDER BY name ASC";
+        String sql = "SELECT * FROM ProductInfo WHERE category = ? AND name NOT LIKE 'DELETED-%' ORDER BY name ASC";
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -202,6 +206,22 @@ public class ProductDAO {
     }
 
     /**
+     * Soft deletes a product by renaming it and setting stock to 0.
+     * Used when product has history and cannot be physically deleted.
+     */
+    public boolean softDelete(int id) {
+        String sql = "UPDATE ProductInfo SET name = CONCAT('DELETED-', id, '-', name), stock = 0 WHERE id = ?";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
      * Deletes a product by ID.
      * 
      * @param id The product ID.
@@ -214,6 +234,28 @@ public class ProductDAO {
 
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a product is referenced in any orders (OrderItems table).
+     * Rule: Products with order history cannot be deleted to preserve records.
+     * 
+     * @param productId The product ID.
+     * @return true if the product is in at least one order.
+     */
+    public boolean isProductInUse(int productId) {
+        String sql = "SELECT 1 FROM OrderItems WHERE product_id = ? LIMIT 1";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, productId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
