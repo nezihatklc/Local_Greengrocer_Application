@@ -8,6 +8,7 @@ import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.MessageService;
+import com.group18.greengrocer.service.UserService;
 import com.group18.greengrocer.util.AlertUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -51,6 +52,7 @@ public class CustomerController {
     private ProductService productService;
     private OrderService orderService;
     private MessageService messageService;
+    private UserService userService;
 
     // Logged-in user
     private User currentUser;
@@ -97,6 +99,7 @@ public class CustomerController {
         productService = new ProductService();
         orderService = new OrderService();
         messageService = new MessageService();
+        userService = new UserService();
 
         // Default cart label
         cartButton.setText("Cart (0)");
@@ -293,9 +296,9 @@ public class CustomerController {
         }
 
         // Calculate effective price (Double if stock <= threshold)
-        double effectivePrice = (product.getStock() <= product.getThreshold()) 
-                              ? product.getPrice() * 2.0 
-                              : product.getPrice();
+        double effectivePrice = (product.getStock() <= product.getThreshold())
+                ? product.getPrice() * 2.0
+                : product.getPrice();
 
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label(
@@ -520,7 +523,7 @@ public class CustomerController {
 
         Label header = new Label("Order #" + order.getId());
         header.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         // CHECK RATING STATUS
         boolean carrierRated = orderService.hasCarrierRating(order.getId());
         boolean productsRated = orderService.hasProductRating(order.getId());
@@ -536,9 +539,9 @@ public class CustomerController {
         rateProductsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
         rateProductsBtn.setOnAction(e -> showProductRatingSelection(stage, order, allOrders));
         rateProductsBtn.setDisable(productsRated);
-        
+
         if (carrierRated && productsRated) {
-             header.setText("Order #" + order.getId() + " (Fully Rated)");
+            header.setText("Order #" + order.getId() + " (Fully Rated)");
         }
 
         Button backBtn = new Button("Back");
@@ -717,12 +720,20 @@ public class CustomerController {
             }
         });
 
-        // UPDATE + INFO
+        // UPDATE + PERSIST
         dialog.setResultConverter(button -> {
             if (button == saveButtonType) {
-                currentUser.setAddress(addressField.getText());
-                currentUser.setPhoneNumber(phoneField.getText());
-                showInfo("Profile updated successfully.");
+                try {
+                    currentUser.setAddress(addressField.getText());
+                    currentUser.setPhoneNumber(phoneField.getText());
+
+                    // Persist to Database
+                    userService.updateUser(currentUser);
+
+                    showInfo("Profile updated successfully.");
+                } catch (Exception e) {
+                    showError("Could not update profile: " + e.getMessage());
+                }
             }
             return null;
         });
