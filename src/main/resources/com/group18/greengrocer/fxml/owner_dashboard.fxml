@@ -384,7 +384,7 @@
                         <TextArea fx:id="msgReplyArea" wrapText="true" prefRowCount="4" promptText="Type your reply here..."/>
 
                         <HBox spacing="10" alignment="CENTER_RIGHT">
-                            <Button text="Mark as Read" onAction="#handleMarkAsRead" styleClass="button-secondary"/>
+                            <Button text="End Conversation" onAction="#handleEndConversation" styleClass="button-danger"/>
                             <Button text="Send Reply" onAction="#handleSendReply" styleClass="button-primary"/>
                         </HBox>
                     </VBox>

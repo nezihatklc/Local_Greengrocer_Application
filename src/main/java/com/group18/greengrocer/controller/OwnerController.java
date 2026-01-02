@@ -146,56 +146,67 @@ public class OwnerController {
             usernameLabel.setText("Owner: " + currentUser.getUsername());
         }
 
-        setupTableColumns();
-        
-        // Load initial data for all tabs
-        refreshProductTable();
-        refreshCarrierTable();
-        refreshOrderTable();
-        loadMessages(); // Load messages on startup
+        if (categoryCombo != null) {
+            categoryCombo.getItems().setAll(Category.values());
+        }
 
-        // Listener: Update detail view when a message row is selected
-        if (messageTable != null) {
-            messageTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    fromLabel.setText(newVal.getSenderUsername());
-                    contentArea.setText(newVal.getContent());
-                }
+        // Messages Setup
+        if (messagesTable != null) {
+            msgFromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderName()));
+            msgDateCol.setCellValueFactory(cell -> {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                return new SimpleStringProperty(sdf.format(cell.getValue().getSentAt()));
             });
+            msgContentCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getContent()));
+
+            messagesTable.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldV, newV) -> showMessageDetails(newV));
+            handleRefreshMessages();
+        }
+
+        // Order Table
+        if (ordersTable != null) {
+            orderIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+            orderCustomerCol.setCellValueFactory(
+                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getCustomerId())));
+            orderDateCol
+                    .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getOrderTime().toString()));
+            orderTotalCol.setCellValueFactory(
+                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getTotalCost())));
+            orderStatusCol.setCellValueFactory(cell -> {
+                com.group18.greengrocer.model.Order.Status status = cell.getValue().getStatus();
+                if (status == com.group18.greengrocer.model.Order.Status.WAITING)
+                    return new SimpleStringProperty("Waiting");
+                if (status == com.group18.greengrocer.model.Order.Status.RECEIVED)
+                    return new SimpleStringProperty("Received");
+                return new SimpleStringProperty(status.toString());
+            });
+
+            ordersTable.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldV, newV) -> showOrderDetails(newV));
+        }
+
+        // Bind Buttons to Selection
+        if (addButton != null && updateButton != null && productTable != null) {
+            addButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNotNull());
+            updateButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNull());
+        }
+
+        loadOwnerData();
+        loadCarrierData();
+        handleRefreshReports();
+        handleRefreshOrders();
+
+        // Init Loyalty Fields with current values
+        if (loyaltyMinOrderField != null) {
+            loyaltyMinOrderField.setText(String.valueOf(discountService.getLoyaltyMinOrderCount()));
+        }
+        if (loyaltyRateField != null) {
+            loyaltyRateField.setText(String.valueOf(discountService.getLoyaltyDiscountRate()));
         }
     }
 
-    /**
-     * Configures the columns for all TableViews in the dashboard.
-     */
-    private void setupTableColumns() {
-        // 1. Product Columns
-        idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
-        nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-        categoryCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCategory().toString()));
-        priceCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPrice()));
-        stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
-
-        // 2. Message Columns
-        if (fromCol != null) {
-            fromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderUsername()));
-            dateCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSentAt().toString()));
-            // Show only first 20 chars for preview
-            previewCol.setCellValueFactory(cell -> {
-                String content = cell.getValue().getContent();
-                return new SimpleStringProperty(content.length() > 20 ? content.substring(0, 20) + "..." : content);
-            });
-        }
-    }
-
-    // =============================================================
-    // SECTION: MESSAGE HANDLING LOGIC (Crash-Proof)
-    // =============================================================
-
-    /**
-     * Handles the "Mark as Read" action.
-     * Includes validation to prevent system crash if no message is selected.
-     */
+    // ================= ORDER APPROVAL =================
     @FXML
     private void handleMarkAsRead() {
         // Validation: Check if a message is selected to prevent NullPointerException
@@ -636,7 +647,28 @@ public class OwnerController {
         }
 
         msgSenderField.setText(msg.getSenderName() + " (ID: " + msg.getSenderId() + ")");
-        msgReadArea.setText(msg.getContent());
+
+        // Load Conversation Log
+        java.util.List<Message> conversation = messageService.getConversation(msg.getConversationId());
+        StringBuilder sb = new StringBuilder();
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM HH:mm");
+
+        for (Message m : conversation) {
+            sb.append("[").append(sdf.format(m.getSentAt())).append("] ");
+            sb.append(m.getSenderName()).append(": ");
+            sb.append(m.getContent()).append("\n\n");
+        }
+
+        msgReadArea.setText(sb.toString());
+        msgReadArea.setScrollTop(Double.MAX_VALUE); // Scroll to bottom
+
+        if (msg.getConversationStatus() != null && msg.getConversationStatus().equalsIgnoreCase("CLOSED")) {
+            msgReplyArea.setDisable(true);
+            msgReplyArea.setPromptText("This conversation is CLOSED.");
+        } else {
+            msgReplyArea.setDisable(false);
+            msgReplyArea.setPromptText("Type your reply here...");
+        }
 
         // Auto-mark as read if unread
         if (!msg.isRead()) {
@@ -678,13 +710,10 @@ public class OwnerController {
             if (msgReplyArea != null) msgReplyArea.clear();
             
         } catch (Exception e) {
->>>>>>> 6e070348b5d31ffe8f82250157c5ecfcc98110f8
             e.printStackTrace();
+            AlertUtil.showError("Operation Failed", "Could not mark message as read: " + e.getMessage());
         }
     }
-<<<<<<< HEAD
-}
-=======
 
     @FXML
     private void handleSendReply() {
@@ -703,16 +732,33 @@ public class OwnerController {
         try {
             messageService.replyToMessage(selected.getId(), replyText);
 
-            // Replaced Alert with clearing and status update
             msgReplyArea.clear();
             msgReplyArea.setPromptText("Reply sent successfully!");
 
-            // Refresh table
-            handleRefreshMessages();
+            // Refresh table details to show new message in log
+            showMessageDetails(selected);
 
         } catch (Throwable e) {
             e.printStackTrace();
             AlertUtil.showError("Error", "Failed to send reply: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleEndConversation() {
+        Message selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("No Selection", "Select a conversation to end.");
+            return;
+        }
+
+        try {
+            messageService.closeConversation(selected.getConversationId());
+            AlertUtil.showInfo("Success", "Conversation closed.");
+            handleRefreshMessages(); // Refresh list to update status
+
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to close conversation: " + e.getMessage());
         }
     }
 }

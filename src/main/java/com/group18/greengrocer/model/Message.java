@@ -43,11 +43,19 @@ public class Message {
      * Corresponds to 'is_read'.
      */
     private boolean isRead;
-    
+
     /**
-     * Name of the sender (joined field, not directly in Messages table but useful for UI).
+     * Name of the sender (joined field, not directly in Messages table but useful
+     * for UI).
      */
     private String senderName;
+
+    /**
+     * Default constructor.
+     * Initializes timestamp to current time and isRead to false.
+     */
+    private int conversationId;
+    private String conversationStatus; // For UI display purposes (joined data)
 
     /**
      * Default constructor.
@@ -148,6 +156,22 @@ public class Message {
         this.senderName = senderName;
     }
 
+    public int getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(int conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public String getConversationStatus() {
+        return conversationStatus;
+    }
+
+    public void setConversationStatus(String conversationStatus) {
+        this.conversationStatus = conversationStatus;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -157,6 +181,7 @@ public class Message {
                 ", content='" + content + '\'' +
                 ", sentAt=" + sentAt +
                 ", isRead=" + isRead +
+                ", conversationId=" + conversationId +
                 '}';
     }
 
@@ -168,8 +193,10 @@ public class Message {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Message)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Message))
+            return false;
         Message message = (Message) o;
         return id == message.id;
     }
@@ -182,5 +209,64 @@ public class Message {
     @Override
     public int hashCode() {
         return Integer.hashCode(id);
+    }
+
+    /**
+     * Inner class to represent a Conversation session.
+     */
+    public static class Conversation {
+        private int id;
+        private int customerId;
+        private String status; // OPEN, CLOSED
+        private Timestamp createdAt;
+        private Timestamp closedAt;
+
+        public Conversation() {
+        }
+
+        public Conversation(int customerId, String status) {
+            this.customerId = customerId;
+            this.status = status;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public int getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(int customerId) {
+            this.customerId = customerId;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Timestamp getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(Timestamp createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public Timestamp getClosedAt() {
+            return closedAt;
+        }
+
+        public void setClosedAt(Timestamp closedAt) {
+            this.closedAt = closedAt;
+        }
     }
 }
