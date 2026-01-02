@@ -10,6 +10,7 @@ import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.MessageService;
 import com.group18.greengrocer.service.UserService;
 import com.group18.greengrocer.util.AlertUtil;
+import com.group18.greengrocer.util.ValidatorUtil;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
