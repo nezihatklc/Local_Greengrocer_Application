@@ -943,9 +943,10 @@ public class OwnerController {
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             
-            stage.setScene(new Scene(root));
+            // Use setRoot to preserve the stage properties (like maximization)
+            stage.getScene().setRoot(root);
             
-            // Ensure full screen
+            // Ensure full screen is maintained
             stage.setMaximized(true);
 
             stage.show();
