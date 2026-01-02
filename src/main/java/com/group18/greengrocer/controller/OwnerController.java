@@ -39,8 +39,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.geometry.Insets;
-import com.group18.greengrocer.model.Message;
-import com.group18.greengrocer.service.MessageService;
 
 import java.util.Optional;
 
@@ -48,19 +46,7 @@ import java.util.Optional;
  * OwnerController (Updated for Image Upload)
  */
 public class OwnerController {
-// --- Services ---
-    
-    private final MessageService messageService;
 
-    // --- FXML Fields for Messages ---
-    @FXML private TableView<Message> messageTable; // Tablo
-    @FXML private TableColumn<Message, String> fromCol;
-    @FXML private TableColumn<Message, String> dateCol;
-    @FXML private TableColumn<Message, String> previewCol;
-    
-    @FXML private Label fromLabel;      // Gönderen kişi etiketi
-    @FXML private TextArea contentArea; // Mesaj içeriği
-    @FXML private TextArea replyField;  // Cevap alanı
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
@@ -920,7 +906,7 @@ public class OwnerController {
         }
     }
 
-  /**
+    /**
      * Handles the "Mark as Read" button action.
      * <p>
      * Validates that a message is selected, updates its status in the database,
@@ -929,31 +915,30 @@ public class OwnerController {
      */
     @FXML
     private void handleMarkAsRead() {
-        // 1. Validation: Check if a message is actually selected to prevent NullPointerException
-        Message selected = messageTable.getSelectionModel().getSelectedItem();
-        
+        Message selected = messagesTable.getSelectionModel().getSelectedItem();
+
         if (selected == null) {
             AlertUtil.showWarning("Selection Error", "Please select a message to mark as read.");
-            return; // Stop execution here if nothing is selected
+            return;
         }
 
         try {
-            // 2. Database Update: Call service to update status
-            messageService.markAsRead(selected.getId());
-            
-            // 3. User Feedback: Show success message
+            messageService.markMessageAsRead(selected.getId());
+            selected.setRead(true); // Update UI model
+
             AlertUtil.showInfo("Success", "Message marked as read.");
-            
-            // 4. UI Refresh: Reload the table to reflect the new status (Unread -> Read)
-            loadMessages(); 
-            
-            // 5. Cleanup: Clear the detail view fields
-            fromLabel.setText("");
-            contentArea.clear();
-            replyField.clear();
-            
+
+            handleRefreshMessages();
+
+            // Clear details
+            if (msgSenderField != null)
+                msgSenderField.clear();
+            if (msgReadArea != null)
+                msgReadArea.clear();
+            if (msgReplyArea != null)
+                msgReplyArea.clear();
+
         } catch (Exception e) {
-            // Log the error and show it to the user gracefully
             e.printStackTrace();
             AlertUtil.showError("Operation Failed", "Could not mark message as read: " + e.getMessage());
         }
