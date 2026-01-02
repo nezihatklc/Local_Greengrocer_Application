@@ -128,6 +128,12 @@
                             
                             <Label text="Threshold:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
                             <TextField fx:id="thresholdField" promptText="Low stock alert level" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                            <Label text="Image:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                                <Button text="Upload" onAction="#handleUploadImage"/>
+                                <ImageView fx:id="productImageView" fitWidth="40" fitHeight="40" preserveRatio="true" style="-fx-border-color: lightgray;"/>
+                            </HBox>
                         </GridPane>
 
                         <HBox spacing="10" alignment="CENTER_LEFT">
@@ -206,7 +212,7 @@
                         
                         <Label text="Code:"/>
                         <TextField fx:id="couponCodeField" promptText="e.g. SUMMER2026"/>
-                        
+        
                         <Label text="Discount Amount (TL):"/>
                         <TextField fx:id="couponAmountField" promptText="e.g. 50.0"/>
                         

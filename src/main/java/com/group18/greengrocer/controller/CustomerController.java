@@ -140,22 +140,43 @@ public class CustomerController {
         // SAFE IMAGE LOAD
         // =====================
 
-        try {
-            String imageName = product.getName().toLowerCase() + ".png";
-            var stream = getClass().getResourceAsStream(
-                    "/com/group18/greengrocer/images/products/" + imageName);
+        // =====================
+        // SAFE IMAGE LOAD (BLOB Priority)
+        // =====================
+        Image image = null;
 
-            if (stream != null) {
-                Image image = new Image(stream);
-                ImageView imageView = new ImageView(image);
-                imageView.setFitWidth(120);
-                imageView.setFitHeight(100);
-                imageView.setPreserveRatio(true);
-                imageView.setStyle("-fx-border-color: red;");
-                box.getChildren().add(imageView);
+        // 1. Try DB BLOB
+        if (product.getImage() != null && product.getImage().length > 0) {
+            try {
+                image = new Image(new java.io.ByteArrayInputStream(product.getImage()));
+            } catch (Exception e) {
+                // Ignore corrupt BLOB, fallback
             }
-        } catch (Exception e) {
-            // deliberately ignore
+        }
+
+        // 2. Fallback to Classpath Resource
+        if (image == null) {
+            try {
+                String imageName = product.getName().toLowerCase() + ".png";
+                var stream = getClass().getResourceAsStream(
+                        "/com/group18/greengrocer/images/products/" + imageName);
+
+                if (stream != null) {
+                    image = new Image(stream);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+
+        // 3. Display if found
+        if (image != null) {
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(120);
+            imageView.setFitHeight(100);
+            imageView.setPreserveRatio(true);
+            imageView.setStyle("-fx-border-color: red;");
+            box.getChildren().add(imageView);
         }
 
         Label nameLabel = new Label(product.getName());

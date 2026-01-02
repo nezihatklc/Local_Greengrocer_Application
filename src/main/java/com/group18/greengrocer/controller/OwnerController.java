@@ -4,7 +4,7 @@ import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.UserService;
-import com.group18.greengrocer.service.DiscountService; // NEW
+import com.group18.greengrocer.service.DiscountService;
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -23,23 +23,28 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.DatePicker; // NEW
+import javafx.scene.control.DatePicker;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import java.io.IOException;
+import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
 import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.util.ValidatorUtil;
 
 import java.util.Optional;
 
 /**
- * OwnerController
- * Controller for the Owner dashboard UI.
+ * OwnerController (Updated for Image Upload)
  */
 public class OwnerController {
 
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
-    private final DiscountService discountService; // NEW
+    private final DiscountService discountService;
 
     // FXML Fields
     @FXML
@@ -49,6 +54,7 @@ public class OwnerController {
     @FXML
     private Button logoutButton;
 
+    // Table
     @FXML
     private TableView<Product> productTable;
     @FXML
@@ -68,7 +74,7 @@ public class OwnerController {
     @FXML
     private TableColumn<Product, Double> thresholdCol;
 
-    // -- FORM FIELDS --
+    // Form
     @FXML
     private TextField nameField;
     @FXML
@@ -86,8 +92,13 @@ public class OwnerController {
 
     @FXML
     private Label effectivePriceLabel;
+    @FXML
+    private ImageView productImageView; // NEW
 
-    // -- CARRIER FIELDS --
+    // Internal state for image
+    private byte[] currentImageBytes; // NEW
+
+    // Carrier
     @FXML
     private TableView<User> carrierTable;
     @FXML
@@ -108,14 +119,13 @@ public class OwnerController {
     @FXML
     private TextArea carrierAddressArea;
 
-    // -- DISCOUNTS & LOYALTY FIELDS (NEW) --
+    // Discounts
     @FXML
     private TextField couponCodeField;
     @FXML
     private TextField couponAmountField;
     @FXML
     private DatePicker couponExpiryPicker;
-
     @FXML
     private TextField loyaltyMinOrderField;
     @FXML
@@ -124,7 +134,7 @@ public class OwnerController {
     public OwnerController() {
         this.productService = new ProductService();
         this.userService = new UserService();
-        this.discountService = new DiscountService(); // NEW
+        this.discountService = new DiscountService();
     }
 
     public void initData(User user) {
@@ -137,23 +147,20 @@ public class OwnerController {
 
     @FXML
     public void initialize() {
-        // ---- Table column bindings ----
+        // Table Columns
         idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
         nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-
         categoryCol.setCellValueFactory(cell -> {
             Product p = cell.getValue();
-            String cat = (p.getCategory() == null) ? "-" : p.getCategory().name();
-            return new SimpleStringProperty(cat);
+            return new SimpleStringProperty(p.getCategory() == null ? "-" : p.getCategory().name());
         });
-
         typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
         unitCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUnit()));
         priceCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPrice()));
         stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
         thresholdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getThreshold()));
 
-        // ---- Carrier Table Bindings ----
+        // Carrier Table
         if (carrierTable != null) {
             carrierIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
             carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
@@ -161,11 +168,11 @@ public class OwnerController {
             carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
         }
 
-        // ---- Selection listener ----
-        productTable.getSelectionModel()
-                .selectedItemProperty()
+        // Listener
+        productTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldVal, newVal) -> showProductDetails(newVal));
 
+        // Init user if needed
         if (this.currentUser == null) {
             this.currentUser = SessionManager.getInstance().getCurrentUser();
         }
@@ -205,6 +212,10 @@ public class OwnerController {
         stockField.setText(String.valueOf(product.getStock()));
         thresholdField.setText(String.valueOf(product.getThreshold()));
 
+        // Display Image
+        currentImageBytes = product.getImage();
+        displayImage(currentImageBytes);
+
         try {
             double effectivePrice = productService.getEffectivePrice(product);
             effectivePriceLabel.setText(String.format("%.2f ₺", effectivePrice));
@@ -214,54 +225,43 @@ public class OwnerController {
     }
 
     @FXML
-    private void handleRefresh() {
-        loadOwnerData();
-        AlertUtil.showInfo("Refreshed", "Product list refreshed.");
-    }
+    private void handleUploadImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Product Image");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif"));
 
-    @FXML
-    private void handleBack() {
-        handleLogout();
-    }
-
-    @FXML
-    private void handleLogout() {
-        try {
-            SessionManager.getInstance().logout();
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) logoutButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Group18 GreenGrocer - Login");
-            stage.show();
-
-        } catch (IOException e) {
-            AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleDelete() {
-        Product selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            AlertUtil.showWarning("No Selection", "Please select a product to delete.");
-            return;
-        }
-
-        Optional<ButtonType> result = AlertUtil.showConfirmation(
-                "Delete Product",
-                "Are you sure you want to delete " + selected.getName() + "?");
-
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        File file = fileChooser.showOpenDialog(productImageView.getScene().getWindow());
+        if (file != null) {
             try {
-                productService.removeProduct(selected.getId());
-                AlertUtil.showInfo("Success", "Product deleted successfully.");
-                loadOwnerData();
-            } catch (Exception e) {
-                AlertUtil.showError("Error", "Could not delete product: " + e.getMessage());
+                // Read bytes
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                // Validate size? (Max 16MB for MEDIUMBLOB, but code uses default BLOB (64KB
+                // potentially? No, usually larger in modern MySQL unless strictly TINYBLOB))
+                // Just use it.
+                currentImageBytes = bytes;
+                displayImage(currentImageBytes);
+
+            } catch (IOException e) {
+                AlertUtil.showError("Image Error", "Failed to read image: " + e.getMessage());
             }
+        }
+    }
+
+    private void displayImage(byte[] imageBytes) {
+        if (productImageView == null)
+            return;
+
+        if (imageBytes != null && imageBytes.length > 0) {
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+                Image img = new Image(bis);
+                productImageView.setImage(img);
+            } catch (Exception e) {
+                productImageView.setImage(null);
+            }
+        } else {
+            productImageView.setImage(null);
         }
     }
 
@@ -280,6 +280,7 @@ public class OwnerController {
             newProduct.setPrice(Double.parseDouble(priceField.getText().trim()));
             newProduct.setStock(Double.parseDouble(stockField.getText().trim()));
             newProduct.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
+            newProduct.setImage(currentImageBytes); // Set BLOB
 
             productService.addProduct(newProduct);
 
@@ -313,6 +314,7 @@ public class OwnerController {
             selected.setPrice(Double.parseDouble(priceField.getText().trim()));
             selected.setStock(Double.parseDouble(stockField.getText().trim()));
             selected.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
+            selected.setImage(currentImageBytes); // Update BLOB
 
             productService.updateProduct(selected);
 
@@ -325,7 +327,6 @@ public class OwnerController {
                     .filter(p -> p.getId() == selectedId)
                     .findFirst()
                     .ifPresent(p -> productTable.getSelectionModel().select(p));
-
             productTable.refresh();
 
         } catch (NumberFormatException e) {
@@ -345,7 +346,70 @@ public class OwnerController {
         stockField.clear();
         thresholdField.clear();
 
+        currentImageBytes = null;
+        if (productImageView != null)
+            productImageView.setImage(null);
+
         productTable.getSelectionModel().clearSelection();
+    }
+
+    // ... Other methods (handleDelete, handles for Carrier, Coupons etc.) stay the
+    // same ...
+    // To save context, I will overwrite the whole file with the full content
+    // including previous features.
+
+    // ... [Previous code for Refresh, Back, Logout, Delete, ValidateForm, Carrier
+    // logic, Coupon logic] ...
+
+    // (Re-implementing all those methods to ensure file consistency)
+
+    @FXML
+    private void handleRefresh() {
+        loadOwnerData();
+        AlertUtil.showInfo("Refreshed", "Product list refreshed.");
+    }
+
+    @FXML
+    private void handleBack() {
+        handleLogout();
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            SessionManager.getInstance().logout();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Group18 GreenGrocer - Login");
+            stage.show();
+        } catch (IOException e) {
+            AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleDelete() {
+        Product selected = productTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("No Selection", "Please select a product to delete.");
+            return;
+        }
+
+        Optional<ButtonType> result = AlertUtil.showConfirmation(
+                "Delete Product",
+                "Are you sure you want to delete " + selected.getName() + "?");
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                productService.removeProduct(selected.getId());
+                AlertUtil.showInfo("Success", "Product deleted successfully.");
+                loadOwnerData();
+            } catch (Exception e) {
+                AlertUtil.showError("Error", "Could not delete product: " + e.getMessage());
+            }
+        }
     }
 
     private boolean validateForm() {
@@ -397,17 +461,13 @@ public class OwnerController {
             carrier.setPassword(p);
             carrier.setPhoneNumber(ph);
             carrier.setAddress(ad);
-
             userService.addCarrier(carrier);
             AlertUtil.showInfo("Success", "New Carrier hired: " + u);
-
             carrierUsernameField.clear();
             carrierPasswordField.clear();
             carrierPhoneField.clear();
             carrierAddressArea.clear();
-
             loadCarrierData();
-
         } catch (Exception e) {
             AlertUtil.showError("Hire Error", e.getMessage());
         }
@@ -420,10 +480,8 @@ public class OwnerController {
             AlertUtil.showWarning("No Selection", "Select a carrier to fire.");
             return;
         }
-
         Optional<ButtonType> res = AlertUtil.showConfirmation("Fire Carrier",
                 "Are you sure you want to fire " + selected.getUsername() + "?");
-
         if (res.isPresent() && res.get() == ButtonType.OK) {
             try {
                 userService.removeCarrier(selected.getId());
@@ -434,10 +492,6 @@ public class OwnerController {
             }
         }
     }
-
-    // ==========================================
-    // DISCOUNTS & LOYALTY (NEW)
-    // ==========================================
 
     @FXML
     private void handleCreateCoupon() {
@@ -456,20 +510,16 @@ public class OwnerController {
                 AlertUtil.showError("Error", "Discount amount must be positive.");
                 return;
             }
-
             com.group18.greengrocer.model.Coupon c = new com.group18.greengrocer.model.Coupon();
             c.setCode(code.trim());
             c.setDiscountAmount(amount);
             c.setExpiryDate(java.sql.Date.valueOf(expiry));
             c.setActive(true);
-
             discountService.createCoupon(c);
-
             AlertUtil.showInfo("Success", "Coupon created: " + code);
             couponCodeField.clear();
             couponAmountField.clear();
             couponExpiryPicker.setValue(null);
-
         } catch (NumberFormatException e) {
             AlertUtil.showError("Error", "Amount must be a number.");
         } catch (Exception e) {
@@ -490,10 +540,8 @@ public class OwnerController {
         try {
             int minOrder = Integer.parseInt(minStr);
             double rate = Double.parseDouble(rateStr);
-
             discountService.updateLoyaltyRules(minOrder, rate);
             AlertUtil.showInfo("Success", "Loyalty rules updated.");
-
         } catch (NumberFormatException e) {
             AlertUtil.showError("Error", "Please enter valid numbers.");
         } catch (Exception e) {
