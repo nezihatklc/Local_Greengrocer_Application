@@ -83,6 +83,10 @@ public class UserService {
             throw new IllegalArgumentException("Address cannot be empty.");
         if (phone.isEmpty())
             throw new IllegalArgumentException("Phone number cannot be empty.");
+
+        if (!ValidatorUtil.isValidName(username))
+            throw new IllegalArgumentException("Name must contain only letters and spaces.");
+
         if (!ValidatorUtil.isValidPhoneNumber(phone))
             throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 
@@ -185,6 +189,10 @@ public class UserService {
             throw new IllegalArgumentException("Address cannot be empty.");
         if (phone.isEmpty())
             throw new IllegalArgumentException("Phone number cannot be empty.");
+
+        if (!ValidatorUtil.isValidName(username))
+            throw new IllegalArgumentException("Name must contain only letters and spaces.");
+
         if (!ValidatorUtil.isValidPhoneNumber(phone))
             throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 

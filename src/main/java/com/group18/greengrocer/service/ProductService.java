@@ -252,6 +252,9 @@ public class ProductService {
         if (ValidatorUtil.isEmpty(product.getName())) {
             throw new IllegalArgumentException("Product name cannot be empty.");
         }
+        if (!ValidatorUtil.isValidName(product.getName())) {
+            throw new IllegalArgumentException("Product name must contain only letters and spaces.");
+        }
 
         if (product.getCategory() == null) {
             throw new IllegalArgumentException("Product category is required.");

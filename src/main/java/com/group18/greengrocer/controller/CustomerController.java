@@ -808,8 +808,8 @@ public class CustomerController {
         saveButton.addEventFilter(ActionEvent.ACTION, event -> {
             String phone = phoneField.getText();
 
-            if (phone.length() != 10 && phone.length() != 11) {
-                showError("Phone number must be 10 or 11 digits.");
+            if (!ValidatorUtil.isValidPhoneNumber(phone)) {
+                showError("Invalid phone number format (10-13 digits).");
                 event.consume();
             }
         });

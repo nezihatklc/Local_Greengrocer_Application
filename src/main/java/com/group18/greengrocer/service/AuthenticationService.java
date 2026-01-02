@@ -60,6 +60,11 @@ public class AuthenticationService {
             throw new ValidationException("Username cannot be empty.");
         }
 
+        // Rule: Name validation (Letters only)
+        if (!ValidatorUtil.isValidName(user.getUsername())) {
+            throw new ValidationException("Name must contain only letters and spaces.");
+        }
+
         // Rule: Username must be unique
         if (!isUsernameUnique(user.getUsername())) {
             throw new ValidationException("Username is already taken: " + user.getUsername());
