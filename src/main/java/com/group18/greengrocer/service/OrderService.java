@@ -619,4 +619,48 @@ public class OrderService {
         return map;
     }
 
+    /**
+     * Calculates total revenue from all non-cancelled orders.
+     */
+    public double getTotalRevenue() {
+        return orderDAO.findAllOrders().stream()
+                .filter(o -> o.getStatus() != Order.Status.CANCELLED)
+                .mapToDouble(Order::getTotalCost)
+                .sum();
+    }
+
+    /**
+     * Counts total non-cancelled orders.
+     */
+    public int getTotalOrdersCount() {
+        return (int) orderDAO.findAllOrders().stream()
+                .filter(o -> o.getStatus() != Order.Status.CANCELLED)
+                .count();
+    }
+
+    /**
+     * Counts unique customers who have placed at least one non-cancelled order.
+     */
+    public int getActiveCustomersCount() {
+        return (int) orderDAO.findAllOrders().stream()
+                .filter(o -> o.getStatus() != Order.Status.CANCELLED)
+                .map(Order::getCustomerId)
+                .distinct()
+                .count();
+    }
+
+    /**
+     * Calculates order status distribution.
+     */
+    public java.util.Map<String, Integer> getOrderStatusDistribution() {
+        List<Order> allOrders = orderDAO.findAllOrders();
+        java.util.Map<String, Integer> map = new java.util.HashMap<>();
+        
+        for (Order o : allOrders) {
+            String status = o.getStatus().toString();
+            map.put(status, map.getOrDefault(status, 0) + 1);
+        }
+        return map;
+    }
+
 }

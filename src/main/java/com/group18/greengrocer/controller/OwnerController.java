@@ -765,9 +765,21 @@ public class OwnerController {
     @FXML
     private javafx.scene.chart.PieChart categoryPieChart;
     @FXML
+    private javafx.scene.chart.PieChart orderStatusChart; // NEW
+    @FXML
     private javafx.scene.chart.BarChart<String, Number> productSalesChart;
     @FXML
     private javafx.scene.chart.LineChart<String, Number> revenueChart;
+
+    // Summary Labels
+    @FXML
+    private Label totalRevenueLabel;
+    @FXML
+    private Label totalOrdersLabel;
+    @FXML
+    private Label activeCustomersLabel;
+    @FXML
+    private Label avgOrderValueLabel;
 
     @FXML
     private void handleRefreshReports() {
@@ -776,24 +788,55 @@ public class OwnerController {
 
         com.group18.greengrocer.service.OrderService orderService = new com.group18.greengrocer.service.OrderService();
 
-        // 1. Pie Chart
+        // 0. Summary Cards
+        if (totalRevenueLabel != null) {
+            double rev = orderService.getTotalRevenue();
+            totalRevenueLabel.setText(String.format("%.2f TL", rev));
+        }
+        if (totalOrdersLabel != null) {
+            totalOrdersLabel.setText(String.valueOf(orderService.getTotalOrdersCount()));
+        }
+        if (activeCustomersLabel != null) {
+            activeCustomersLabel.setText(String.valueOf(orderService.getActiveCustomersCount()));
+        }
+        if (avgOrderValueLabel != null) {
+            double rev = orderService.getTotalRevenue();
+            int count = orderService.getTotalOrdersCount();
+            double avg = (count > 0) ? rev / count : 0.0;
+            avgOrderValueLabel.setText(String.format("%.2f TL", avg));
+        }
+
+        // 1. Pie Chart (Categories)
         java.util.Map<String, Double> catData = orderService.getSalesByCategory();
         categoryPieChart.getData().clear();
         catData.forEach((cat, val) -> {
             categoryPieChart.getData().add(new javafx.scene.chart.PieChart.Data(cat, val));
         });
 
-        // 2. Bar Chart
+        // 1.5 Pie Chart (Order Status)
+        if (orderStatusChart != null) {
+            java.util.Map<String, Integer> statusData = orderService.getOrderStatusDistribution();
+            orderStatusChart.getData().clear();
+            statusData.forEach((stat, val) -> {
+                orderStatusChart.getData().add(new javafx.scene.chart.PieChart.Data(stat, val));
+            });
+        }
+
+        // 2. Bar Chart (Top Products - Sorted & Limited)
         java.util.Map<String, Double> prodData = orderService.getRevenueByProduct();
         productSalesChart.getData().clear();
         javafx.scene.chart.XYChart.Series<String, Number> seriesP = new javafx.scene.chart.XYChart.Series<>();
         seriesP.setName("Revenue");
-        prodData.forEach((prod, val) -> {
-            seriesP.getData().add(new javafx.scene.chart.XYChart.Data<>(prod, val));
-        });
+        
+        // Sort descending and take top 10
+        prodData.entrySet().stream()
+            .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+            .limit(10)
+            .forEach(e -> seriesP.getData().add(new javafx.scene.chart.XYChart.Data<>(e.getKey(), e.getValue())));
+            
         productSalesChart.getData().add(seriesP);
 
-        // 3. Line Chart
+        // 3. Line Chart (Time)
         java.util.Map<String, Double> timeData = orderService.getRevenueOverTime();
         revenueChart.getData().clear();
         javafx.scene.chart.XYChart.Series<String, Number> seriesT = new javafx.scene.chart.XYChart.Series<>();
