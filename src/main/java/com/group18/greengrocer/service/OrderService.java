@@ -352,13 +352,8 @@ public class OrderService {
             throw new IllegalStateException("You cannot cancel this order.");
         }
 
-        // STATUS CHECK
-        if (order.getStatus() == Order.Status.DELIVERED) {
-            throw new IllegalStateException("Delivered orders cannot be cancelled.");
-        }
-
-        if (order.getStatus() == Order.Status.CANCELLED) {
-            throw new IllegalStateException("Order is already cancelled.");
+        if (order.getStatus() != Order.Status.WAITING) {
+            throw new IllegalStateException("You cannot cancel an order that has been approved or is being prepared.");
         }
 
         // CANCEL ORDER

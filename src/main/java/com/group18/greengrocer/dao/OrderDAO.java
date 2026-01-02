@@ -205,9 +205,14 @@ public class OrderDAO {
      * @return A list of orders associated with the carrier.
      */
     // ASSIGNED TO: Carrier (Work History)
+    // ASSIGNED TO: Carrier (Work History)
     public List<Order> findOrdersByCarrierId(int carrierId) {
         List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM OrderInfo WHERE carrier_id = ? ORDER BY ordertime DESC";
+        // JOIN to get rating info
+        String sql = "SELECT O.*, CR.rating, CR.comment " + 
+                     "FROM OrderInfo O " + 
+                     "LEFT JOIN CarrierRatings CR ON O.id = CR.order_id " +
+                     "WHERE O.carrier_id = ? ORDER BY O.ordertime DESC";
 
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -216,6 +221,14 @@ public class OrderDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Order order = mapOrder(rs);
+                    
+                    // Manually populate rating fields from the joined columns
+                    int r = rs.getInt("rating");
+                    if (!rs.wasNull()) {
+                        order.setRating(r);
+                        order.setReview(rs.getString("comment"));
+                    }
+
                     loadOrderItems(order, conn);
                     orders.add(order);
                 }
@@ -290,7 +303,7 @@ public class OrderDAO {
     // ASSIGNED TO: Owner
     public boolean approveOrder(int orderId) {
         // Allow approving 'WAITING' (new) or legacy orders
-        String sql = "UPDATE OrderInfo SET status = 'RECEIVED' WHERE id = ? AND (status = 'WAITING' OR status = 'RECEIVED')";
+        String sql = "UPDATE OrderInfo SET status = 'RECEIVED' WHERE id = ? AND (status = 'WAITING' OR status = 'RECEIVED' OR status = 'AVAILABLE')";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -411,7 +424,7 @@ public class OrderDAO {
      * @return true if successful.
      */
     public boolean dismissOrder(int orderId) {
-        String sql = "UPDATE OrderInfo SET status = 'COMPLETED' WHERE id = ? AND status = 'DELIVERED'";
+        String sql = "UPDATE OrderInfo SET status = 'COMPLETED' WHERE id = ?";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
