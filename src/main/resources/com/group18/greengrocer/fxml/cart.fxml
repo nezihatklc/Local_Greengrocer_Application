@@ -11,6 +11,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -45,21 +48,31 @@
                      </columnResizePolicy>
                   </TableView>
                   
-                  <!-- DISCOUNTS & ACTIONS SECTION -->
-                  <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="card" style="-fx-padding: 15;">
-                      <children>
-                          <VBox spacing="5">
-                              <Label text="Loyalty Program" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
-                              <Label fx:id="loyaltyLabel" text="Status: Checking..." textFill="#2E7D32" style="-fx-font-weight: bold;"/>
-                          </VBox>
-                          
-                          <Region HBox.hgrow="ALWAYS"/>
-                          
-                          <Label text="Have a Coupon?" styleClass="label"/>
-                          <TextField fx:id="couponField" promptText="Enter Code" prefWidth="150" />
-                          <Button text="Apply" onAction="#handleApplyCoupon" styleClass="button-secondary"/>
-                      </children>
-                  </HBox>
+                   <!-- DISCOUNTS SECTION: SPLIT INTO TWO -->
+                   <HBox spacing="20.0" styleClass="card" style="-fx-padding: 20;">
+                       <children>
+                           <!-- LEFT: LOYALTY -->
+                           <VBox spacing="10" HBox.hgrow="ALWAYS">
+                               <Label text="Loyalty Program Progress" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32; -fx-font-size: 14px;"/>
+                               <HBox alignment="CENTER_LEFT" spacing="10">
+                                   <ProgressBar fx:id="loyaltyProgressBar" prefWidth="250" progress="0.0" style="-fx-accent: #2E7D32;"/>
+                                   <Label fx:id="loyaltyStatusLabel" text="0/10 Orders" style="-fx-font-weight: bold;"/>
+                               </HBox>
+                               <Label fx:id="loyaltyTierLabel" text="Next Tier: 5 orders for 5% off" style="-fx-font-size: 11px; -fx-text-fill: #546E7A;"/>
+                           </VBox>
+                           
+                           <Separator orientation="VERTICAL" />
+                           
+                           <!-- RIGHT: COUPON -->
+                           <VBox spacing="10" prefWidth="300">
+                               <Label text="Have a Coupon?" style="-fx-font-weight: bold; -fx-text-fill: #546E7A; -fx-font-size: 14px;"/>
+                               <HBox spacing="10" alignment="CENTER_LEFT">
+                                   <TextField fx:id="couponField" promptText="Enter promo code" HBox.hgrow="ALWAYS" />
+                                   <Button text="Apply" onAction="#handleApplyCoupon" styleClass="button-secondary" minWidth="80"/>
+                               </HBox>
+                           </VBox>
+                       </children>
+                   </HBox>
 
                   <!-- TOTAL & CHECKOUT -->
                   <HBox alignment="CENTER_RIGHT" spacing="20.0">

@@ -45,7 +45,13 @@ public class CartController {
     private Label totalPriceLabel;
 
     @FXML
-    private Label loyaltyLabel; // NEW
+    private ProgressBar loyaltyProgressBar;
+
+    @FXML
+    private Label loyaltyStatusLabel;
+
+    @FXML
+    private Label loyaltyTierLabel;
 
     @FXML
     private TextField couponField; // NEW
@@ -99,12 +105,14 @@ public class CartController {
 
         // Initialize Time Combos
         ObservableList<Integer> hours = FXCollections.observableArrayList();
-        for (int i = 0; i < 24; i++) hours.add(i);
+        for (int i = 0; i < 24; i++)
+            hours.add(i);
         deliveryHourCombo.setItems(hours);
         deliveryHourCombo.getSelectionModel().select(Integer.valueOf(9)); // Default 9 AM
 
         ObservableList<Integer> minutes = FXCollections.observableArrayList();
-        for (int i = 0; i < 60; i += 15) minutes.add(i);
+        for (int i = 0; i < 60; i += 15)
+            minutes.add(i);
         deliveryMinuteCombo.setItems(minutes);
         deliveryMinuteCombo.getSelectionModel().selectFirst();
     }
@@ -212,19 +220,19 @@ public class CartController {
         // Check strict past (Date + Time)
         java.time.LocalDateTime requestedDateTime = deliveryDate.atTime(hour, minute);
         if (requestedDateTime.isBefore(java.time.LocalDateTime.now())) {
-             showAlert("Error", "Delivery time cannot be in the past.");
-             return;
+            showAlert("Error", "Delivery time cannot be in the past.");
+            return;
         }
 
         if (deliveryDate.isAfter(LocalDate.now().plusDays(Role.OWNER.equals(currentUser.getRole()) ? 30 : 2))) {
-             // For regular user, 48 hours constraint from original code?
-             // Original: isAfter(LocalDate.now().plusDays(2))
-             // Keeping original logic for consistency unless I see User Type check elsewhere.
-             // Actually original code had hardcoded plusDays(2). Let's stick to it.
-             showAlert("Error", "Delivery must be within 48 hours for standard shipping.");
-             return;
+            // For regular user, 48 hours constraint from original code?
+            // Original: isAfter(LocalDate.now().plusDays(2))
+            // Keeping original logic for consistency unless I see User Type check
+            // elsewhere.
+            // Actually original code had hardcoded plusDays(2). Let's stick to it.
+            showAlert("Error", "Delivery must be within 48 hours for standard shipping.");
+            return;
         }
-
 
         // CONFIRMATION DIALOG
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -270,13 +278,22 @@ public class CartController {
         double finalPrice = discountService.calculateFinalPrice(cartOrder);
 
         // Loyalty Check
-        double loyaltyPercent = discountService.getLoyaltyDiscount(currentUser.getId());
-        if (loyaltyPercent > 0) {
-            loyaltyLabel.setText(String.format("Loyalty Active (%d+ orders): %.0f%% off",
-                    Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT, loyaltyPercent));
+        int completed = discountService.getCompletedOrderCount(currentUser.getId());
+
+        // Progress bar (max 10 orders for full tier)
+        loyaltyProgressBar.setProgress(Math.min(1.0, completed / 10.0));
+        loyaltyStatusLabel.setText(completed + " / 10 Orders");
+
+        if (completed >= 10) {
+            loyaltyTierLabel.setText("Loyalty Active: Tier 2 (10+ orders) - 15% discount applied!");
+            loyaltyTierLabel.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+        } else if (completed >= 5) {
+            loyaltyTierLabel.setText("Loyalty Active: Tier 1 (5+ orders) - 5% discount applied! (Need "
+                    + (10 - completed) + " more for 15%)");
+            loyaltyTierLabel.setStyle("-fx-text-fill: #2E7D32;");
         } else {
-            loyaltyLabel.setText(String.format("Loyalty: None (Need %d+ completed orders)",
-                    Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT));
+            loyaltyTierLabel.setText("Next Tier: " + (5 - completed) + " more orders for 5% discount.");
+            loyaltyTierLabel.setStyle("-fx-text-fill: #546E7A;");
         }
 
         totalPriceLabel.setText(

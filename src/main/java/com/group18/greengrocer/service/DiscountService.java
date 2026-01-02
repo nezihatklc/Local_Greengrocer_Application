@@ -27,9 +27,9 @@ public class DiscountService {
     private final CouponDAO couponDAO;
     private final OrderDAO orderDAO;
 
-    // Owner-configurable loyalty rule (in-memory)
-    private int loyaltyMinOrderCount = Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT;
-    private double loyaltyDiscountRate = Constants.DEFAULT_LOYALTY_DISCOUNT_RATE; // percent (e.g., 10.0)
+    // Owner-configurable loyalty rule (shared across instances)
+    private static int loyaltyMinOrderCount = Constants.DEFAULT_LOYALTY_MIN_ORDER_COUNT;
+    private static double loyaltyDiscountRate = Constants.DEFAULT_LOYALTY_DISCOUNT_RATE; // percent (e.g., 10.0)
 
     public DiscountService() {
         this.couponDAO = new CouponDAO();
@@ -160,24 +160,32 @@ public class DiscountService {
 
     /**
      * Loyalty discount percent based on user's past COMPLETED orders.
+     * Tier 1: 5+ orders -> 5%
+     * Tier 2: 10+ orders -> 15%
      * 
-     * @return percent (e.g., 10.0 for %10)
+     * @return percent (e.g., 5.0 or 15.0)
      */
     public double getLoyaltyDiscount(int userId) {
+        int completed = getCompletedOrderCount(userId);
+
+        if (completed >= 10)
+            return 15.0;
+        if (completed >= 5)
+            return 5.0;
+        return 0.0;
+    }
+
+    public int getCompletedOrderCount(int userId) {
         if (userId <= 0)
-            return 0.0;
-
-        // DAO already exists: findOrdersByCustomerId
+            return 0;
         List<Order> orders = orderDAO.findOrdersByCustomerId(userId);
-
         int completed = 0;
         for (Order o : orders) {
-            if (o != null && o.getStatus() == Order.Status.DELIVERED) {
+            if (o != null && (o.getStatus() == Order.Status.DELIVERED || o.getStatus() == Order.Status.COMPLETED)) {
                 completed++;
             }
         }
-
-        return (completed >= loyaltyMinOrderCount) ? loyaltyDiscountRate : 0.0;
+        return completed;
     }
 
     /**
@@ -189,8 +197,16 @@ public class DiscountService {
         if (discountRate <= 0)
             throw new IllegalArgumentException("discountRate must be > 0.");
 
-        this.loyaltyMinOrderCount = minOrderCount;
-        this.loyaltyDiscountRate = discountRate;
+        DiscountService.loyaltyMinOrderCount = minOrderCount;
+        DiscountService.loyaltyDiscountRate = discountRate;
+    }
+
+    public int getLoyaltyMinOrderCount() {
+        return loyaltyMinOrderCount;
+    }
+
+    public double getLoyaltyDiscountRate() {
+        return loyaltyDiscountRate;
     }
 
     // -------------------------

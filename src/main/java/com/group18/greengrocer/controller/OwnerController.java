@@ -282,6 +282,14 @@ public class OwnerController {
         loadCarrierData();
         handleRefreshReports();
         handleRefreshOrders();
+
+        // Init Loyalty Fields with current values
+        if (loyaltyMinOrderField != null) {
+            loyaltyMinOrderField.setText(String.valueOf(discountService.getLoyaltyMinOrderCount()));
+        }
+        if (loyaltyRateField != null) {
+            loyaltyRateField.setText(String.valueOf(discountService.getLoyaltyDiscountRate()));
+        }
     }
 
     // ================= ORDER APPROVAL =================
