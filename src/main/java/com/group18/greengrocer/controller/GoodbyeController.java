@@ -39,9 +39,8 @@ public class GoodbyeController {
             Parent root = FXMLLoader.load(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             if (rootPane.getScene() != null) {
                 Stage stage = (Stage) rootPane.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.centerOnScreen();
+                stage.getScene().setRoot(root);
+                stage.setMaximized(true);
                 stage.setTitle("Group18 GreenGrocer - Login");
             }
         } catch (IOException e) {

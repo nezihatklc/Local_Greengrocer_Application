@@ -394,6 +394,7 @@ public class CustomerController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Your Cart");
+            stage.setMaximized(true);
             stage.showAndWait();
 
             // 1. Refresh cart count (in case items removed)
@@ -444,6 +445,7 @@ public class CustomerController {
             Stage stage = new Stage();
             stage.setTitle("Order History");
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.showAndWait();
 
             // Re-load products to reflect stock changes if an order was cancelled
@@ -511,6 +513,7 @@ public class CustomerController {
         root.getChildren().addAll(header, new Label("Which order do you want to rate?"), orderBox, new Separator(),
                 nextBtn, backBtn);
         stage.setScene(new Scene(root));
+        stage.setMaximized(true);
         stage.show();
     }
 
@@ -750,7 +753,7 @@ public class CustomerController {
             Parent root = FXMLLoader.load(
                     getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Stage stage = (Stage) cartButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.getScene().setRoot(root);
             stage.setTitle("Group18 GreenGrocer - Login");
             stage.setMaximized(true);
             stage.show();
@@ -856,6 +859,7 @@ public class CustomerController {
 
         root.getChildren().addAll(new Label("Chat History:"), chatList, bottom);
         stage.setScene(new Scene(root));
+        stage.setMaximized(true);
         stage.show();
 
         // Initial Load

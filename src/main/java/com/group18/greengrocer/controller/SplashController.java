@@ -165,8 +165,8 @@ public class SplashController {
                         // Sadece sahne varsa işlem yap (Unit test vs. durumu için)
                         if (rootPane != null && rootPane.getScene() != null) {
                                 Stage stage = (Stage) rootPane.getScene().getWindow();
-                                stage.setScene(new Scene(root));
-                                stage.centerOnScreen();
+                                stage.getScene().setRoot(root);
+                                stage.setMaximized(true);
                         }
                 } catch (IOException e) {
                         e.printStackTrace();

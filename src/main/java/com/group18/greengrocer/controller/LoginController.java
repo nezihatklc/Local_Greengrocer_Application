@@ -80,6 +80,7 @@ public class LoginController {
             Parent root = FXMLLoader.load(getClass().getResource("/com/group18/greengrocer/fxml/register.fxml"));
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.getScene().setRoot(root);
+            stage.setMaximized(true);
         } catch (IOException e) {
             e.printStackTrace();
             AlertUtil.showError("Navigation Error", "Could not load registration screen: " + e.getMessage());

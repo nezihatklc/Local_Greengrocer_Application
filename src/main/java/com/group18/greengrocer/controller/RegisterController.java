@@ -68,6 +68,7 @@ public class RegisterController {
             // But here handleRegister/Back are triggered by buttons.
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.getScene().setRoot(root);
+            stage.setMaximized(true);
         } catch (IOException e) {
             e.printStackTrace();
             AlertUtil.showError("Navigation Error", "Could not load login screen: " + e.getMessage());

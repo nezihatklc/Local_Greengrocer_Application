@@ -318,7 +318,7 @@ public class CarrierController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.getScene().setRoot(root);
             stage.setTitle("Group18 GreenGrocer - Login");
             stage.show();
             stage.setMaximized(true);
