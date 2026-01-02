@@ -168,6 +168,7 @@ public class ProductDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Database Error: " + e.getMessage());
         }
         return false;
     }

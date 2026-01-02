@@ -101,6 +101,10 @@ public class OwnerController {
     private Label effectivePriceLabel;
     @FXML
     private ImageView productImageView; // NEW
+    @FXML
+    private Button addButton;
+    @FXML
+    private Button updateButton;
 
     // Internal state for image
     private byte[] currentImageBytes; // NEW
@@ -200,7 +204,12 @@ public class OwnerController {
         });
         typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
         unitCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUnit()));
-        priceCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPrice()));
+        priceCol.setCellValueFactory(cell -> {
+            Product p = cell.getValue();
+            // Use effective price logic (doubled if stock <= threshold)
+            double effective = (p.getStock() <= p.getThreshold()) ? p.getPrice() * 2.0 : p.getPrice();
+            return new SimpleObjectProperty<>(effective);
+        });
         stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
         thresholdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getThreshold()));
 
@@ -256,6 +265,12 @@ public class OwnerController {
 
             ordersTable.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldV, newV) -> showOrderDetails(newV));
+        }
+
+        // Bind Buttons to Selection
+        if (addButton != null && updateButton != null && productTable != null) {
+            addButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNotNull());
+            updateButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNull());
         }
 
         loadOwnerData();
@@ -512,8 +527,10 @@ public class OwnerController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
+            boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
+            stage.setMaximized(wasMaximized);
             stage.show();
         } catch (IOException e) {
             AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());

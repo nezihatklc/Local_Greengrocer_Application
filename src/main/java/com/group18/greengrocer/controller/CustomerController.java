@@ -276,9 +276,14 @@ public class CustomerController {
             box.getChildren().add(imageView);
         }
 
+        // Calculate effective price (Double if stock <= threshold)
+        double effectivePrice = (product.getStock() <= product.getThreshold()) 
+                              ? product.getPrice() * 2.0 
+                              : product.getPrice();
+
         Label nameLabel = new Label(product.getName());
         Label priceLabel = new Label(
-                "Price: " + product.getPrice() + " ₺ / " + product.getUnit());
+                "Price: " + String.format("%.2f", effectivePrice) + " ₺ / " + product.getUnit());
         Label stockLabel = new Label("Stock: " + product.getStock());
 
         // AMOUNT INPUT
@@ -498,16 +503,26 @@ public class CustomerController {
 
         Label header = new Label("Order #" + order.getId());
         header.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        
+        // CHECK RATING STATUS
+        boolean carrierRated = orderService.hasCarrierRating(order.getId());
+        boolean productsRated = orderService.hasProductRating(order.getId());
 
-        Button rateCarrierBtn = new Button("Rate Carrier");
+        Button rateCarrierBtn = new Button(carrierRated ? "Rate Carrier (Done)" : "Rate Carrier");
         rateCarrierBtn.setMaxWidth(Double.MAX_VALUE);
         rateCarrierBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
         rateCarrierBtn.setOnAction(e -> showCarrierRatingForm(stage, order, allOrders));
+        rateCarrierBtn.setDisable(carrierRated);
 
-        Button rateProductsBtn = new Button("Rate Products");
+        Button rateProductsBtn = new Button(productsRated ? "Rate Products (Done)" : "Rate Products");
         rateProductsBtn.setMaxWidth(Double.MAX_VALUE);
         rateProductsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
         rateProductsBtn.setOnAction(e -> showProductRatingSelection(stage, order, allOrders));
+        rateProductsBtn.setDisable(productsRated);
+        
+        if (carrierRated && productsRated) {
+             header.setText("Order #" + order.getId() + " (Fully Rated)");
+        }
 
         Button backBtn = new Button("Back");
         backBtn.setMaxWidth(Double.MAX_VALUE);
@@ -615,7 +630,7 @@ public class CustomerController {
             }
             int rating = (int) group.getSelectedToggle().getUserData();
             try {
-                orderService.rateProduct(currentUser.getId(), item.getProduct().getId(), rating);
+                orderService.rateProduct(order.getId(), currentUser.getId(), item.getProduct().getId(), rating);
                 AlertUtil.showInfo("Success", "Product rated!");
                 // Optionally reset form
                 group.selectToggle(null);
@@ -707,8 +722,10 @@ public class CustomerController {
             Parent root = FXMLLoader.load(
                     getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
             Stage stage = (Stage) cartButton.getScene().getWindow();
+            boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
             stage.setTitle("Group18 GreenGrocer - Login");
+            stage.setMaximized(wasMaximized);
         } catch (IOException e) {
             showError("Could not go back to login: " + e.getMessage());
         }

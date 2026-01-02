@@ -149,8 +149,8 @@ public class ProductService {
     public void addProduct(Product product) {
         validateProductForUpsert(product, false);
 
-        boolean ok = productDAO.insert(product);
-        if (!ok) throw new IllegalStateException("Failed to add product.");
+        productDAO.insert(product);
+        // Exception will be thrown if failed
     }
 
     /**

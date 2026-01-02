@@ -253,7 +253,7 @@ public class OrderHistoryController {
 
                         ratingDialog.showAndWait().ifPresent(rating -> {
                                 try {
-                                        orderService.rateProduct(currentUser.getId(), item.getProduct().getId(),
+                                        orderService.rateProduct(selected.getId(), currentUser.getId(), item.getProduct().getId(),
                                                         rating);
                                         showAlert("Success", "Product rated successfully!");
                                 } catch (Exception e) {

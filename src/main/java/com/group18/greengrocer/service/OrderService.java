@@ -88,10 +88,10 @@ public class OrderService {
         }
 
         double price = product.getPrice();
-        // Logic moved to DiscountService to avoid double application
-        // if (product.getStock() <= product.getThreshold()) {
-        // price *= 2.0;
-        // }
+        // Apple threshold logic immediately for better UX
+        if (product.getStock() <= product.getThreshold()) {
+            price *= 2.0;
+        }
 
         CartItem newItem = new CartItem(product, amount);
         newItem.setPriceAtPurchase(price);
@@ -424,14 +424,34 @@ public class OrderService {
      * @param rating     Rating value (1-5).
      */
     // ASSIGNED TO: Customer
-    public void rateProduct(int customerId, int productId, int rating) {
+    public void rateProduct(int orderId, int customerId, int productId, int rating) {
         if (rating < 1 || rating > 5)
             return;
 
         com.group18.greengrocer.dao.ProductRatingDAO dao = new com.group18.greengrocer.dao.ProductRatingDAO();
-        com.group18.greengrocer.model.ProductRating pr = new com.group18.greengrocer.model.ProductRating(customerId,
+        com.group18.greengrocer.model.ProductRating pr = new com.group18.greengrocer.model.ProductRating(orderId, customerId,
                 productId, rating);
         dao.addRating(pr);
+    }
+    
+    /**
+     * Checks if the carrier for an order has effectively been rated.
+     * @param orderId The ID of the order.
+     * @return true if carrier rating exists.
+     */
+    public boolean hasCarrierRating(int orderId) {
+        com.group18.greengrocer.dao.CarrierRatingDAO dao = new com.group18.greengrocer.dao.CarrierRatingDAO();
+        return dao.hasRated(orderId);
+    }
+
+    /**
+     * Checks if any products in an order have been rated.
+     * @param orderId The ID of the order.
+     * @return true if product rating(s) exist.
+     */
+    public boolean hasProductRating(int orderId) {
+        com.group18.greengrocer.dao.ProductRatingDAO dao = new com.group18.greengrocer.dao.ProductRatingDAO();
+        return dao.hasRatedOrder(orderId);
     }
 
     /**

@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 public class ProductRating {
 
     private int id;
+    private int orderId; // Added orderId
     private int customerId;
     private int productId;
     private int rating;
@@ -17,7 +18,8 @@ public class ProductRating {
     public ProductRating() {
     }
 
-    public ProductRating(int customerId, int productId, int rating) {
+    public ProductRating(int orderId, int customerId, int productId, int rating) {
+        this.orderId = orderId;
         this.customerId = customerId;
         this.productId = productId;
         this.rating = rating;
@@ -62,5 +64,13 @@ public class ProductRating {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 }

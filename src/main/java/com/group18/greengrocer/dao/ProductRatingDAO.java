@@ -11,34 +11,20 @@ public class ProductRatingDAO {
 
     public ProductRatingDAO() {
         this.dbAdapter = DatabaseAdapter.getInstance();
-        createTableIfNotExists();
-    }
-
-    private void createTableIfNotExists() {
-        String sql = "CREATE TABLE IF NOT EXISTS ProductRatings (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                "customer_id INT NOT NULL, " +
-                "product_id INT NOT NULL, " +
-                "rating INT NOT NULL, " +
-                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                "FOREIGN KEY (customer_id) REFERENCES UserInfo(id), " +
-                "FOREIGN KEY (product_id) REFERENCES ProductInfo(id))";
-        try (Connection conn = dbAdapter.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Schema is handled by database_schema.sql usually, but we keep this for safety/legacy
+        // Note: The schema.sql definition includes order_id, so we must respect that.
     }
 
     public boolean addRating(ProductRating rating) {
-        String sql = "INSERT INTO ProductRatings (customer_id, product_id, rating, created_at) VALUES (?, ?, ?, ?)";
+        // Updated to include order_id
+        String sql = "INSERT INTO ProductRatings (order_id, customer_id, product_id, rating, created_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, rating.getCustomerId());
-            stmt.setInt(2, rating.getProductId());
-            stmt.setInt(3, rating.getRating());
-            stmt.setTimestamp(4, rating.getCreatedAt());
+            stmt.setInt(1, rating.getOrderId());
+            stmt.setInt(2, rating.getCustomerId());
+            stmt.setInt(3, rating.getProductId());
+            stmt.setInt(4, rating.getRating());
+            stmt.setTimestamp(5, rating.getCreatedAt());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -56,6 +42,7 @@ public class ProductRatingDAO {
                 while (rs.next()) {
                     ProductRating pr = new ProductRating();
                     pr.setId(rs.getInt("id"));
+                    pr.setOrderId(rs.getInt("order_id"));
                     pr.setCustomerId(rs.getInt("customer_id"));
                     pr.setProductId(rs.getInt("product_id"));
                     pr.setRating(rs.getInt("rating"));
@@ -67,5 +54,24 @@ public class ProductRatingDAO {
             e.printStackTrace();
         }
         return ratings;
+    }
+
+    /**
+     * Checks if any product in the given order has been rated.
+     * @param orderId The ID of the order.
+     * @return true if at least one rating exists for this order.
+     */
+    public boolean hasRatedOrder(int orderId) {
+        String sql = "SELECT 1 FROM ProductRatings WHERE order_id = ?";
+        try (Connection conn = dbAdapter.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
