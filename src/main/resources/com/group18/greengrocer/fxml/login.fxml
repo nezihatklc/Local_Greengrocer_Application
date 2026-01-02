@@ -20,7 +20,7 @@
     <children>
         <VBox alignment="CENTER" maxWidth="420.0" spacing="24.0" styleClass="login-card">
             <children>
-                <Label text="GreenGrocer" styleClass="heading-1"/>
+                <Label text="Group18 GreenGrocer" styleClass="heading-1"/>
                 <ImageView fitHeight="150.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
                     <image>
                         <Image url="@../images/logo.png" />

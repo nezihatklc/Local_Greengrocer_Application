@@ -322,6 +322,31 @@ public class CustomerController {
                 : product.getPrice();
 
         Label nameLabel = new Label(product.getName());
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        // RATING DISPLAY
+        try {
+            double avgRating = productService.getAverageProductRating(product.getId());
+            Label ratingLabel = new Label();
+            StringBuilder stars = new StringBuilder();
+            int fullStars = (int) Math.round(avgRating);
+            for (int i = 0; i < 5; i++) {
+                if (i < fullStars)
+                    stars.append("★");
+                else
+                    stars.append("☆");
+            }
+            if (avgRating > 0) {
+                ratingLabel.setText(stars.toString() + " (" + String.format("%.1f", avgRating) + ")");
+                ratingLabel.setStyle("-fx-text-fill: #FFC107; -fx-font-size: 14px;"); // Gold color
+            } else {
+                ratingLabel.setText("No ratings");
+                ratingLabel.setStyle("-fx-text-fill: #9E9E9E; -fx-font-size: 11px; -fx-font-style: italic;");
+            }
+            box.getChildren().add(ratingLabel);
+        } catch (Exception e) {
+            // Ignore rating load error
+        }
         Label priceLabel = new Label(
                 "Price: " + String.format("%.2f", effectivePrice) + " ₺ / " + product.getUnit());
         Label stockLabel = new Label("Stock: " + product.getStock());
@@ -360,7 +385,8 @@ public class CustomerController {
                 // =====================
                 if (amount > product.getStock()) {
                     showError(
-                            "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " " + product.getUnit());
+                            "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " "
+                                    + product.getUnit());
                     return;
                 }
 
@@ -736,6 +762,9 @@ public class CustomerController {
             try {
                 orderService.rateProduct(order.getId(), currentUser.getId(), item.getProduct().getId(), rating);
                 AlertUtil.showInfo("Success", "Product rated!");
+
+                // REFRESH UI to show updated ratings immediately
+                loadProducts();
                 // Refresh selection list or options?
                 // The user requirement says "product ... bi kere".
                 // Since our logic considers "Products Rated" as a whole block check, we treat
@@ -802,6 +831,22 @@ public class CustomerController {
         grid.add(new Label("Phone:"), 0, 1);
         grid.add(phoneField, 1, 1);
 
+        // PASSWORD FIELDS
+        javafx.scene.control.PasswordField currentPassField = new javafx.scene.control.PasswordField();
+        currentPassField.setPromptText("Current Password");
+
+        javafx.scene.control.PasswordField newPassField = new javafx.scene.control.PasswordField();
+        newPassField.setPromptText("New Password");
+
+        grid.add(new Separator(), 0, 2, 2, 1);
+        grid.add(new Label("Change Password (Optional)"), 0, 3, 2, 1);
+
+        grid.add(new Label("Current:"), 0, 4);
+        grid.add(currentPassField, 1, 4);
+
+        grid.add(new Label("New:"), 0, 5);
+        grid.add(newPassField, 1, 5);
+
         dialog.getDialogPane().setContent(grid);
 
         // SAVE BUTTON VALIDATION
@@ -813,6 +858,31 @@ public class CustomerController {
             if (!ValidatorUtil.isValidPhoneNumber(phone)) {
                 showError("Invalid phone number format (10-13 digits).");
                 event.consume();
+                return;
+            }
+
+            // PASSWORD VALIDATION
+            String curPass = currentPassField.getText();
+            String newPass = newPassField.getText();
+
+            if (!newPass.isEmpty()) {
+                if (curPass.isEmpty()) {
+                    showError("Please enter your current password to set a new one.");
+                    event.consume();
+                    return;
+                }
+                if (!curPass.equals(currentUser.getPassword())) {
+                    showError("Current password is incorrect.");
+                    event.consume();
+                    return;
+                }
+
+                // NEW: Strong Password Check using ValidatorUtil
+                if (!com.group18.greengrocer.util.ValidatorUtil.isStrongPassword(newPass)) {
+                    showError("Password must be at least 8 chars, include upper/lower case and a digit.");
+                    event.consume();
+                    return;
+                }
             }
         });
 
@@ -822,6 +892,11 @@ public class CustomerController {
                 try {
                     currentUser.setAddress(addressField.getText());
                     currentUser.setPhoneNumber(phoneField.getText());
+
+                    String newPass = newPassField.getText();
+                    if (!newPass.isEmpty()) {
+                        currentUser.setPassword(newPass);
+                    }
 
                     // Persist to Database
                     userService.updateUser(currentUser);

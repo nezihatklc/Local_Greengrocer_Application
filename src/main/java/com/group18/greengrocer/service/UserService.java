@@ -109,10 +109,7 @@ public class UserService {
         } else {
             // If password is provided (optional), enforce your ValidatorUtil rule
             if (!ValidatorUtil.isStrongPassword(incomingPass)) {
-                // If it's the SAME password as before, allow it (legacy support)
-                if (!incomingPass.equals(existing.getPassword())) {
-                    throw new IllegalArgumentException("Weak password (min 8, upper+lower+digit).");
-                }
+                throw new IllegalArgumentException("Weak password (min 8, upper+lower+digit).");
             }
         }
 
