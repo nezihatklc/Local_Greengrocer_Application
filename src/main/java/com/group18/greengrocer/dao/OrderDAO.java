@@ -209,10 +209,10 @@ public class OrderDAO {
     public List<Order> findOrdersByCarrierId(int carrierId) {
         List<Order> orders = new ArrayList<>();
         // JOIN to get rating info
-        String sql = "SELECT O.*, CR.rating, CR.comment " + 
-                     "FROM OrderInfo O " + 
-                     "LEFT JOIN CarrierRatings CR ON O.id = CR.order_id " +
-                     "WHERE O.carrier_id = ? ORDER BY O.ordertime DESC";
+        String sql = "SELECT O.*, CR.rating, CR.comment " +
+                "FROM OrderInfo O " +
+                "LEFT JOIN CarrierRatings CR ON O.id = CR.order_id " +
+                "WHERE O.carrier_id = ? ORDER BY O.ordertime DESC";
 
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -221,7 +221,7 @@ public class OrderDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Order order = mapOrder(rs);
-                    
+
                     // Manually populate rating fields from the joined columns
                     int r = rs.getInt("rating");
                     if (!rs.wasNull()) {
@@ -454,9 +454,15 @@ public class OrderDAO {
         order.setRequestedDeliveryDate(rs.getTimestamp("requested_delivery_date"));
 
         try {
-            order.setStatus(Order.Status.valueOf(rs.getString("status")));
+            String statusStr = rs.getString("status");
+            if (statusStr != null) {
+                order.setStatus(Order.Status.valueOf(statusStr.trim().toUpperCase()));
+            } else {
+                order.setStatus(Order.Status.WAITING);
+            }
         } catch (IllegalArgumentException e) {
-            // Default or error handling
+            System.err.println(
+                    "OrderDAO: Unknown status found in DB: '" + rs.getString("status") + "' -> Defaulting to WAITING");
             order.setStatus(Order.Status.WAITING);
         }
 

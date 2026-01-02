@@ -358,11 +358,11 @@
                     <!-- LEFT: Message List -->
                     <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: #F4F6F8;">
                         <Label text="Inbox" styleClass="heading-2"/>
-                        <TableView fx:id="messagesTable" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="messageTable" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="msgFromCol" text="From" prefWidth="100"/>
-                                <TableColumn fx:id="msgDateCol" text="Date" prefWidth="120"/>
-                                <TableColumn fx:id="msgContentCol" text="Preview" prefWidth="150"/>
+                                <TableColumn fx:id="fromCol" text="From" prefWidth="100"/>
+                                <TableColumn fx:id="dateCol" text="Date" prefWidth="120"/>
+                                <TableColumn fx:id="previewCol" text="Preview" prefWidth="150"/>
                             </columns>
                         </TableView>
                         <Button text="Refresh Inbox" onAction="#handleRefreshMessages" styleClass="button-secondary"/>
@@ -373,15 +373,15 @@
                         <Label text="Message Details" styleClass="heading-2"/>
                         
                         <Label text="From:" styleClass="label"/>
-                        <TextField fx:id="msgSenderField" editable="false" style="-fx-background-color: #f0f0f0;"/>
+                        <Label fx:id="fromLabel" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
 
                         <Label text="Content:" styleClass="label"/>
-                        <TextArea fx:id="msgReadArea" editable="false" wrapText="true" prefRowCount="5" style="-fx-background-color: #f0f0f0;"/>
+                        <TextArea fx:id="contentArea" editable="false" wrapText="true" prefRowCount="5" style="-fx-background-color: #f0f0f0;"/>
 
                         <Separator/>
 
                         <Label text="Your Reply:" styleClass="label"/>
-                        <TextArea fx:id="msgReplyArea" wrapText="true" prefRowCount="4" promptText="Type your reply here..."/>
+                        <TextArea fx:id="replyField" wrapText="true" prefRowCount="4" promptText="Type your reply here..."/>
 
                         <HBox spacing="10" alignment="CENTER_RIGHT">
                             <Button text="End Conversation" onAction="#handleEndConversation" styleClass="button-danger"/>
