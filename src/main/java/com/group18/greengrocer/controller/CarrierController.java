@@ -5,11 +5,9 @@ import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.UserService;
-import com.group18.greengrocer.util.AlertUtil;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -20,274 +18,253 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Controller for the Carrier Dashboard.
- * Handles order selection, delivery completion, and history viewing.
+ * Controller for Carrier Dashboard.
+ * Handles order selection, delivery completion and history.
  */
 public class CarrierController {
 
     // Services
-    private final OrderService orderService;
-    private final UserService userService;
+    private final OrderService orderService = new OrderService();
+    private final UserService userService = new UserService();
 
-    // Current logged-in user
+    // Logged in carrier
     private User currentUser;
 
-    // UI Components (FXML)
-    @FXML
-    private Label usernameLabel;
-    @FXML
-    private Button logoutButton;
+    // ===== HEADER =====
+    @FXML private Label usernameLabel;
+    @FXML private Button logoutButton;
 
-    // Available Orders Tab
-    @FXML
-    private TableView<Order> availableOrdersTable;
-    @FXML
-    private TableColumn<Order, Integer> colOrderId;
-    @FXML
-    private TableColumn<Order, String> colCustomerName;
-    @FXML
-    private TableColumn<Order, String> colAddress;
-    @FXML
-    private TableColumn<Order, String> colAvProducts; // [NEW]
-    @FXML
-    private TableColumn<Order, String> colAvDate; // [NEW]
-    @FXML
-    private TableColumn<Order, String> colTotalPrice;
-    @FXML
-    private Button acceptOrderButton;
+    // ===== AVAILABLE ORDERS =====
+    @FXML private TableView<Order> availableOrdersTable;
+    @FXML private TableColumn<Order, Integer> colOrderId;
+    @FXML private TableColumn<Order, String> colCustomerName;
+    @FXML private TableColumn<Order, String> colAddress;
+    @FXML private TableColumn<Order, String> colAvProducts;
+    @FXML private TableColumn<Order, String> colAvDate;
+    @FXML private TableColumn<Order, String> colTotalPrice;
+    @FXML private Button acceptOrderButton;
 
-    // My Current Order Tab
-    @FXML
-    private TableView<Order> currentOrdersTable; // [NEW] Table instead of Label
-    @FXML
-    private TableColumn<Order, Integer> colCurOrderId;
-    @FXML
-    private TableColumn<Order, String> colCurCustomer;
-    @FXML
-    private TableColumn<Order, String> colCurAddress;
-    @FXML
-    private TableColumn<Order, String> colCurProducts;
-    @FXML
-    private TableColumn<Order, String> colCurTotal;
-    @FXML
-    private TableColumn<Order, String> colCurStatus;
+    // ===== CURRENT ORDERS =====
+    @FXML private TableView<Order> currentOrdersTable;
+    @FXML private TableColumn<Order, Integer> colCurOrderId;
+    @FXML private TableColumn<Order, String> colCurCustomer;
+    @FXML private TableColumn<Order, String> colCurAddress;
+    @FXML private TableColumn<Order, String> colCurProducts;
+    @FXML private TableColumn<Order, String> colCurTotal;
+    @FXML private TableColumn<Order, String> colCurStatus;
+    @FXML private DatePicker deliveryDatePicker;
+    @FXML private Button completeDeliveryButton;
 
-    @FXML
-    private DatePicker deliveryDatePicker;
-    @FXML
-    private Button completeDeliveryButton;
+    // ===== HISTORY =====
+    @FXML private TableView<Order> completedOrdersTable;
+    @FXML private TableColumn<Order, Integer> colHistOrderId;
+    @FXML private TableColumn<Order, String> colHistDate;
+    @FXML private TableColumn<Order, String> colHistStatus;
+    @FXML private TableColumn<Order, String> colHistRating;
 
-    // History Tab
-    @FXML
-    private TableView<Order> completedOrdersTable;
-    @FXML
-    private TableColumn<Order, Integer> colHistOrderId;
-    @FXML
-    private TableColumn<Order, String> colHistDate;
-    @FXML
-    private TableColumn<Order, String> colHistStatus;
-    @FXML
-    private TableColumn<Order, String> colHistRating;
-
-    public CarrierController() {
-        this.orderService = new OrderService();
-        this.userService = new UserService();
-    }
-
-    /**
-     * Called by the login screen to set the current user and load their data.
-     * 
-     * @param user The logged-in Carrier.
-     */
     public void initData(User user) {
         this.currentUser = user;
-        if (currentUser != null) {
-            usernameLabel.setText("Carrier: " + currentUser.getUsername());
-            refreshAll();
-        }
+        usernameLabel.setText("Carrier: " + user.getUsername());
+        refreshAll();
     }
 
     @FXML
     public void initialize() {
+        colAvDate.setText("Req. Delivery");
         setupAvailableOrdersTable();
         setupCurrentOrdersTable();
         setupHistoryTable();
     }
 
+    // ===== TABLE SETUPS =====
+
     private void setupAvailableOrdersTable() {
-        colOrderId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
 
-        colCustomerName.setCellValueFactory(cellData -> {
-            int customerId = cellData.getValue().getCustomerId();
-            User customer = userService.getUserById(customerId);
-            return new SimpleStringProperty(customer != null ? customer.getUsername() : "Unknown");
+        colOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
+
+        colCustomerName.setCellValueFactory(cd -> {
+            User c = userService.getUserById(cd.getValue().getCustomerId());
+            return new SimpleStringProperty(c != null ? c.getUsername() : "Unknown");
         });
 
-        colAddress.setCellValueFactory(cellData -> {
-            int customerId = cellData.getValue().getCustomerId();
-            User customer = userService.getUserById(customerId);
-            return new SimpleStringProperty(customer != null ? customer.getAddress() : "Unknown");
+        colAddress.setCellValueFactory(cd -> {
+            User c = userService.getUserById(cd.getValue().getCustomerId());
+            return new SimpleStringProperty(c != null ? c.getAddress() : "Unknown");
         });
 
-        // Format product list: "3.0kg Apple, 1.5kg Banana"
-        colAvProducts.setCellValueFactory(cellData -> {
-            List<CartItem> items = cellData.getValue().getItems();
+        colAvProducts.setCellValueFactory(cd -> {
+            List<CartItem> items = cd.getValue().getItems();
             if (items == null || items.isEmpty())
                 return new SimpleStringProperty("No details");
+
             String summary = items.stream()
-                    .map(item -> String.format("%.1fkg %s", item.getQuantity(),
-                            item.getProduct() != null ? item.getProduct().getName() : "?"))
+                    .map(i -> String.format("%.1fkg %s",
+                            i.getQuantity(),
+                            i.getProduct() != null ? i.getProduct().getName() : "?"))
                     .collect(Collectors.joining(", "));
             return new SimpleStringProperty(summary);
         });
 
-        colAvDate.setCellValueFactory(cellData -> {
-            Date date = cellData.getValue().getOrderTime();
-            return new SimpleStringProperty(date != null ? date.toString() : "-");
+        colAvDate.setCellValueFactory(cd -> {
+            Date d = cd.getValue().getRequestedDeliveryDate();
+            if (d == null) return new SimpleStringProperty("-");
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+            return new SimpleStringProperty(sdf.format(d));
         });
 
-        colTotalPrice.setCellValueFactory(
-                cellData -> new SimpleStringProperty("$" + String.format("%.2f", cellData.getValue().getTotalCost())));
+        colTotalPrice.setCellValueFactory(cd ->
+                new SimpleStringProperty(
+                        "$" + String.format("%.2f", cd.getValue().getTotalCost())
+                ));
     }
 
     private void setupCurrentOrdersTable() {
-        colCurOrderId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
 
-        colCurCustomer.setCellValueFactory(cellData -> {
-            int customerId = cellData.getValue().getCustomerId();
-            User customer = userService.getUserById(customerId);
-            return new SimpleStringProperty(customer != null ? customer.getUsername() : "Unknown");
+        colCurOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
+
+        colCurCustomer.setCellValueFactory(cd -> {
+            User c = userService.getUserById(cd.getValue().getCustomerId());
+            return new SimpleStringProperty(c != null ? c.getUsername() : "Unknown");
         });
 
-        colCurAddress.setCellValueFactory(cellData -> {
-            int customerId = cellData.getValue().getCustomerId();
-            User customer = userService.getUserById(customerId);
-            return new SimpleStringProperty(customer != null ? customer.getAddress() : "Unknown");
+        colCurAddress.setCellValueFactory(cd -> {
+            User c = userService.getUserById(cd.getValue().getCustomerId());
+            return new SimpleStringProperty(c != null ? c.getAddress() : "Unknown");
         });
 
-        colCurProducts.setCellValueFactory(cellData -> {
-            List<CartItem> items = cellData.getValue().getItems();
+        colCurProducts.setCellValueFactory(cd -> {
+            List<CartItem> items = cd.getValue().getItems();
             if (items == null || items.isEmpty())
                 return new SimpleStringProperty("No details");
+
             String summary = items.stream()
-                    .map(item -> String.format("%.1fkg %s", item.getQuantity(),
-                            item.getProduct() != null ? item.getProduct().getName() : "?"))
+                    .map(i -> String.format("%.1fkg %s",
+                            i.getQuantity(),
+                            i.getProduct() != null ? i.getProduct().getName() : "?"))
                     .collect(Collectors.joining(", "));
             return new SimpleStringProperty(summary);
         });
 
-        colCurTotal.setCellValueFactory(
-                cellData -> new SimpleStringProperty("$" + String.format("%.2f", cellData.getValue().getTotalCost())));
+        colCurTotal.setCellValueFactory(cd ->
+                new SimpleStringProperty("$" + String.format("%.2f", cd.getValue().getTotalCost())));
 
-        colCurStatus
-                .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus().toString()));
+        colCurStatus.setCellValueFactory(cd ->
+                new SimpleStringProperty(cd.getValue().getStatus().toString()));
     }
 
     private void setupHistoryTable() {
-        colHistOrderId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
 
-        colHistDate.setCellValueFactory(cellData -> {
-            Date date = cellData.getValue().getDeliveryTime();
-            return new SimpleStringProperty(date != null ? date.toString() : "-");
+        colHistOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
+
+        colHistDate.setCellValueFactory(cd -> {
+            Date d = cd.getValue().getDeliveryTime();
+            return new SimpleStringProperty(d != null ? d.toString() : "-");
         });
 
-        colHistStatus
-                .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getStatus().toString()));
+        colHistStatus.setCellValueFactory(cd ->
+                new SimpleStringProperty(cd.getValue().getStatus().toString()));
 
-        colHistRating.setCellValueFactory(cellData -> {
-            int rating = userService.getRatingForOrder(cellData.getValue().getId());
-            return new SimpleStringProperty(rating > 0 ? String.valueOf(rating) : "Not Rated");
+        colHistRating.setCellValueFactory(cd -> {
+            int r = userService.getRatingForOrder(cd.getValue().getId());
+            return new SimpleStringProperty(r > 0 ? String.valueOf(r) : "Not Rated");
         });
     }
+
+    // ===== DATA LOAD =====
 
     private void refreshAll() {
-        loadAvailableOrders();
-        loadMyCurrentOrders();
-        loadHistory();
-    }
+        availableOrdersTable.setItems(
+                FXCollections.observableArrayList(orderService.getPendingOrders())
+        );
 
-    private void loadAvailableOrders() {
-        List<Order> orders = orderService.getPendingOrders();
-        ObservableList<Order> observableOrders = FXCollections.observableArrayList(orders);
-        availableOrdersTable.setItems(observableOrders);
-    }
-
-    private void loadMyCurrentOrders() {
-        List<Order> myOrders = orderService.getOrdersByCarrier(currentUser.getId());
-
-        // Filter for active SELECTED orders (One or Many)
-        List<Order> activeOrders = myOrders.stream()
+        List<Order> active = orderService.getOrdersByCarrier(currentUser.getId())
+                .stream()
                 .filter(o -> o.getStatus() == Order.Status.SELECTED)
                 .toList();
 
-        currentOrdersTable.setItems(FXCollections.observableArrayList(activeOrders));
+        currentOrdersTable.setItems(FXCollections.observableArrayList(active));
 
-        // Disable buttons if no orders, but generally they are enabled for selection
-        boolean hasOrders = !activeOrders.isEmpty();
-        deliveryDatePicker.setDisable(!hasOrders);
-        completeDeliveryButton.setDisable(!hasOrders);
+        completedOrdersTable.setItems(
+                FXCollections.observableArrayList(
+                        orderService.getOrdersByCarrier(currentUser.getId())
+                                .stream()
+                                .filter(o -> o.getStatus() == Order.Status.COMPLETED)
+                                .toList()
+                )
+        );
+
+        boolean hasActive = !active.isEmpty();
+        deliveryDatePicker.setDisable(!hasActive);
+        completeDeliveryButton.setDisable(!hasActive);
     }
 
-    private void loadHistory() {
-        List<Order> myOrders = orderService.getOrdersByCarrier(currentUser.getId());
-
-        // Filter for completed orders
-        List<Order> completedOrders = myOrders.stream()
-                .filter(o -> o.getStatus() == Order.Status.COMPLETED)
-                .toList();
-
-        completedOrdersTable.setItems(FXCollections.observableArrayList(completedOrders));
-    }
+    // ===== ACTIONS =====
 
     @FXML
     private void handleAcceptOrder() {
-        Order selectedOrder = availableOrdersTable.getSelectionModel().getSelectedItem();
-        if (selectedOrder == null) {
-            AlertUtil.showWarning("No Selection", "Please select an order to take.");
+        Order selected = availableOrdersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("No Selection", "Please select an order.");
             return;
         }
 
         try {
-            orderService.assignOrderToCarrier(selectedOrder.getId(), currentUser.getId());
-            AlertUtil.showInfo("Success", "You have taken Order #" + selectedOrder.getId());
+            orderService.assignOrderToCarrier(selected.getId(), currentUser.getId());
+            showAlert("Success", "Order #" + selected.getId() + " assigned.");
             refreshAll();
-        } catch (Exception e) {
-            AlertUtil.showError("Error", e.getMessage());
+        } catch (IllegalStateException e) {
+            showAlert("Order Taken", "This order has already been taken.");
         }
     }
 
     @FXML
     private void handleCompleteDelivery() {
-        Order selectedOrder = currentOrdersTable.getSelectionModel().getSelectedItem();
 
-        if (selectedOrder == null) {
-            AlertUtil.showWarning("No Selection", "Please select the order you are delivering from the list above.");
+        Order selected = currentOrdersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("No Selection", "Please select an order.");
             return;
         }
 
         if (deliveryDatePicker.getValue() == null) {
-            AlertUtil.showWarning("Missing Date", "Please select a delivery date.");
+            showAlert("Missing Date", "Please select a delivery date.");
             return;
         }
 
-        try {
-            Date deliveryDate = Date
-                    .from(deliveryDatePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
-            orderService.completeOrder(selectedOrder.getId(), deliveryDate);
-            AlertUtil.showInfo("Success", "Order #" + selectedOrder.getId() + " delivered!");
+        Date deliveryDate = Date.from(
+                deliveryDatePicker.getValue()
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant()
+        );
 
-            // Clear inputs
-            deliveryDatePicker.setValue(null);
-            refreshAll();
-        } catch (Exception e) {
-            AlertUtil.showError("Error", e.getMessage());
+        if (selected.getOrderTime() != null &&
+                deliveryDate.before(selected.getOrderTime())) {
+            showAlert("Invalid Date", "Delivery date cannot be before order date.");
+            return;
         }
+
+        Date requested = selected.getRequestedDeliveryDate();
+        if (requested != null && deliveryDate.before(requested)) {
+            showAlert("Warning", "Delivery is earlier than requested date.");
+            return;
+        }
+
+        orderService.completeOrder(selected.getId(), deliveryDate);
+        showAlert("Success", "Order delivered.");
+        deliveryDatePicker.setValue(null);
+        refreshAll();
     }
 
     @FXML
     private void handleLogout() {
-        // Close current stage
-        Stage stage = (Stage) logoutButton.getScene().getWindow();
-        stage.close();
+        ((Stage) logoutButton.getScene().getWindow()).close();
+    }
+
+    private void showAlert(String title, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 }
