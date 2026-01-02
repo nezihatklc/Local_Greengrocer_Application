@@ -1,16 +1,22 @@
 package com.group18.greengrocer.controller;
 
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+
 import com.group18.greengrocer.model.Category;
+import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
-import com.group18.greengrocer.model.Message;
+import com.group18.greengrocer.service.MessageService;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
-import com.group18.greengrocer.service.MessageService;
 import com.group18.greengrocer.service.UserService;
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.ValidatorUtil;
+
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,30 +26,25 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Separator;
-import javafx.collections.FXCollections;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.stage.Stage;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class CustomerController {
 
