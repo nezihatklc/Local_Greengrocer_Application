@@ -10,7 +10,7 @@ import java.util.List;
  * Aggregates order details, status, and the list of items purchased.
  */
 public class Order {
-    
+
     /**
      * Enumeration of possible Order statuses.
      * Corresponds to the 'status' column in 'OrderInfo'.
@@ -20,17 +20,17 @@ public class Order {
          * Order placed by customer, waiting to be picked up by a carrier.
          */
         AVAILABLE,
-        
+
         /**
          * Order selected by a carrier and is currently in progress.
          */
         SELECTED,
-        
+
         /**
          * Order successfully delivered to the customer.
          */
         COMPLETED,
-        
+
         /**
          * Order cancelled.
          */
@@ -63,7 +63,7 @@ public class Order {
      * The ID of the carrier delivering the order (can be null if not yet selected).
      * Corresponds to 'carrier_id'.
      */
-    private Integer carrierId; 
+    private Integer carrierId;
 
     /**
      * The time the order was placed.
@@ -99,14 +99,18 @@ public class Order {
      * The ID of the coupon used (if any).
      * Corresponds to 'used_coupon_id'.
      */
-    private Integer usedCouponId; 
+    private Integer usedCouponId;
 
     /**
      * The invoice content, typically stored as a JSON or String representation.
      * Corresponds to 'invoice'.
      */
     private String invoice;
-    
+
+    // Rating
+    private int rating;
+    private String review;
+
     /**
      * The list of products (items) included in this order.
      * This is populated from the 'OrderItems' table.
@@ -135,8 +139,8 @@ public class Order {
      * @param usedCouponId The ID of the used coupon.
      * @param invoice      The invoice data.
      */
-    public Order(int id, int customerId, Integer carrierId, Timestamp orderTime, Timestamp deliveryTime, 
-                 Status status, double totalCost, Integer usedCouponId, String invoice) {
+    public Order(int id, int customerId, Integer carrierId, Timestamp orderTime, Timestamp deliveryTime,
+            Status status, double totalCost, Integer usedCouponId, String invoice) {
         this.id = id;
         this.customerId = customerId;
         this.carrierId = carrierId;
@@ -245,6 +249,22 @@ public class Order {
         this.invoice = invoice;
     }
 
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
+    public String getReview() {
+        return review;
+    }
+
+    public void setReview(String review) {
+        this.review = review;
+    }
+
     public List<CartItem> getItems() {
         return items;
     }
@@ -252,7 +272,7 @@ public class Order {
     public void setItems(List<CartItem> items) {
         this.items = items;
     }
-    
+
     /**
      * Adds an item to the order.
      * 
@@ -282,8 +302,10 @@ public class Order {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Order)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Order))
+            return false;
         Order order = (Order) o;
         return id == order.id;
     }

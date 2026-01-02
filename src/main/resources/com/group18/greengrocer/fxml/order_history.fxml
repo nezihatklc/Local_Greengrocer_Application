@@ -61,6 +61,10 @@
                     onAction="#handleDownloadInvoice"
                     styleClass="button-secondary"/>
 
+            <Button text="Rate Products"
+                    onAction="#handleRateProducts"
+                    styleClass="button-accent"/>
+
             <Button text="Close"
                     onAction="#handleClose"
                     styleClass="button-secondary"/>

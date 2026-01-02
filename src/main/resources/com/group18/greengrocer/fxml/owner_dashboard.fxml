@@ -165,6 +165,7 @@
 
                         <HBox spacing="15">
                             <Button text="Refresh List" onAction="#handleRefreshCarriers" styleClass="button-secondary"/>
+                            <Button text="View Ratings" onAction="#handleViewCarrierRatings" styleClass="button-accent"/>
                             <Button text="Fire Selected" onAction="#handleFireCarrier" styleClass="button-danger"/>
                         </HBox>
                     </VBox>

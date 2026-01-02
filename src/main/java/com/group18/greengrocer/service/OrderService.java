@@ -90,7 +90,7 @@ public class OrderService {
         double price = product.getPrice();
         // Logic moved to DiscountService to avoid double application
         // if (product.getStock() <= product.getThreshold()) {
-        //    price *= 2.0;
+        // price *= 2.0;
         // }
 
         CartItem newItem = new CartItem(product, amount);
@@ -174,7 +174,7 @@ public class OrderService {
 
             // Logic moved to DiscountService
             // if (product.getStock() <= product.getThreshold()) {
-            //    currentPrice *= 2.0;
+            // currentPrice *= 2.0;
             // }
 
             item.setPriceAtPurchase(currentPrice);
@@ -393,6 +393,24 @@ public class OrderService {
 
         // 6. Save rating to database
         ratingDAO.addRating(carrierRating);
+    }
+
+    /**
+     * Allows a customer to rate a purchased product.
+     * 
+     * @param customerId The ID of the customer.
+     * @param productId  The ID of the product.
+     * @param rating     Rating value (1-5).
+     */
+    // ASSIGNED TO: Customer
+    public void rateProduct(int customerId, int productId, int rating) {
+        if (rating < 1 || rating > 5)
+            return;
+
+        com.group18.greengrocer.dao.ProductRatingDAO dao = new com.group18.greengrocer.dao.ProductRatingDAO();
+        com.group18.greengrocer.model.ProductRating pr = new com.group18.greengrocer.model.ProductRating(customerId,
+                productId, rating);
+        dao.addRating(pr);
     }
 
     /**

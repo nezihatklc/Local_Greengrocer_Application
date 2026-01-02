@@ -27,17 +27,21 @@ public class CartItem {
 
     /**
      * The price of the product at the moment of purchase.
-     * Use this, not product.getPrice(), for order history to preserve historical pricing.
+     * Use this, not product.getPrice(), for order history to preserve historical
+     * pricing.
      * Corresponds to 'price_at_purchase'.
      */
     private double priceAtPurchase;
-    
+
     /**
      * The ID of the order this item belongs to.
      * Null if the item is in a transient shopping cart.
      * Corresponds to 'order_id'.
      */
-    private Integer orderId; 
+    private Integer orderId;
+
+    // Rating (1-5) for this product in this order
+    private int rating;
 
     /**
      * Default constructor.
@@ -106,13 +110,21 @@ public class CartItem {
     public void setPriceAtPurchase(double priceAtPurchase) {
         this.priceAtPurchase = priceAtPurchase;
     }
-    
+
     public Integer getOrderId() {
         return orderId;
     }
 
     public void setOrderId(Integer orderId) {
         this.orderId = orderId;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     /**
@@ -144,8 +156,10 @@ public class CartItem {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CartItem)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof CartItem))
+            return false;
         CartItem cartItem = (CartItem) o;
         return product != null ? product.equals(cartItem.product) : cartItem.product == null;
     }

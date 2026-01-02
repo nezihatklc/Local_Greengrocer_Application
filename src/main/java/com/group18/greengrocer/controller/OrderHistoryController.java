@@ -190,6 +190,51 @@ public class OrderHistoryController {
         }
 
         @FXML
+        private void handleRateProducts() {
+                Order selected = ordersTable.getSelectionModel().getSelectedItem();
+                if (selected == null) {
+                        showAlert("Warning", "Please select an order to rate products.");
+                        return;
+                }
+
+                if (selected.getStatus() != Order.Status.COMPLETED) {
+                        showAlert("Error", "You can only rate products from delivered orders.");
+                        return;
+                }
+
+                if (selected.getItems().isEmpty()) {
+                        showAlert("Error", "No items in this order.");
+                        return;
+                }
+
+                // Show list of products to rate
+                ChoiceDialog<com.group18.greengrocer.model.CartItem> itemDialog = new ChoiceDialog<>(
+                                selected.getItems().get(0), selected.getItems());
+                itemDialog.setTitle("Rate Product");
+                itemDialog.setHeaderText("Select a product to rate");
+                itemDialog.setContentText("Product:");
+
+                itemDialog.showAndWait().ifPresent(item -> {
+                        // Ask for rating
+                        ChoiceDialog<Integer> ratingDialog = new ChoiceDialog<>(5, java.util.List.of(1, 2, 3, 4, 5));
+                        ratingDialog.setTitle("Rate Product: " + item.getProduct().getName());
+                        ratingDialog.setHeaderText("Rate this product (1-5)");
+                        ratingDialog.setContentText("Stars:");
+
+                        ratingDialog.showAndWait().ifPresent(rating -> {
+                                try {
+                                        orderService.rateProduct(currentUser.getId(), item.getProduct().getId(),
+                                                        rating);
+                                        showAlert("Success", "Product rated successfully!");
+                                } catch (Exception e) {
+                                        e.printStackTrace();
+                                        showAlert("Error", "Failed to rate product: " + e.getMessage());
+                                }
+                        });
+                });
+        }
+
+        @FXML
         private void handleClose() {
                 Stage stage = (Stage) ordersTable.getScene().getWindow();
                 stage.close();

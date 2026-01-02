@@ -5,6 +5,7 @@ import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.User;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.UserService;
+import com.group18.greengrocer.util.AlertUtil;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -242,31 +243,30 @@ public class CarrierController {
     private void handleAcceptOrder() {
         Order selectedOrder = availableOrdersTable.getSelectionModel().getSelectedItem();
         if (selectedOrder == null) {
-            showAlert("No Selection", "Please select an order to take.");
+            AlertUtil.showWarning("No Selection", "Please select an order to take.");
             return;
         }
 
         try {
             orderService.assignOrderToCarrier(selectedOrder.getId(), currentUser.getId());
-            showAlert("Success", "You have taken Order #" + selectedOrder.getId());
+            AlertUtil.showInfo("Success", "You have taken Order #" + selectedOrder.getId());
             refreshAll();
         } catch (Exception e) {
-            showAlert("Error", e.getMessage());
+            AlertUtil.showError("Error", e.getMessage());
         }
     }
 
     @FXML
     private void handleCompleteDelivery() {
-        // [FIX] Get selection from the NEW table, not finding first
         Order selectedOrder = currentOrdersTable.getSelectionModel().getSelectedItem();
 
         if (selectedOrder == null) {
-            showAlert("No Selection", "Please select the order you are delivering from the list above.");
+            AlertUtil.showWarning("No Selection", "Please select the order you are delivering from the list above.");
             return;
         }
 
         if (deliveryDatePicker.getValue() == null) {
-            showAlert("Missing Date", "Please select a delivery date.");
+            AlertUtil.showWarning("Missing Date", "Please select a delivery date.");
             return;
         }
 
@@ -274,13 +274,13 @@ public class CarrierController {
             Date deliveryDate = Date
                     .from(deliveryDatePicker.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant());
             orderService.completeOrder(selectedOrder.getId(), deliveryDate);
-            showAlert("Success", "Order #" + selectedOrder.getId() + " delivered!");
+            AlertUtil.showInfo("Success", "Order #" + selectedOrder.getId() + " delivered!");
 
             // Clear inputs
             deliveryDatePicker.setValue(null);
             refreshAll();
         } catch (Exception e) {
-            showAlert("Error", e.getMessage());
+            AlertUtil.showError("Error", e.getMessage());
         }
     }
 
@@ -289,13 +289,5 @@ public class CarrierController {
         // Close current stage
         Stage stage = (Stage) logoutButton.getScene().getWindow();
         stage.close();
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

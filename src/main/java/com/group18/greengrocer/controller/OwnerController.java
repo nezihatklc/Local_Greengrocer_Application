@@ -35,6 +35,11 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.util.ValidatorUtil;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ListCell;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Insets;
 
 import java.util.Optional;
 
@@ -476,6 +481,59 @@ public class OwnerController {
     private void handleRefreshCarriers() {
         loadCarrierData();
         AlertUtil.showInfo("Refreshed", "Carrier list refreshed.");
+    }
+
+    @FXML
+    private void handleViewCarrierRatings() {
+        User selectedCarrier = carrierTable.getSelectionModel().getSelectedItem();
+        if (selectedCarrier == null) {
+            AlertUtil.showWarning("No Selection", "Please select a carrier to view ratings.");
+            return;
+        }
+
+        Stage stage = new Stage();
+        stage.setTitle("Ratings for: " + selectedCarrier.getUsername());
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(15));
+        root.setPrefSize(400, 500);
+
+        Label header = new Label("Customer Feedback");
+        header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        ListView<String> reviewList = new ListView<>();
+        VBox.setVgrow(reviewList, Priority.ALWAYS);
+
+        // Fetch ratings from DB
+        com.group18.greengrocer.service.OrderService orderService = new com.group18.greengrocer.service.OrderService();
+        java.util.List<com.group18.greengrocer.model.Order> carrierOrders = orderService
+                .getOrdersByCarrier(selectedCarrier.getId());
+
+        java.util.List<String> reviews = new java.util.ArrayList<>();
+        double totalScore = 0;
+        int count = 0;
+
+        for (com.group18.greengrocer.model.Order o : carrierOrders) {
+            if (o.getRating() > 0) {
+                reviews.add("★ " + o.getRating() + "/5\n" + (o.getReview() == null ? "" : o.getReview()) +
+                        "\n-------------------");
+                totalScore += o.getRating();
+                count++;
+            }
+        }
+
+        if (reviews.isEmpty()) {
+            reviews.add("No ratings yet.");
+        } else {
+            double avg = totalScore / count;
+            header.setText("Average Rating: " + String.format("%.1f", avg) + " / 5.0");
+        }
+
+        reviewList.getItems().setAll(reviews);
+
+        root.getChildren().addAll(header, reviewList);
+        stage.setScene(new Scene(root));
+        stage.show();
     }
 
     @FXML
