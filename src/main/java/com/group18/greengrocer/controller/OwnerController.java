@@ -48,7 +48,19 @@ import java.util.Optional;
  * OwnerController (Updated for Image Upload)
  */
 public class OwnerController {
+// --- Services ---
+    
+    private final MessageService messageService;
 
+    // --- FXML Fields for Messages ---
+    @FXML private TableView<Message> messageTable; // Tablo
+    @FXML private TableColumn<Message, String> fromCol;
+    @FXML private TableColumn<Message, String> dateCol;
+    @FXML private TableColumn<Message, String> previewCol;
+    
+    @FXML private Label fromLabel;      // Gönderen kişi etiketi
+    @FXML private TextArea contentArea; // Mesaj içeriği
+    @FXML private TextArea replyField;  // Cevap alanı
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
