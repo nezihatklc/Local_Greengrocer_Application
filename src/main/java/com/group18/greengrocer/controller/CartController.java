@@ -20,7 +20,22 @@ import java.time.LocalDate;
 import com.group18.greengrocer.service.DiscountService;
 import com.group18.greengrocer.model.Coupon;
 import com.group18.greengrocer.util.Constants;
-
+/**
+ * Controller class for the Shopping Cart and Checkout screen.
+ * <p>
+ * This controller manages the customer's cart view, allowing them to:
+ * <ul>
+ * <li>Review items, quantities, and prices.</li>
+ * <li>Remove items from the cart.</li>
+ * <li>Apply discount coupons.</li>
+ * <li>View their loyalty status and progress.</li>
+ * <li>Select delivery date and time.</li>
+ * <li>Proceed to final checkout and order placement.</li>
+ * </ul>
+ *
+ * @author Group18
+ * @version 1.0
+ */
 public class CartController {
 
     // =====================
@@ -84,6 +99,11 @@ public class CartController {
     // =====================
     // INITIALIZE
     // =====================
+    /**
+     * Initializes the controller class. This method is automatically called
+     * after the fxml file has been loaded.
+     * Sets up table columns and populates the delivery time combo boxes.
+     */
     @FXML
     public void initialize() {
 
@@ -120,6 +140,13 @@ public class CartController {
     // =====================
     // INIT FROM CUSTOMER
     // =====================
+    /**
+     * Receives the current user and their active cart data from the main customer dashboard.
+     * Initializes the table data and updates price calculations.
+     *
+     * @param user The logged-in customer.
+     * @param cart The current 'Order' object acting as the shopping cart.
+     */
     public void initData(User user, Order cart) {
         this.currentUser = user;
         this.cartOrder = cart;
@@ -135,6 +162,11 @@ public class CartController {
     // =====================
     // REMOVE ITEM
     // =====================
+
+    /**
+     * Handles the removal of a selected item from the cart.
+     * Updates the database via OrderService and refreshes the UI (table and total price).
+     */
     @FXML
     private void handleRemoveItem() {
 
@@ -157,7 +189,10 @@ public class CartController {
 
         checkoutButton.setDisable(cartItems.isEmpty());
     }
-
+/**
+     * Validates and applies a discount coupon code entered by the user.
+     * If valid, updates the total price reflecting the discount.
+     */
     @FXML
     private void handleApplyCoupon() {
         String code = couponField.getText();
@@ -179,6 +214,17 @@ public class CartController {
     // =====================
     // CHECKOUT
     // =====================
+
+    /**
+     * Handles the final checkout process.
+     * Performs multiple validations:
+     * <ul>
+     * <li>Checks for minimum cart value.</li>
+     * <li>Validates delivery date/time (cannot be in the past).</li>
+     * <li>Enforces delivery window constraints (e.g., within 48 hours).</li>
+     * </ul>
+     * If valid, prompts for confirmation and submits the order via OrderService.
+     */
     @FXML
     private void handleCheckout() {
 
@@ -259,6 +305,10 @@ public class CartController {
     // =====================
     // BACK
     // =====================
+
+    /**
+     * Closes the cart window and returns to the previous screen.
+     */
     @FXML
     private void handleBack() {
         closeStage();
@@ -267,7 +317,10 @@ public class CartController {
     // =====================
     // PRICE CALCULATIONS
     // =====================
-
+/**
+     * Recalculates the total price including VAT, coupons, and loyalty discounts.
+     * Updates the UI labels and the Loyalty Progress Bar accordingly.
+     */
     private void updateTotalPriceLabel() {
         if (cartOrder == null)
             return;
@@ -315,6 +368,9 @@ public class CartController {
     // =====================
     // UTIL
     // =====================
+    /**
+     * Helper method to display information alerts.
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

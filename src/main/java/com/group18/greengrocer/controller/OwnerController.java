@@ -1,25 +1,30 @@
 package com.group18.greengrocer.controller;
 
+import com.group18.greengrocer.model.Category;
+import com.group18.greengrocer.model.Message;
+import com.group18.greengrocer.model.Order;
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
-import com.group18.greengrocer.model.Message;
-import com.group18.greengrocer.service.ProductService;
-import com.group18.greengrocer.service.UserService;
+// Services
 import com.group18.greengrocer.service.DiscountService;
 import com.group18.greengrocer.service.MessageService;
+import com.group18.greengrocer.service.OrderService;
+import com.group18.greengrocer.service.ProductService;
+import com.group18.greengrocer.service.UserService;
+// Utils
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Button;
-import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+<<<<<<< HEAD
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+=======
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
@@ -39,506 +44,242 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.geometry.Insets;
+>>>>>>> 6e070348b5d31ffe8f82250157c5ecfcc98110f8
 
-import java.util.Optional;
+import java.io.IOException;
 
 /**
- * OwnerController (Updated for Image Upload)
+ * Controller class for the Owner Dashboard.
+ * Manages Products, Carriers, Orders, and Messages.
  */
 public class OwnerController {
+<<<<<<< HEAD
+
+    // =============================================================
+    // SECTION: SERVICE DECLARATIONS
+    // =============================================================
+    private final ProductService productService;
+    private final UserService userService;
+    private final OrderService orderService;
+    private final DiscountService discountService;
+    private final MessageService messageService; // Corrected from MessagesService
+
+    private User currentUser;
+
+    // =============================================================
+    // SECTION: FXML UI COMPONENTS
+    // =============================================================
+
+    @FXML private Label usernameLabel;
+    @FXML private Button logoutButton;
+
+    // --- Product Tab Elements ---
+    @FXML private TableView<Product> productTable;
+    @FXML private TableColumn<Product, Integer> idCol;
+    @FXML private TableColumn<Product, String> nameCol;
+    @FXML private TableColumn<Product, String> categoryCol;
+    @FXML private TableColumn<Product, String> typeCol;
+    @FXML private TableColumn<Product, String> unitCol;
+    @FXML private TableColumn<Product, Double> priceCol;
+    @FXML private TableColumn<Product, Double> stockCol;
+    @FXML private TableColumn<Product, Double> thresholdCol;
+    
+    @FXML private Label effectivePriceLabel;
+    @FXML private TextField nameField, typeField, unitField, priceField, stockField, thresholdField;
+    @FXML private ComboBox<Category> categoryCombo;
+
+    // --- Carrier Tab Elements ---
+    @FXML private TableView<User> carrierTable;
+    @FXML private TableColumn<User, Integer> carrierIdCol;
+    @FXML private TableColumn<User, String> carrierNameCol;
+    @FXML private TableColumn<User, String> carrierPhoneCol;
+    @FXML private TableColumn<User, String> carrierAddressCol;
+    @FXML private TextField carrierUsernameField, carrierPhoneField;
+    @FXML private PasswordField carrierPasswordField;
+    @FXML private TextArea carrierAddressArea;
+
+    // --- Order Tab Elements ---
+    @FXML private TableView<Order> orderTable;
+    @FXML private TableColumn<Order, Integer> orderIdCol;
+    @FXML private TableColumn<Order, Integer> orderCustomerCol;
+    @FXML private TableColumn<Order, String> orderDateCol;
+    @FXML private TableColumn<Order, Double> orderTotalCol;
+    @FXML private TableColumn<Order, String> orderStatusCol;
+    @FXML private TableColumn<Order, Integer> orderCarrierCol;
+    @FXML private TextArea orderDetailsArea;
+
+    // --- Messages Tab Elements (Fixed Missing Definitions) ---
+    @FXML private TableView<Message> messageTable;
+    @FXML private TableColumn<Message, String> fromCol;
+    @FXML private TableColumn<Message, String> dateCol;
+    @FXML private TableColumn<Message, String> previewCol;
+    
+    @FXML private Label fromLabel;      
+    @FXML private TextArea contentArea; 
+    @FXML private TextArea replyField;
+=======
     // --- Services ---
 
     private User currentUser;
     private final ProductService productService;
     private final UserService userService;
     private final DiscountService discountService;
+>>>>>>> 6e070348b5d31ffe8f82250157c5ecfcc98110f8
 
-    // FXML Fields
-    @FXML
-    private Label usernameLabel;
-    @FXML
-    private Button backButton;
-    @FXML
-    private Button logoutButton;
-
-    // Table
-    @FXML
-    private TableView<Product> productTable;
-    @FXML
-    private TableColumn<Product, Integer> idCol;
-    @FXML
-    private TableColumn<Product, String> nameCol;
-    @FXML
-    private TableColumn<Product, String> categoryCol;
-    @FXML
-    private TableColumn<Product, String> typeCol;
-    @FXML
-    private TableColumn<Product, String> unitCol;
-    @FXML
-    private TableColumn<Product, Double> priceCol;
-    @FXML
-    private TableColumn<Product, Double> stockCol;
-    @FXML
-    private TableColumn<Product, Double> thresholdCol;
-
-    // Form
-    @FXML
-    private TextField nameField;
-    @FXML
-    private ComboBox<Category> categoryCombo;
-    @FXML
-    private TextField typeField;
-    @FXML
-    private TextField unitField;
-    @FXML
-    private TextField priceField;
-    @FXML
-    private TextField stockField;
-    @FXML
-    private TextField thresholdField;
-
-    @FXML
-    private Label effectivePriceLabel;
-    @FXML
-    private ImageView productImageView; // NEW
-    @FXML
-    private Button addButton;
-    @FXML
-    private Button updateButton;
-
-    // Internal state for image
-    private byte[] currentImageBytes; // NEW
-
-    // Carrier
-    @FXML
-    private TableView<User> carrierTable;
-    @FXML
-    private TableColumn<User, Integer> carrierIdCol;
-    @FXML
-    private TableColumn<User, String> carrierNameCol;
-    @FXML
-    private TableColumn<User, String> carrierPhoneCol;
-    @FXML
-    private TableColumn<User, String> carrierAddressCol;
-
-    @FXML
-    private TextField carrierUsernameField;
-    @FXML
-    private PasswordField carrierPasswordField;
-    @FXML
-    private TextField carrierPhoneField;
-    @FXML
-    private TextArea carrierAddressArea;
-
-    // Discounts
-    @FXML
-    private TextField couponCodeField;
-    @FXML
-    private TextField couponAmountField;
-    @FXML
-    private DatePicker couponExpiryPicker;
-    @FXML
-    private TextField loyaltyMinOrderField;
-    @FXML
-    private TextField loyaltyRateField;
-
-    // Messages
-    @FXML
-    private TableView<Message> messagesTable;
-    @FXML
-    private TableColumn<Message, String> msgFromCol;
-    @FXML
-    private TableColumn<Message, String> msgDateCol;
-    @FXML
-    private TableColumn<Message, String> msgContentCol;
-    @FXML
-    private TextField msgSenderField;
-    @FXML
-    private TextArea msgReadArea;
-    @FXML
-    private TextArea msgReplyArea;
-
-    private final MessageService messageService;
-    private final com.group18.greengrocer.service.OrderService orderService; // Add OrderService
-
-    // Order Approval Tab
-    @FXML
-    private TableView<com.group18.greengrocer.model.Order> ordersTable;
-    @FXML
-    private TableColumn<com.group18.greengrocer.model.Order, Integer> orderIdCol;
-    @FXML
-    private TableColumn<com.group18.greengrocer.model.Order, String> orderCustomerCol;
-    @FXML
-    private TableColumn<com.group18.greengrocer.model.Order, String> orderDateCol;
-    @FXML
-    private TableColumn<com.group18.greengrocer.model.Order, String> orderTotalCol;
-    @FXML
-    private TableColumn<com.group18.greengrocer.model.Order, String> orderStatusCol;
-    @FXML
-    private TextArea orderDetailsArea;
+    // =============================================================
+    // SECTION: CONSTRUCTOR & INITIALIZATION
+    // =============================================================
 
     public OwnerController() {
+        // Initialize all backend services
         this.productService = new ProductService();
         this.userService = new UserService();
+        this.orderService = new OrderService();
         this.discountService = new DiscountService();
-        this.messageService = new MessageService();
-        this.orderService = new com.group18.greengrocer.service.OrderService();
-    }
-
-    public void initData(User user) {
-        this.currentUser = user;
-        if (usernameLabel != null && currentUser != null) {
-            usernameLabel.setText("Owner: " + currentUser.getUsername());
-        }
-        loadOwnerData();
+        this.messageService = new MessageService(); // Initialized correctly
     }
 
     @FXML
     public void initialize() {
-        // Table Columns
-        idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
-        nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
-        categoryCol.setCellValueFactory(cell -> {
-            Product p = cell.getValue();
-            return new SimpleStringProperty(p.getCategory() == null ? "-" : p.getCategory().name());
-        });
-        typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
-        unitCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUnit()));
-        priceCol.setCellValueFactory(cell -> {
-            Product p = cell.getValue();
-            // Use effective price logic (doubled if stock <= threshold)
-            double effective = (p.getStock() <= p.getThreshold()) ? p.getPrice() * 2.0 : p.getPrice();
-            return new SimpleObjectProperty<>(effective);
-        });
-        stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
-        thresholdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getThreshold()));
-
-        // Carrier Table
-        if (carrierTable != null) {
-            carrierIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
-            carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
-            carrierPhoneCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPhoneNumber()));
-            carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
-        }
-
-        // Listener
-        productTable.getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldVal, newVal) -> showProductDetails(newVal));
-
-        // Init user if needed
-        if (this.currentUser == null) {
-            this.currentUser = SessionManager.getInstance().getCurrentUser();
-        }
-        if (usernameLabel != null && currentUser != null) {
+        this.currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
             usernameLabel.setText("Owner: " + currentUser.getUsername());
         }
 
-        if (categoryCombo != null) {
-            categoryCombo.getItems().setAll(Category.values());
-        }
+        setupTableColumns();
+        
+        // Load initial data for all tabs
+        refreshProductTable();
+        refreshCarrierTable();
+        refreshOrderTable();
+        loadMessages(); // Load messages on startup
 
-        // Messages Setup
-        if (messagesTable != null) {
-            msgFromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderName()));
-            msgDateCol.setCellValueFactory(cell -> {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
-                return new SimpleStringProperty(sdf.format(cell.getValue().getSentAt()));
+        // Listener: Update detail view when a message row is selected
+        if (messageTable != null) {
+            messageTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    fromLabel.setText(newVal.getSenderUsername());
+                    contentArea.setText(newVal.getContent());
+                }
             });
-            msgContentCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getContent()));
-
-            messagesTable.getSelectionModel().selectedItemProperty()
-                    .addListener((obs, oldV, newV) -> showMessageDetails(newV));
-            handleRefreshMessages();
         }
+    }
 
-        // Order Table
-        if (ordersTable != null) {
-            orderIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
-            orderCustomerCol.setCellValueFactory(
-                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getCustomerId())));
-            orderDateCol
-                    .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getOrderTime().toString()));
-            orderTotalCol.setCellValueFactory(
-                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getTotalCost())));
-            orderStatusCol.setCellValueFactory(cell -> {
-                com.group18.greengrocer.model.Order.Status status = cell.getValue().getStatus();
-                if (status == com.group18.greengrocer.model.Order.Status.WAITING)
-                    return new SimpleStringProperty("Waiting");
-                if (status == com.group18.greengrocer.model.Order.Status.RECEIVED)
-                    return new SimpleStringProperty("Received");
-                return new SimpleStringProperty(status.toString());
+    /**
+     * Configures the columns for all TableViews in the dashboard.
+     */
+    private void setupTableColumns() {
+        // 1. Product Columns
+        idCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+        nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
+        categoryCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCategory().toString()));
+        priceCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPrice()));
+        stockCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getStock()));
+
+        // 2. Message Columns
+        if (fromCol != null) {
+            fromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderUsername()));
+            dateCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSentAt().toString()));
+            // Show only first 20 chars for preview
+            previewCol.setCellValueFactory(cell -> {
+                String content = cell.getValue().getContent();
+                return new SimpleStringProperty(content.length() > 20 ? content.substring(0, 20) + "..." : content);
             });
-
-            ordersTable.getSelectionModel().selectedItemProperty()
-                    .addListener((obs, oldV, newV) -> showOrderDetails(newV));
-        }
-
-        // Bind Buttons to Selection
-        if (addButton != null && updateButton != null && productTable != null) {
-            addButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNotNull());
-            updateButton.disableProperty().bind(productTable.getSelectionModel().selectedItemProperty().isNull());
-        }
-
-        loadOwnerData();
-        loadCarrierData();
-        handleRefreshReports();
-        handleRefreshOrders();
-
-        // Init Loyalty Fields with current values
-        if (loyaltyMinOrderField != null) {
-            loyaltyMinOrderField.setText(String.valueOf(discountService.getLoyaltyMinOrderCount()));
-        }
-        if (loyaltyRateField != null) {
-            loyaltyRateField.setText(String.valueOf(discountService.getLoyaltyDiscountRate()));
         }
     }
 
-    // ================= ORDER APPROVAL =================
+    // =============================================================
+    // SECTION: MESSAGE HANDLING LOGIC (Crash-Proof)
+    // =============================================================
+
+    /**
+     * Handles the "Mark as Read" action.
+     * Includes validation to prevent system crash if no message is selected.
+     */
     @FXML
-    private void handleRefreshOrders() {
-        if (ordersTable == null)
-            return;
-
-        java.util.List<com.group18.greengrocer.model.Order> allOrders = orderService.getAllOrdersForOwner();
-        // Filter mainly for RECEIVED orders for approval, but maybe show others too?
-        // User flow: "Sipariş, ilk olarak owner (işletme sahibi) onayına düşer."
-        // So we focus on RECEIVED orders.
-        java.util.List<com.group18.greengrocer.model.Order> pending = allOrders.stream()
-                .filter(o -> o.getStatus() == com.group18.greengrocer.model.Order.Status.WAITING ||
-                        o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
-                .toList();
-
-        ordersTable.getItems().setAll(pending);
-    }
-
-    @FXML
-    private void handleApproveOrder() {
-        com.group18.greengrocer.model.Order selected = ordersTable.getSelectionModel().getSelectedItem();
+    private void handleMarkAsRead() {
+        // Validation: Check if a message is selected to prevent NullPointerException
+        Message selected = messageTable.getSelectionModel().getSelectedItem();
+        
         if (selected == null) {
-            AlertUtil.showWarning("No Selection", "Please select an order to approve.");
+            AlertUtil.showWarning("Selection Error", "Please select a message to mark as read.");
+            return; // Exit method safely
+        }
+
+        try {
+            // Database operation
+            messageService.markAsRead(selected.getId());
+            
+            // UI Feedback
+            AlertUtil.showInfo("Success", "Message marked as read.");
+            
+            // Refresh logic: Reload list to update status
+            loadMessages(); 
+            
+            // Clear details
+            fromLabel.setText("");
+            contentArea.clear();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Operation Failed", "Could not update message status: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads messages from the database and populates the table.
+     */
+    private void loadMessages() {
+        if (messageTable != null) {
+            messageTable.getItems().setAll(messageService.getAllMessages());
+        }
+    }
+
+    /**
+     * Handles sending a reply (Placeholder implementation).
+     */
+    @FXML
+    private void handleSendReply() {
+        Message selected = messageTable.getSelectionModel().getSelectedItem();
+        String replyText = replyField.getText();
+
+        if (selected == null || replyText.trim().isEmpty()) {
+            AlertUtil.showWarning("Input Error", "Please select a message and enter a reply.");
             return;
         }
 
         try {
-            orderService.approveOrder(selected.getId());
-            AlertUtil.showInfo("Success", "Order #" + selected.getId() + " approved and moved to Received.");
-            handleRefreshOrders();
-            orderDetailsArea.clear();
+            // Future implementation: messageService.sendReply(...)
+            AlertUtil.showInfo("Info", "Reply functionality is under development.\nDraft: " + replyText);
+            replyField.clear();
         } catch (Exception e) {
-            AlertUtil.showError("Error", e.getMessage());
+            AlertUtil.showError("Error", "Failed to send reply.");
         }
     }
 
-    private void showOrderDetails(com.group18.greengrocer.model.Order order) {
-        if (orderDetailsArea == null)
-            return;
-        if (order == null) {
-            orderDetailsArea.clear();
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Order ID: ").append(order.getId()).append("\n");
-        String statusLabel = order.getStatus().toString();
-        if (order.getStatus() == com.group18.greengrocer.model.Order.Status.WAITING)
-            statusLabel = "Waiting";
-        else if (order.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
-            statusLabel = "Received";
-        sb.append("Status: ").append(statusLabel).append("\n");
-        sb.append("Date: ").append(order.getOrderTime()).append("\n");
-        sb.append("Total: ").append(order.getTotalCost()).append(" $\n\n");
-        sb.append("Items:\n");
-        for (com.group18.greengrocer.model.CartItem item : order.getItems()) {
-            sb.append("- ").append(item.getQuantity()).append(" x ")
-                    .append(item.getProduct().getName()).append("\n");
-        }
-        orderDetailsArea.setText(sb.toString());
+    // =============================================================
+    // SECTION: DATA REFRESH HELPERS
+    // =============================================================
+
+    private void refreshProductTable() {
+        productTable.getItems().setAll(productService.getAllProducts());
     }
-
-    private void loadOwnerData() {
-        if (productTable == null)
-            return;
-        productTable.getItems().setAll(productService.getAllProductsForOwner());
-    }
-
-    private void showProductDetails(Product product) {
-        if (effectivePriceLabel == null)
-            return;
-
-        if (product == null) {
-            effectivePriceLabel.setText("-");
-            handleClear();
-            return;
-        }
-
-        nameField.setText(product.getName());
-        categoryCombo.setValue(product.getCategory());
-        typeField.setText(product.getType());
-        unitField.setText(product.getUnit());
-        priceField.setText(String.valueOf(product.getPrice()));
-        stockField.setText(String.valueOf(product.getStock()));
-        thresholdField.setText(String.valueOf(product.getThreshold()));
-
-        // Display Image
-        currentImageBytes = product.getImage();
-        displayImage(currentImageBytes);
-
-        try {
-            double effectivePrice = productService.getEffectivePrice(product);
-            effectivePriceLabel.setText(String.format("%.2f ₺", effectivePrice));
-        } catch (Exception e) {
-            effectivePriceLabel.setText("-");
+    
+    private void refreshCarrierTable() {
+        if (carrierTable != null) {
+           carrierTable.getItems().setAll(userService.getAllCarriers());
         }
     }
 
-    @FXML
-    private void handleUploadImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Product Image");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif"));
-
-        File file = fileChooser.showOpenDialog(productImageView.getScene().getWindow());
-        if (file != null) {
-            try {
-                // Read bytes
-                byte[] bytes = Files.readAllBytes(file.toPath());
-                // Validate size? (Max 16MB for MEDIUMBLOB, but code uses default BLOB (64KB
-                // potentially? No, usually larger in modern MySQL unless strictly TINYBLOB))
-                // Just use it.
-                currentImageBytes = bytes;
-                displayImage(currentImageBytes);
-
-            } catch (IOException e) {
-                AlertUtil.showError("Image Error", "Failed to read image: " + e.getMessage());
-            }
+    private void refreshOrderTable() {
+        if (orderTable != null) {
+            orderTable.getItems().setAll(orderService.getAllOrders());
         }
     }
 
-    private void displayImage(byte[] imageBytes) {
-        if (productImageView == null)
-            return;
-
-        if (imageBytes != null && imageBytes.length > 0) {
-            try {
-                ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                Image img = new Image(bis);
-                productImageView.setImage(img);
-            } catch (Exception e) {
-                productImageView.setImage(null);
-            }
-        } else {
-            productImageView.setImage(null);
-        }
-    }
-
-    @FXML
-    private void handleAdd() {
-        if (!validateForm())
-            return;
-
-        try {
-            Product newProduct = new Product();
-            newProduct.setId(-1);
-            newProduct.setName(nameField.getText().trim());
-            newProduct.setCategory(categoryCombo.getValue());
-            newProduct.setType(typeField.getText().trim());
-            newProduct.setUnit(unitField.getText().trim());
-            newProduct.setPrice(Double.parseDouble(priceField.getText().trim()));
-            newProduct.setStock(Double.parseDouble(stockField.getText().trim()));
-            newProduct.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
-            newProduct.setImage(currentImageBytes); // Set BLOB
-
-            productService.addProduct(newProduct);
-
-            AlertUtil.showInfo("Success", "Product added successfully.");
-            handleClear();
-            loadOwnerData();
-
-        } catch (NumberFormatException e) {
-            AlertUtil.showError("Input Error", "Price, Stock, and Threshold must be valid numbers.");
-        } catch (Exception e) {
-            AlertUtil.showError("Error", "Could not add product: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleUpdate() {
-        Product selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            AlertUtil.showWarning("No Selection", "Please select a product to update.");
-            return;
-        }
-
-        if (!validateForm())
-            return;
-
-        try {
-            selected.setName(nameField.getText().trim());
-            selected.setCategory(categoryCombo.getValue());
-            selected.setType(typeField.getText().trim());
-            selected.setUnit(unitField.getText().trim());
-            selected.setPrice(Double.parseDouble(priceField.getText().trim()));
-            selected.setStock(Double.parseDouble(stockField.getText().trim()));
-            selected.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
-            selected.setImage(currentImageBytes); // Update BLOB
-
-            productService.updateProduct(selected);
-
-            AlertUtil.showInfo("Success", "Product updated successfully.");
-
-            int selectedId = selected.getId();
-            loadOwnerData();
-
-            productTable.getItems().stream()
-                    .filter(p -> p.getId() == selectedId)
-                    .findFirst()
-                    .ifPresent(p -> productTable.getSelectionModel().select(p));
-            productTable.refresh();
-
-        } catch (NumberFormatException e) {
-            AlertUtil.showError("Input Error", "Price, Stock, and Threshold must be valid numbers.");
-        } catch (Exception e) {
-            AlertUtil.showError("Error", "Could not update product: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleClear() {
-        nameField.clear();
-        categoryCombo.getSelectionModel().clearSelection();
-        typeField.clear();
-        unitField.clear();
-        priceField.clear();
-        stockField.clear();
-        thresholdField.clear();
-
-        currentImageBytes = null;
-        if (productImageView != null)
-            productImageView.setImage(null);
-
-        productTable.getSelectionModel().clearSelection();
-    }
-
-    // ... Other methods (handleDelete, handles for Carrier, Coupons etc.) stay the
-    // same ...
-    // To save context, I will overwrite the whole file with the full content
-    // including previous features.
-
-    // ... [Previous code for Refresh, Back, Logout, Delete, ValidateForm, Carrier
-    // logic, Coupon logic] ...
-
-    // (Re-implementing all those methods to ensure file consistency)
-
-    @FXML
-    private void handleRefresh() {
-        loadOwnerData();
-        AlertUtil.showInfo("Refreshed", "Product list refreshed.");
-    }
-
-    @FXML
-    private void handleBack() {
-        handleLogout();
-    }
+    // =============================================================
+    // SECTION: NAVIGATION
+    // =============================================================
 
     @FXML
     private void handleLogout() {
@@ -547,6 +288,10 @@ public class OwnerController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
+<<<<<<< HEAD
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+=======
             stage.getScene().setRoot(root);
             stage.setTitle("Group18 GreenGrocer - Login");
             stage.show();
@@ -933,10 +678,13 @@ public class OwnerController {
             if (msgReplyArea != null) msgReplyArea.clear();
             
         } catch (Exception e) {
+>>>>>>> 6e070348b5d31ffe8f82250157c5ecfcc98110f8
             e.printStackTrace();
-            AlertUtil.showError("Operation Failed", "Could not mark message as read: " + e.getMessage());
         }
     }
+<<<<<<< HEAD
+}
+=======
 
     @FXML
     private void handleSendReply() {
@@ -968,3 +716,4 @@ public class OwnerController {
         }
     }
 }
+>>>>>>> 6e070348b5d31ffe8f82250157c5ecfcc98110f8

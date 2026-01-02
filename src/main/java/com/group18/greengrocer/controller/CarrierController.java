@@ -26,8 +26,18 @@ import javafx.scene.Scene;
 import com.group18.greengrocer.util.SessionManager;
 
 /**
- * Controller for Carrier Dashboard.
- * Handles order selection, delivery completion and history.
+ * Controller class for the Carrier (Delivery Personnel) Dashboard.
+ * <p>
+ * This class manages the user interface for carriers, allowing them to:
+ * <ul>
+ * <li>View available orders that are ready for delivery.</li>
+ * <li>Accept orders to their current delivery queue.</li>
+ * <li>Mark orders as delivered with a specific date and time.</li>
+ * <li>View their personal delivery history.</li>
+ * </ul>
+ *
+ * @author Group18
+ * @version 1.0
  */
 public class CarrierController {
 
@@ -97,13 +107,22 @@ public class CarrierController {
     private TableColumn<Order, String> colHistStatus;
     @FXML
     private TableColumn<Order, String> colHistRating;
-
+/**
+     * Initializes the controller with the logged-in user's data.
+     * This method should be called immediately after loading the FXML.
+     *
+     * @param user The User object representing the currently logged-in carrier.
+     */
     public void initData(User user) {
         this.currentUser = user;
         usernameLabel.setText("Carrier: " + user.getUsername());
         refreshAll();
     }
-
+/**
+     * JavaFX initialization method.
+     * Automatically called after the FXML file has been loaded.
+     * Sets up table columns and populates time selection combo boxes.
+     */
     @FXML
     public void initialize() {
         colAvDate.setText("Req. Delivery");
@@ -126,7 +145,10 @@ public class CarrierController {
     }
 
     // ===== TABLE SETUPS =====
-
+/**
+     * Configures the columns for the "Available Orders" table.
+     * Maps Order properties to the table cells using CellValueFactories.
+     */
     private void setupAvailableOrdersTable() {
 
         colOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
@@ -165,7 +187,9 @@ public class CarrierController {
         colTotalPrice.setCellValueFactory(cd -> new SimpleStringProperty(
                 String.format("%.2f", cd.getValue().getTotalCost())));
     }
-
+/**
+     * Configures the columns for the "Current Orders" (Accepted but not delivered) table.
+     */
     private void setupCurrentOrdersTable() {
 
         colCurOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
@@ -198,7 +222,10 @@ public class CarrierController {
 
         colCurStatus.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getStatus().toString()));
     }
-
+/**
+     * Configures the columns for the "Order History" table.
+     * Displays completed orders and their customer ratings.
+     */
     private void setupHistoryTable() {
 
         colHistOrderId.setCellValueFactory(cd -> new SimpleObjectProperty<>(cd.getValue().getId()));
@@ -217,7 +244,10 @@ public class CarrierController {
     }
 
     // ===== DATA LOAD =====
-
+/**
+     * Refreshes data in all tables by fetching the latest information from the services.
+     * Updates the UI state (enable/disable buttons) based on current active orders.
+     */
     private void refreshAll() {
         availableOrdersTable.setItems(
                 FXCollections.observableArrayList(orderService.getPendingOrders()));
@@ -242,7 +272,11 @@ public class CarrierController {
     }
 
     // ===== ACTIONS =====
-
+/**
+     * Handles the "Accept Order" button click.
+     * Assigns the selected order from the available list to the current carrier.
+     * Displays an alert if no order is selected or if the order is already taken.
+     */
     @FXML
     private void handleAcceptOrder() {
         Order selected = availableOrdersTable.getSelectionModel().getSelectedItem();
@@ -259,7 +293,11 @@ public class CarrierController {
             showAlert("Order Taken", "This order has already been taken.");
         }
     }
-
+/**
+     * Handles the "Complete Delivery" button click.
+     * Validates the selected date and time, checks if it's logically valid (after order time),
+     * and updates the order status to DELIVERED.
+     */
     @FXML
     private void handleCompleteDelivery() {
 
@@ -310,7 +348,10 @@ public class CarrierController {
         deliveryDatePicker.setValue(null);
         refreshAll();
     }
-
+/**
+     * Handles the logout process.
+     * Clears the session and navigates back to the Login screen.
+     */
     @FXML
     private void handleLogout() {
         try {
