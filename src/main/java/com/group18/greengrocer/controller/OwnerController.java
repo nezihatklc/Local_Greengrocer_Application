@@ -39,6 +39,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.geometry.Insets;
+import com.group18.greengrocer.model.Message;
+import com.group18.greengrocer.service.MessageService;
 
 import java.util.Optional;
 
