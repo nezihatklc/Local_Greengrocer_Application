@@ -64,17 +64,28 @@ public class CarrierController {
 
     // ===== CURRENT ORDERS =====
     // ===== CURRENT ORDERS =====
-    @FXML private TableView<Order> currentOrdersTable;
-    @FXML private TableColumn<Order, Integer> colCurOrderId;
-    @FXML private TableColumn<Order, String> colCurCustomer;
-    @FXML private TableColumn<Order, String> colCurAddress;
-    @FXML private TableColumn<Order, String> colCurProducts;
-    @FXML private TableColumn<Order, String> colCurTotal;
-    @FXML private TableColumn<Order, String> colCurStatus;
-    @FXML private DatePicker deliveryDatePicker;
-    @FXML private ComboBox<Integer> deliveryHourCombo;
-    @FXML private ComboBox<Integer> deliveryMinuteCombo;
-    @FXML private Button completeDeliveryButton;
+    @FXML
+    private TableView<Order> currentOrdersTable;
+    @FXML
+    private TableColumn<Order, Integer> colCurOrderId;
+    @FXML
+    private TableColumn<Order, String> colCurCustomer;
+    @FXML
+    private TableColumn<Order, String> colCurAddress;
+    @FXML
+    private TableColumn<Order, String> colCurProducts;
+    @FXML
+    private TableColumn<Order, String> colCurTotal;
+    @FXML
+    private TableColumn<Order, String> colCurStatus;
+    @FXML
+    private DatePicker deliveryDatePicker;
+    @FXML
+    private ComboBox<Integer> deliveryHourCombo;
+    @FXML
+    private ComboBox<Integer> deliveryMinuteCombo;
+    @FXML
+    private Button completeDeliveryButton;
 
     // ===== HISTORY =====
     @FXML
@@ -103,12 +114,14 @@ public class CarrierController {
 
         // Initialize Time Combos
         ObservableList<Integer> hours = FXCollections.observableArrayList();
-        for (int i = 0; i < 24; i++) hours.add(i);
+        for (int i = 0; i < 24; i++)
+            hours.add(i);
         deliveryHourCombo.setItems(hours);
         deliveryHourCombo.getSelectionModel().select(Integer.valueOf(12));
 
         ObservableList<Integer> minutes = FXCollections.observableArrayList();
-        for (int i = 0; i < 60; i += 15) minutes.add(i);
+        for (int i = 0; i < 60; i += 15)
+            minutes.add(i);
         deliveryMinuteCombo.setItems(minutes);
         deliveryMinuteCombo.getSelectionModel().selectFirst();
     }
@@ -264,7 +277,7 @@ public class CarrierController {
 
         Integer hour = deliveryHourCombo.getValue();
         Integer minute = deliveryMinuteCombo.getValue();
-        
+
         if (hour == null || minute == null) {
             showAlert("Missing Time", "Please select a delivery time.");
             return;
@@ -274,8 +287,7 @@ public class CarrierController {
                 deliveryDatePicker.getValue()
                         .atTime(hour, minute)
                         .atZone(ZoneId.systemDefault())
-                        .toInstant()
-        );
+                        .toInstant());
 
         if (selected.getOrderTime() != null &&
                 deliveryDate.before(selected.getOrderTime())) {
@@ -304,13 +316,13 @@ public class CarrierController {
     private void handleLogout() {
         try {
             SessionManager.getInstance().logout();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
-            stage.setTitle("Group18 GreenGrocer - Login");
             stage.setMaximized(wasMaximized);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

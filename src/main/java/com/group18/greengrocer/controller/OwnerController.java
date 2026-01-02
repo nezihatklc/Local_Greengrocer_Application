@@ -557,13 +557,13 @@ public class OwnerController {
     private void handleLogout() {
         try {
             SessionManager.getInstance().logout();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             boolean wasMaximized = stage.isMaximized();
             stage.setScene(new Scene(root));
-            stage.setTitle("Group18 GreenGrocer - Login");
             stage.setMaximized(wasMaximized);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());
@@ -599,19 +599,19 @@ public class OwnerController {
             return false;
         }
         if (!ValidatorUtil.isValidName(nameField.getText())) {
-             AlertUtil.showWarning("Validation", "Product Name must contain only letters and spaces.");
-             return false;
+            AlertUtil.showWarning("Validation", "Product Name must contain only letters and spaces.");
+            return false;
         }
 
         if (categoryCombo.getValue() == null) {
             AlertUtil.showWarning("Validation", "Category is required.");
             return false;
         }
-        
+
         // Optional: Validate Type if desired
         if (!ValidatorUtil.isEmpty(typeField.getText()) && !ValidatorUtil.isValidName(typeField.getText())) {
-             AlertUtil.showWarning("Validation", "Type must contain only letters and spaces.");
-             return false;
+            AlertUtil.showWarning("Validation", "Type must contain only letters and spaces.");
+            return false;
         }
 
         if (ValidatorUtil.isEmpty(priceField.getText()) ||
@@ -861,13 +861,13 @@ public class OwnerController {
         productSalesChart.getData().clear();
         javafx.scene.chart.XYChart.Series<String, Number> seriesP = new javafx.scene.chart.XYChart.Series<>();
         seriesP.setName("Revenue");
-        
+
         // Sort descending and take top 10
         prodData.entrySet().stream()
-            .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
-            .limit(10)
-            .forEach(e -> seriesP.getData().add(new javafx.scene.chart.XYChart.Data<>(e.getKey(), e.getValue())));
-            
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(10)
+                .forEach(e -> seriesP.getData().add(new javafx.scene.chart.XYChart.Data<>(e.getKey(), e.getValue())));
+
         productSalesChart.getData().add(seriesP);
 
         // 3. Line Chart (Time)
