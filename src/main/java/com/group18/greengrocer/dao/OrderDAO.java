@@ -290,7 +290,7 @@ public class OrderDAO {
     // ASSIGNED TO: Owner
     public boolean approveOrder(int orderId) {
         // Allow approving 'WAITING' (new) or legacy orders
-        String sql = "UPDATE OrderInfo SET status = 'RECEIVED' WHERE id = ? AND (status = 'WAITING' OR status = 'RECEIVED')";
+        String sql = "UPDATE OrderInfo SET status = 'RECEIVED' WHERE id = ? AND (status = 'WAITING' OR status = 'RECEIVED' OR status = 'AVAILABLE')";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -411,7 +411,7 @@ public class OrderDAO {
      * @return true if successful.
      */
     public boolean dismissOrder(int orderId) {
-        String sql = "UPDATE OrderInfo SET status = 'COMPLETED' WHERE id = ? AND status = 'DELIVERED'";
+        String sql = "UPDATE OrderInfo SET status = 'COMPLETED' WHERE id = ?";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 

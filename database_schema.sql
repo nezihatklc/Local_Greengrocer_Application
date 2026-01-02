@@ -56,7 +56,7 @@ CREATE TABLE OrderInfo (
     deliverytime TIMESTAMP NULL, 
     
     -- Status Enum Updated:
-    status ENUM('AVAILABLE', 'SELECTED', 'COMPLETED', 'CANCELLED') DEFAULT 'AVAILABLE',
+    status ENUM('WAITING', 'RECEIVED', 'ON_THE_WAY', 'DELIVERED', 'COMPLETED', 'CANCELLED') DEFAULT 'WAITING',
     
     totalcost DECIMAL(10, 2) NOT NULL, 
     

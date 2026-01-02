@@ -153,23 +153,11 @@ public class OrderHistoryController {
                         return;
                 }
 
-                if (selected.getStatus() == Order.Status.DELIVERED) {
-                        showAlert("Error", "You cannot cancel a delivered order.");
+                // NEW RULE: Customer can only cancel if status is WAITING.
+                // Once Owner approves (RECEIVED/Preparing), cancellation is forbidden.
+                if (selected.getStatus() != Order.Status.WAITING) {
+                        showAlert("Error", "You cannot cancel an order that is being prepared by the owner.");
                         return;
-                }
-
-                if (selected.getStatus() == Order.Status.CANCELLED) {
-                        showAlert("Error", "You cannot cancel a cancelled order.");
-                        return;
-                }
-
-                // 1-HOUR CANCELLATION LIMIT
-                if (selected.getOrderTime() != null) {
-                        long diff = System.currentTimeMillis() - selected.getOrderTime().getTime();
-                        if (diff > 3600000) { // 1 hour
-                                showAlert("Error", "You cannot cancel an order placed more than 1 hour ago.");
-                                return;
-                        }
                 }
 
                 try {
