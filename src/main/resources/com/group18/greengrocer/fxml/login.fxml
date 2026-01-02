@@ -16,41 +16,33 @@
            stylesheets="@../css/style.css">
     
     <children>
-        <VBox alignment="CENTER" maxWidth="400.0" spacing="20.0" 
-              style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+        <VBox alignment="CENTER" maxWidth="420.0" spacing="24.0" styleClass="login-card">
             <children>
-                <Label text="Group18 GreenGrocer" textFill="#2c3e50">
-                    <font>
-                        <Font name="System Bold" size="28.0" />
-                    </font>
-                </Label>
+                <Label text="Group18 GreenGrocer" styleClass="heading-1"/>
                 
-                <Label text="Welcome back! Please login." textFill="#7f8c8d">
-                    <font>
-                        <Font size="14.0" />
-                    </font>
+                <Label text="Welcome back! Please login." styleClass="subtitle">
                     <VBox.margin>
                         <Insets bottom="10.0" />
                     </VBox.margin>
                 </Label>
                 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Username" style="-fx-font-weight: bold;"/>
-                    <TextField fx:id="usernameField" promptText="Enter your username" style="-fx-padding: 10;"/>
+                <VBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="Username" styleClass="label" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="usernameField" promptText="Enter your username"/>
                 </VBox>
                 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Password" style="-fx-font-weight: bold;"/>
-                    <PasswordField fx:id="passwordField" promptText="Enter your password" style="-fx-padding: 10;"/>
+                <VBox spacing="8.0" alignment="CENTER_LEFT">
+                    <Label text="Password" styleClass="label" style="-fx-font-weight: bold;"/>
+                    <PasswordField fx:id="passwordField" promptText="Enter your password"/>
                 </VBox>
                 
                 <Button fx:id="loginButton" text="Login" onAction="#handleLogin" defaultButton="true" 
-                        maxWidth="Infinity" />
+                        maxWidth="Infinity" styleClass="button-accent" />
                 
                 <VBox alignment="CENTER" spacing="5.0">
-                    <Label text="Don't have an account?" textFill="#7f8c8d"/>
+                    <Label text="Don't have an account?" styleClass="subtitle"/>
                     <Hyperlink text="Register as Customer" onAction="#handleRegister" 
-                               style="-fx-text-fill: #2980b9; -fx-font-size: 14px;"/>
+                               styleClass="hyperlink" style="-fx-font-size: 14px;"/>
                 </VBox>
             </children>
         </VBox>

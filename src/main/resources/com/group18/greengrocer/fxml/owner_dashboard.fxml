@@ -26,50 +26,43 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.group18.greengrocer.controller.OwnerController">
+            fx:controller="com.group18.greengrocer.controller.OwnerController"
+            stylesheets="@../css/style.css">
 
     <!-- TOP: Header bar -->
     <top>
-        <HBox spacing="10">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-            <Label text="Owner Dashboard"
-                   style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <HBox spacing="15" styleClass="app-header" alignment="CENTER_LEFT">
+            <Label text="Owner Dashboard" styleClass="heading-2" style="-fx-text-fill: white; -fx-font-size: 20px;"/>
 
             <!-- Spacer: pushes username to the right -->
             <Region HBox.hgrow="ALWAYS"/>
 
             <!-- Logged-in user info (filled by Controller using SessionManager later) -->
-            <Label text="User:"/>
-            <Label fx:id="usernameLabel" text="-" />
-            <Button fx:id="backButton" text="Back" onAction="#handleBack"/>
-            <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout"/>
+            <Label text="User:" styleClass="text-white"/>
+            <Label fx:id="usernameLabel" text="-" styleClass="text-white" style="-fx-font-weight: bold;"/>
+            <Button fx:id="backButton" text="Back" onAction="#handleBack" styleClass="button-secondary"/>
+            <Button fx:id="logoutButton" text="Logout" onAction="#handleLogout" styleClass="button-danger"/>
 
         </HBox>
     </top>
 
     <!-- CENTER: Main content with Tabs -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
             
             <!-- TAB 1: Products (Existing Interface) -->
             <Tab text="Products">
-                <SplitPane dividerPositions="0.60">
+                <SplitPane dividerPositions="0.60" style="-fx-background-color: transparent;">
 
                     <!-- LEFT: Product list (TableView) -->
-                    <VBox spacing="10">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <Label text="All Products (Owner View)"
-                               style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <VBox spacing="15" style="-fx-background-color: #F4F6F8; -fx-padding: 15;">
+                        <Label text="All Products (Owner View)" styleClass="heading-2"/>
 
                         <!--
                           TableView rows will be loaded in OwnerController using ProductService.
                           Columns will be bound to Product fields in the controller (PropertyValueFactory).
                         -->
-                        <TableView fx:id="productTable" prefHeight="420">
+                        <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
                                 <TableColumn fx:id="nameCol" text="Name" prefWidth="150"/>
@@ -80,64 +73,64 @@
                                 <TableColumn fx:id="stockCol" text="Stock" prefWidth="90"/>
                                 <TableColumn fx:id="thresholdCol" text="Threshold" prefWidth="100"/>
                             </columns>
+
                         </TableView>
 
                         <!-- Action buttons -->
-                        <HBox spacing="10">
+                        <HBox spacing="15" alignment="CENTER_LEFT">
                             <!-- Week11: onAction -> calls OwnerController.handleRefresh() -->
-                            <Button text="Refresh" onAction="#handleRefresh"/>
+                            <Button text="Refresh" onAction="#handleRefresh" styleClass="button-secondary"/>
 
                             <!-- Week11: onAction -> calls OwnerController.handleDelete() -->
-                            <Button text="Delete Selected" onAction="#handleDelete"/>
+                            <Button text="Delete Selected" onAction="#handleDelete" styleClass="button-danger"/>
 
                             <Region HBox.hgrow="ALWAYS"/>
 
                             <!-- Shows the computed effective price (threshold rule) -->
-                            <Label text="Effective Price:"/>
-                            <Label fx:id="effectivePriceLabel" text="-" />
+                            <VBox alignment="CENTER_RIGHT"> 
+                                <Label text="Effective Price:" styleClass="subtitle"/>
+                                <Label fx:id="effectivePriceLabel" text="-" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32;" />
+                            </VBox>
                         </HBox>
                     </VBox>
 
                     <!-- RIGHT: Product Form -->
-                    <VBox spacing="10">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <Label text="Product Details" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    <VBox spacing="15" styleClass="card" style="-fx-padding: 20; -fx-background-color: white;">
+                        <Label text="Product Details" styleClass="heading-2"/>
                         
-                        <GridPane hgap="10" vgap="10">
+                        <GridPane hgap="10" vgap="15">
                             <padding><Insets top="10" right="10" bottom="10" left="0"/></padding>
                             
-                            <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="nameField" promptText="e.g. Apple" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                             
-                            <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <ComboBox fx:id="categoryCombo" promptText="Select Category" prefWidth="150" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="label"/>
+                            <ComboBox fx:id="categoryCombo" promptText="Select Category" prefWidth="200" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                             
-                            <Label text="Type:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <Label text="Type:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="typeField" promptText="e.g. Golden" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                             
-                            <Label text="Unit:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                            <Label text="Unit:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="unitField" promptText="e.g. kg" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                             
-                            <Label text="Price (₺):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                            <Label text="Price (₺):" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="priceField" promptText="0.00" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
                             
-                            <Label text="Stock:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                            <Label text="Stock:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="stockField" promptText="0.0" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
                             
-                            <Label text="Threshold:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                            <Label text="Threshold:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="thresholdField" promptText="Low stock alert level" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
                         </GridPane>
 
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Button text="Add New" fx:id="addButton" onAction="#handleAdd" style="-fx-base: #4CAF50;"/>
-                            <Button text="Update" fx:id="updateButton" onAction="#handleUpdate" style="-fx-base: #2196F3;"/>
-                            <Button text="Clear Form" onAction="#handleClear"/>
+                            <Button text="Add New" fx:id="addButton" onAction="#handleAdd" styleClass="button-primary"/>
+                            <Button text="Update" fx:id="updateButton" onAction="#handleUpdate" styleClass="button-secondary"/>
+                            <Button text="Clear Form" onAction="#handleClear" styleClass="button-secondary"/>
                         </HBox>
 
                        <Label text="* Threshold Rule: If Stock &lt;= Threshold, Price is doubled automatically." 
-       wrapText="true" style="-fx-text-fill: gray; -fx-font-size: 10px;"/>
+       wrapText="true" style="-fx-text-fill: gray; -fx-font-size: 11px;"/>
                     </VBox>
 
                 </SplitPane>
@@ -145,14 +138,13 @@
 
             <!-- TAB 2: Carrier Management -->
             <Tab text="Carriers">
-                <SplitPane dividerPositions="0.65">
+                <SplitPane dividerPositions="0.65" style="-fx-background-color: transparent;">
                     
                     <!-- LEFT: Carrier List -->
-                    <VBox spacing="10">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Employees (Carriers)" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <VBox spacing="15" style="-fx-background-color: #F4F6F8; -fx-padding: 15;">
+                        <Label text="Employees (Carriers)" styleClass="heading-2"/>
                         
-                        <TableView fx:id="carrierTable" prefHeight="400">
+                        <TableView fx:id="carrierTable" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="carrierIdCol" text="ID" prefWidth="50"/>
                                 <TableColumn fx:id="carrierNameCol" text="Username" prefWidth="120"/>
@@ -160,33 +152,41 @@
                                 <TableColumn fx:id="carrierAddressCol" text="Address" prefWidth="150"/>
                                 <!-- Optional: Rating Column if needed later -->
                             </columns>
+
                         </TableView>
 
-                        <HBox spacing="10">
-                            <Button text="Refresh List" onAction="#handleRefreshCarriers"/>
-                            <Button text="Fire Selected" onAction="#handleFireCarrier" style="-fx-text-fill: red;"/>
+                        <HBox spacing="15">
+                            <Button text="Refresh List" onAction="#handleRefreshCarriers" styleClass="button-secondary"/>
+                            <Button text="Fire Selected" onAction="#handleFireCarrier" styleClass="button-danger"/>
                         </HBox>
                     </VBox>
 
                     <!-- RIGHT: Hire New Carrier Form -->
-                    <VBox spacing="10">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Hire New Carrier" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    <VBox spacing="15" styleClass="card" style="-fx-padding: 20; -fx-background-color: white;">
+                        <Label text="Hire New Carrier" styleClass="heading-2"/>
                         
-                        <Label text="Username:"/>
-                        <TextField fx:id="carrierUsernameField" promptText="Login username"/>
+                        <VBox spacing="5" alignment="CENTER_LEFT">
+                            <Label text="Username:" styleClass="label"/>
+                            <TextField fx:id="carrierUsernameField" promptText="Login username"/>
+                        </VBox>
 
-                        <Label text="Password:"/>
-                        <PasswordField fx:id="carrierPasswordField" promptText="Strong password"/>
+                        <VBox spacing="5" alignment="CENTER_LEFT">
+                            <Label text="Password:" styleClass="label"/>
+                            <PasswordField fx:id="carrierPasswordField" promptText="Strong password"/>
+                        </VBox>
 
-                        <Label text="Phone:"/>
-                        <TextField fx:id="carrierPhoneField" promptText="10-13 digits"/>
+                        <VBox spacing="5" alignment="CENTER_LEFT">
+                            <Label text="Phone:" styleClass="label"/>
+                            <TextField fx:id="carrierPhoneField" promptText="10-13 digits"/>
+                        </VBox>
 
-                        <Label text="Address:"/>
-                        <TextArea fx:id="carrierAddressArea" prefRowCount="3" wrapText="true" promptText="Full address"/>
+                        <VBox spacing="5" alignment="CENTER_LEFT">
+                            <Label text="Address:" styleClass="label"/>
+                            <TextArea fx:id="carrierAddressArea" prefRowCount="3" wrapText="true" promptText="Full address"/>
+                        </VBox>
 
                         <Button text="Hire (Register)" onAction="#handleHireCarrier" 
-                                style="-fx-base: #4CAF50; -fx-font-weight: bold;" maxWidth="Infinity"/>
+                                styleClass="button-primary" maxWidth="Infinity"/>
                         
                         <Label text="* Default role will be CARRIER." style="-fx-text-fill: gray;"/>
                     </VBox>

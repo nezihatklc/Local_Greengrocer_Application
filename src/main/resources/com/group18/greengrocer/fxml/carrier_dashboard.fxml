@@ -9,59 +9,48 @@
             xmlns="http://javafx.com/javafx/19"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.group18.greengrocer.controller.CarrierController"
-            stylesheets="@../css/styles.css"
+            stylesheets="@../css/style.css"
             styleClass="root">
 
     <!-- ===== HEADER ===== -->
     <top>
-        <HBox alignment="CENTER_LEFT"
-              spacing="10"
-              styleClass="header">
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="app-header">
             <children>
-                <Label text="Group18 GreenGrocer - Carrier Dashboard"
-                       styleClass="header-label"/>
+                <Label text="Group18 GreenGrocer - Carrier Dashboard" styleClass="heading-2" style="-fx-text-fill: white; -fx-font-size: 20px;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Label fx:id="usernameLabel"
-                       styleClass="header-label"/>
-                <Button fx:id="logoutButton"
-                        text="Logout"/>
+                <Label fx:id="usernameLabel" styleClass="text-white" style="-fx-font-weight: bold;"/>
+                <Button fx:id="logoutButton" text="Logout" styleClass="button-danger"/>
             </children>
         </HBox>
     </top>
 
     <!-- ===== CENTER ===== -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
+        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: transparent;">
 
             <!-- ===== AVAILABLE ORDERS ===== -->
             <Tab text="Available Orders">
                 <content>
-                    <VBox spacing="10">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <Label text="Orders Waiting for Delivery">
-                            <font>
-                                <Font size="16"/>
-                            </font>
-                        </Label>
+                    <VBox spacing="15" style="-fx-background-color: #F4F6F8; -fx-padding: 20;">
+                        <Label text="Orders Waiting for Delivery" styleClass="heading-2"/>
 
-                        <TableView fx:id="availableOrdersTable"
-                                   VBox.vgrow="ALWAYS">
+                        <TableView fx:id="availableOrdersTable" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="50"/>
-                                <TableColumn fx:id="colCustomerName" text="Customer" prefWidth="100"/>
-                                <TableColumn fx:id="colAddress" text="Address" prefWidth="180"/>
+                                <TableColumn fx:id="colOrderId" text="Order ID" prefWidth="80"/>
+                                <TableColumn fx:id="colCustomerName" text="Customer" prefWidth="120"/>
+                                <TableColumn fx:id="colAddress" text="Address" prefWidth="250"/>
                                 <TableColumn fx:id="colAvProducts" text="Products" prefWidth="250"/>
                                 <TableColumn fx:id="colAvDate" text="Order Date" prefWidth="120"/>
                                 <TableColumn fx:id="colTotalPrice" text="Total" prefWidth="80"/>
                             </columns>
+
                         </TableView>
 
                         <HBox alignment="CENTER_RIGHT">
                             <Button fx:id="acceptOrderButton"
                                     text="Take Selected Order"
-                                    onAction="#handleAcceptOrder"/>
+                                    onAction="#handleAcceptOrder"
+                                    styleClass="button-primary"/>
                         </HBox>
                     </VBox>
                 </content>
@@ -70,38 +59,36 @@
             <!-- ===== MY CURRENT ORDERS ===== -->
             <Tab text="My Current Orders">
                 <content>
-                    <VBox spacing="10">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <Label text="Selected / Active Deliveries">
-                            <font>
-                                <Font name="System Bold" size="16"/>
-                            </font>
-                        </Label>
+                    <VBox spacing="15" style="-fx-background-color: #F4F6F8; -fx-padding: 20;">
+                        <Label text="Selected / Active Deliveries" styleClass="heading-2"/>
 
-                        <Label text="Select an order from the list and mark it as delivered." textFill="gray"/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Select an order from the list and mark it as delivered." styleClass="subtitle"/>
+                             <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Refresh List" onAction="#initialize" styleClass="button-secondary" style="-fx-font-size: 12px;"/>
+                        </HBox>
 
-                        <TableView fx:id="currentOrdersTable"
-                                   VBox.vgrow="ALWAYS">
+                        <TableView fx:id="currentOrdersTable" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colCurOrderId" text="Order ID" prefWidth="60"/>
-                                <TableColumn fx:id="colCurCustomer" text="Customer" prefWidth="100"/>
-                                <TableColumn fx:id="colCurAddress" text="Address" prefWidth="200"/>
-                                <TableColumn fx:id="colCurProducts" text="Products" prefWidth="220"/>
+                                <TableColumn fx:id="colCurOrderId" text="Order ID" prefWidth="80"/>
+                                <TableColumn fx:id="colCurCustomer" text="Customer" prefWidth="120"/>
+                                <TableColumn fx:id="colCurAddress" text="Address" prefWidth="250"/>
+                                <TableColumn fx:id="colCurProducts" text="Products" prefWidth="250"/>
                                 <TableColumn fx:id="colCurTotal" text="Total" prefWidth="80"/>
                                 <TableColumn fx:id="colCurStatus" text="Status" prefWidth="100"/>
                             </columns>
+
                         </TableView>
 
-                        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-border-color: #ddd; -fx-padding: 10; -fx-background-color: #f9f9f9;">
-                            <Label text="Delivery Action:" style="-fx-font-weight: bold;"/>
+                        <HBox spacing="15" alignment="CENTER_LEFT" styleClass="card" style="-fx-padding: 15;">
+                            <Label text="Delivery Action:" styleClass="label" style="-fx-font-weight: bold;"/>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Label text="Date:"/>
+                            <Label text="Date:" styleClass="label"/>
                             <DatePicker fx:id="deliveryDatePicker"/>
                             <Button fx:id="completeDeliveryButton"
                                     text="Deliver Selected"
-                                    onAction="#handleCompleteDelivery"/>
+                                    onAction="#handleCompleteDelivery"
+                                    styleClass="button-accent"/>
                         </HBox>
                     </VBox>
                 </content>
@@ -110,24 +97,17 @@
             <!-- ===== HISTORY ===== -->
             <Tab text="History">
                 <content>
-                    <VBox spacing="10">
-                        <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
-                        </padding>
-                        <Label text="Completed Deliveries">
-                            <font>
-                                <Font size="16"/>
-                            </font>
-                        </Label>
+                    <VBox spacing="15" style="-fx-background-color: #F4F6F8; -fx-padding: 20;">
+                        <Label text="Completed Deliveries" styleClass="heading-2"/>
 
-                        <TableView fx:id="completedOrdersTable"
-                                   VBox.vgrow="ALWAYS">
+                        <TableView fx:id="completedOrdersTable" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="colHistOrderId" text="Order ID" prefWidth="80"/>
                                 <TableColumn fx:id="colHistDate" text="Delivery Date" prefWidth="150"/>
                                 <TableColumn fx:id="colHistStatus" text="Status" prefWidth="120"/>
                                 <TableColumn fx:id="colHistRating" text="Rating" prefWidth="100"/>
                             </columns>
+
                         </TableView>
                     </VBox>
                 </content>
@@ -138,9 +118,11 @@
 
     <!-- ===== FOOTER ===== -->
     <bottom>
-        <HBox alignment="CENTER_RIGHT" padding="5">
-            <Label text="CMPE343 - Group 18"
-                   styleClass="footer-text"/>
+        <HBox alignment="CENTER_RIGHT" styleClass="footer">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="CMPE343 - Group 18" styleClass="subtitle" style="-fx-font-size: 11px;"/>
         </HBox>
     </bottom>
 

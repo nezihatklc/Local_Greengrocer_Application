@@ -8,47 +8,33 @@
 <BorderPane prefHeight="540.0" prefWidth="960.0"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.group18.greengrocer.controller.CustomerController">
+            fx:controller="com.group18.greengrocer.controller.CustomerController"
+            stylesheets="@../css/style.css">
 
     <!-- ================= HEADER ================= -->
     <top>
         <VBox>
-            <HBox alignment="CENTER_LEFT" spacing="10"
-                  style="-fx-background-color: #2E7D32;">
+            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="app-header">
                 <children>
-                    <Label text="Group18 GreenGrocer" textFill="WHITE">
-                        <font>
-                            <Font name="System Bold" size="24"/>
-                        </font>
+                    <Label text="Group18 GreenGrocer" styleClass="heading-2" style="-fx-text-fill: white; -fx-font-size: 24px;">
                     </Label>
 
                     <Region HBox.hgrow="ALWAYS"/>
 
-                    <Label fx:id="usernameLabel" textFill="WHITE"/>
+                    <Label fx:id="usernameLabel" styleClass="text-white" style="-fx-font-weight: bold;"/>
 
-                    <!-- EDIT PROFILE -->
-                    <Button text="Edit Profile"
-                            onAction="#handleEditProfile"/>
+                    <!-- NAVIGATION BUTTONS -->
+                    <Button text="Edit Profile" onAction="#handleEditProfile" styleClass="button-secondary"/>
                            
-                     <Button text="Rate Carrier"
-                            onAction="#handleRateCarrier"/>
+                    <Button text="Rate Carrier" onAction="#handleRateCarrier" styleClass="button-secondary"/>
 
+                    <Button text="My Orders" onAction="#handleMyOrders" styleClass="button-secondary"/>
 
-                    <Button text="My Orders"
-                            onAction="#handleMyOrders"/>
+                    <Button fx:id="cartButton" text="Cart (0)" onAction="#handleViewCart" styleClass="button-accent"/>
 
-                    <Button fx:id="cartButton"
-                            text="Cart (0)"
-                            onAction="#handleViewCart"/>
+                    <Button text="Message Owner" onAction="#handleMessageOwner" styleClass="button-secondary"/>
 
-                     <Button text="Message Owner"
-                            onAction="#handleMessageOwner"/>
-
-                    <Button text="Logout"
-                            onAction="#handleLogout"
-                            style="-fx-background-color:#c62828;"
-                            textFill="WHITE"/>
-
+                    <Button text="Logout" onAction="#handleLogout" styleClass="button-danger"/>
                 </children>
 
                 <padding>
@@ -57,40 +43,35 @@
             </HBox>
 
             <!-- ================= SEARCH BAR ================= -->
-            <HBox spacing="10"
-                  alignment="CENTER_LEFT"
-                  style="-fx-background-color:#eeeeee;">
+            <HBox spacing="15" alignment="CENTER_LEFT" styleClass="sidebar" style="-fx-padding: 15 20;">
                 <children>
-                    <Label text="Search:"/>
+                    <Label text="Search Products:" styleClass="label" style="-fx-font-weight: bold;"/>
                     <TextField fx:id="searchField"
-                               promptText="Search products..."
+                               promptText="Search for fresh fruits &amp; vegetables..."
                                onKeyReleased="#handleSearch"
-                               prefWidth="300"/>
+                               prefWidth="350"/>
                 </children>
-
-                <padding>
-                    <Insets top="8" bottom="8" left="20" right="20"/>
-                </padding>
             </HBox>
         </VBox>
     </top>
 
     <!-- ================= CENTER ================= -->
     <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent;">
             <content>
-                <VBox spacing="10">
+                <VBox spacing="20" style="-fx-background-color: #F4F6F8;">
                     <padding>
-                        <Insets top="10" bottom="10" left="10" right="10"/>
+                        <Insets top="20" bottom="20" left="20" right="20"/>
                     </padding>
                     <children>
                         <!-- FRUITS -->
-                        <TitledPane text="Fruits" collapsible="true" expanded="true">
+                        <TitledPane text="Fresh Fruits" collapsible="true" expanded="true" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32;">
                             <content>
                                 <TilePane fx:id="fruitPane"
                                           prefColumns="4"
-                                          hgap="15"
-                                          vgap="15">
+                                          hgap="20"
+                                          vgap="20"
+                                          style="-fx-background-color: transparent;">
                                     <padding>
                                         <Insets top="10" bottom="10" left="10" right="10"/>
                                     </padding>
@@ -99,12 +80,13 @@
                         </TitledPane>
 
                         <!-- VEGETABLES -->
-                        <TitledPane text="Vegetables" collapsible="true" expanded="true">
+                        <TitledPane text="Fresh Vegetables" collapsible="true" expanded="true" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32;">
                             <content>
                                 <TilePane fx:id="vegetablePane"
                                           prefColumns="4"
-                                          hgap="15"
-                                          vgap="15">
+                                          hgap="20"
+                                          vgap="20"
+                                          style="-fx-background-color: transparent;">
                                     <padding>
                                         <Insets top="10" bottom="10" left="10" right="10"/>
                                     </padding>

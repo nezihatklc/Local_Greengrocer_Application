@@ -17,46 +17,41 @@
            stylesheets="@../css/style.css">
     
     <children>
-        <VBox alignment="CENTER" maxWidth="500.0" spacing="15.0" 
-              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+        <VBox alignment="CENTER" maxWidth="520.0" spacing="18.0" styleClass="login-card">
             <children>
-                <Label text="Register New Customer" textFill="#2c3e50">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                </Label>
+                <Label text="Register New Customer" styleClass="heading-2" style="-fx-font-size: 26px;"/>
                 
-                <Label text="Please fill in your details to create an account." textFill="#7f8c8d"/>
+                <Label text="Please fill in your details to create an account." styleClass="subtitle"/>
                 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Username" style="-fx-font-weight: bold;"/>
+                <VBox spacing="6.0" alignment="CENTER_LEFT">
+                    <Label text="Username" styleClass="label" style="-fx-font-weight: bold;"/>
                     <TextField fx:id="usernameField" promptText="Choose a unique username"/>
                 </VBox>
                 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Password" style="-fx-font-weight: bold;"/>
+                <VBox spacing="6.0" alignment="CENTER_LEFT">
+                    <Label text="Password" styleClass="label" style="-fx-font-weight: bold;"/>
                     <PasswordField fx:id="passwordField" promptText="Min 8 chars, 1 Upper, 1 Lower, 1 Digit"/>
                 </VBox>
 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Phone Number" style="-fx-font-weight: bold;"/>
+                <VBox spacing="6.0" alignment="CENTER_LEFT">
+                    <Label text="Phone Number" styleClass="label" style="-fx-font-weight: bold;"/>
                     <TextField fx:id="phoneField" promptText="e.g., 5551234567"/>
                 </VBox>
                 
-                <VBox spacing="5.0" alignment="CENTER_LEFT">
-                    <Label text="Address" style="-fx-font-weight: bold;"/>
+                <VBox spacing="6.0" alignment="CENTER_LEFT">
+                    <Label text="Address" styleClass="label" style="-fx-font-weight: bold;"/>
                     <TextArea fx:id="addressArea" promptText="Enter your full delivery address" prefRowCount="3" wrapText="true"/>
                 </VBox>
                 
                 <Button text="Register" onAction="#handleRegister" defaultButton="true" 
-                        maxWidth="Infinity">
+                        maxWidth="Infinity" styleClass="button-primary">
                     <VBox.margin>
-                        <Insets top="10.0" />
+                        <Insets top="12.0" />
                     </VBox.margin>
                 </Button>
                 
                 <Hyperlink text="Back to Login" onAction="#handleBack" 
-                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                           styleClass="hyperlink" style="-fx-font-size: 13px;"/>
             </children>
         </VBox>
     </children>
