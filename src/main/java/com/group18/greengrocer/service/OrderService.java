@@ -161,8 +161,14 @@ public class OrderService {
                 throw new IllegalStateException("Insufficient stock for: " + product.getName());
             }
             // Update item with fresh product data for accurate pricing
-            item.setProduct(product);
-            item.setPriceAtPurchase(product.getPrice());
+            item.setProduct(product);double currentPrice = product.getPrice();
+    
+    if (product.getStock() <= product.getThreshold()) {
+        currentPrice *= 2.0;
+    }
+    
+    item.setPriceAtPurchase(currentPrice);
+           
         }
 
         // 2. Final Price Calculation (includes Coupon & Loyalty & Thresholds)
