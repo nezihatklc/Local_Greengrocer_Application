@@ -7,8 +7,21 @@
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.group18.greengrocer.controller.OrderHistoryController"
+            stylesheets="@../css/style.css"
             prefWidth="700"
             prefHeight="450">
+
+    <!-- =====================
+         HEADER
+         ===================== -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="app-header">
+             <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+            <Label text="Order History" styleClass="heading-2" style="-fx-text-fill: white; -fx-font-size: 20px;"/>
+        </HBox>
+    </top>
 
     <!-- =====================
          CENTER : ORDER LIST
@@ -37,16 +50,20 @@
             </padding>
 
             <Button text="View Details"
-                    onAction="#handleViewDetails"/>
+                    onAction="#handleViewDetails"
+                    styleClass="button-secondary"/>
 
             <Button text="Cancel Order"
-                    onAction="#handleCancelOrder"/>
+                    onAction="#handleCancelOrder"
+                    styleClass="button-danger"/>
 
             <Button text="Download Invoice"
-                    onAction="#handleDownloadInvoice"/>
+                    onAction="#handleDownloadInvoice"
+                    styleClass="button-secondary"/>
 
             <Button text="Close"
-                    onAction="#handleClose"/>
+                    onAction="#handleClose"
+                    styleClass="button-secondary"/>
 
         </HBox>
     </bottom>
