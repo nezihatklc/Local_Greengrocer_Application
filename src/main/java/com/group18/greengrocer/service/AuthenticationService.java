@@ -71,9 +71,12 @@ public class AuthenticationService {
         }
 
         // Rule: Phone number validation
-        if (user.getPhoneNumber() != null && !ValidatorUtil.isEmpty(user.getPhoneNumber()) 
-                && !ValidatorUtil.isNumeric(user.getPhoneNumber())) {
-            throw new ValidationException("Phone number must be numeric.");
+        if (ValidatorUtil.isEmpty(user.getPhoneNumber())) {
+            throw new ValidationException("Phone number is required.");
+        }
+
+        if (!ValidatorUtil.isValidPhoneNumber(user.getPhoneNumber())) {
+            throw new ValidationException("Phone number must be valid (10-13 digits).");
         }
 
         // Attempt to create user

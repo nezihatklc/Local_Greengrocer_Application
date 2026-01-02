@@ -34,10 +34,10 @@ public class RegisterController {
 
     @FXML
     private void handleRegister() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
-        String phone = phoneField.getText();
-        String address = addressArea.getText();
+        String username = usernameField.getText() != null ? usernameField.getText().trim() : "";
+        String password = passwordField.getText() != null ? passwordField.getText() : ""; // Don't trim password? Usually yes, but user might want spaces. But standard practice is usually no spaces. Let's keep password raw or trim? Rules don't say. Let's start with staying safe and only trimming username/phone/address.
+        String phone = phoneField.getText() != null ? phoneField.getText().trim() : "";
+        String address = addressArea.getText() != null ? addressArea.getText().trim() : "";
 
         // Create a new User object with CUSTOMER role
         User newUser = new User(username, password, Role.CUSTOMER, address, phone);
