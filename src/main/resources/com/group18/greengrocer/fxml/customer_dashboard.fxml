@@ -26,7 +26,7 @@
                     <!-- NAVIGATION BUTTONS -->
                     <Button text="Edit Profile" onAction="#handleEditProfile" styleClass="button-secondary"/>
                            
-                    <Button text="Rate Carrier" onAction="#handleRateCarrier" styleClass="button-secondary"/>
+                    <Button text="Rate Delivery" onAction="#handleRateCarrier" styleClass="button-secondary"/>
 
                     <Button text="My Orders" onAction="#handleMyOrders" styleClass="button-secondary"/>
 
