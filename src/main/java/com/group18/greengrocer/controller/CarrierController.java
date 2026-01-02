@@ -107,7 +107,8 @@ public class CarrierController {
     private TableColumn<Order, String> colHistStatus;
     @FXML
     private TableColumn<Order, String> colHistRating;
-/**
+
+    /**
      * Initializes the controller with the logged-in user's data.
      * This method should be called immediately after loading the FXML.
      *
@@ -118,7 +119,8 @@ public class CarrierController {
         usernameLabel.setText("Carrier: " + user.getUsername());
         refreshAll();
     }
-/**
+
+    /**
      * JavaFX initialization method.
      * Automatically called after the FXML file has been loaded.
      * Sets up table columns and populates time selection combo boxes.
@@ -145,7 +147,7 @@ public class CarrierController {
     }
 
     // ===== TABLE SETUPS =====
-/**
+    /**
      * Configures the columns for the "Available Orders" table.
      * Maps Order properties to the table cells using CellValueFactories.
      */
@@ -187,8 +189,10 @@ public class CarrierController {
         colTotalPrice.setCellValueFactory(cd -> new SimpleStringProperty(
                 String.format("%.2f", cd.getValue().getTotalCost())));
     }
-/**
-     * Configures the columns for the "Current Orders" (Accepted but not delivered) table.
+
+    /**
+     * Configures the columns for the "Current Orders" (Accepted but not delivered)
+     * table.
      */
     private void setupCurrentOrdersTable() {
 
@@ -222,7 +226,8 @@ public class CarrierController {
 
         colCurStatus.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getStatus().toString()));
     }
-/**
+
+    /**
      * Configures the columns for the "Order History" table.
      * Displays completed orders and their customer ratings.
      */
@@ -244,8 +249,9 @@ public class CarrierController {
     }
 
     // ===== DATA LOAD =====
-/**
-     * Refreshes data in all tables by fetching the latest information from the services.
+    /**
+     * Refreshes data in all tables by fetching the latest information from the
+     * services.
      * Updates the UI state (enable/disable buttons) based on current active orders.
      */
     private void refreshAll() {
@@ -263,7 +269,8 @@ public class CarrierController {
                 FXCollections.observableArrayList(
                         orderService.getOrdersByCarrier(currentUser.getId())
                                 .stream()
-                                .filter(o -> o.getStatus() == Order.Status.DELIVERED)
+                                .filter(o -> o.getStatus() == Order.Status.DELIVERED
+                                        || o.getStatus() == Order.Status.COMPLETED)
                                 .toList()));
 
         boolean hasActive = !active.isEmpty();
@@ -272,7 +279,7 @@ public class CarrierController {
     }
 
     // ===== ACTIONS =====
-/**
+    /**
      * Handles the "Accept Order" button click.
      * Assigns the selected order from the available list to the current carrier.
      * Displays an alert if no order is selected or if the order is already taken.
@@ -293,9 +300,11 @@ public class CarrierController {
             showAlert("Order Taken", "This order has already been taken.");
         }
     }
-/**
+
+    /**
      * Handles the "Complete Delivery" button click.
-     * Validates the selected date and time, checks if it's logically valid (after order time),
+     * Validates the selected date and time, checks if it's logically valid (after
+     * order time),
      * and updates the order status to DELIVERED.
      */
     @FXML
@@ -326,21 +335,29 @@ public class CarrierController {
                         .atZone(ZoneId.systemDefault())
                         .toInstant());
 
-        if (selected.getOrderTime() != null &&
-                deliveryDate.before(selected.getOrderTime())) {
-            showAlert("Invalid Date", "Delivery date cannot be before order date.");
-            return;
-        }
-
         Date requested = selected.getRequestedDeliveryDate();
-        if (requested != null && deliveryDate.before(requested)) {
-            showAlert("Warning", "Delivery is earlier than requested date.");
-            // We allow this, as early delivery is usually OK, just a warning?
-            // Actually original code returned!
-            // "Delivery is earlier than requested date." implies failure.
-            // But carrier can deliver earlier if customer accepts.
-            // Let's keep original behavior: return.
-            return;
+
+        // Strict Validation: Day Match
+        if (requested != null) {
+            LocalDate requestedDate = requested.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate enteredDate = deliveryDatePicker.getValue();
+
+            if (!enteredDate.equals(requestedDate)) {
+                showAlert("Invalid Date", "Delivery must be on the requested date: " + requestedDate);
+                return;
+            }
+
+            // Strict Validation: Time Match (Must be AFTER requested time)
+            if (deliveryDate.before(requested)) {
+                showAlert("Invalid Time", "Delivery time must be at or after the requested time.");
+                return;
+            }
+        } else {
+            // Fallback: Just ensure after order creation if no specific request
+            if (selected.getOrderTime() != null && deliveryDate.before(selected.getOrderTime())) {
+                showAlert("Invalid Date", "Delivery cannot be before order creation time.");
+                return;
+            }
         }
 
         orderService.completeOrder(selected.getId(), deliveryDate);
@@ -348,7 +365,8 @@ public class CarrierController {
         deliveryDatePicker.setValue(null);
         refreshAll();
     }
-/**
+
+    /**
      * Handles the logout process.
      * Clears the session and navigates back to the Login screen.
      */
