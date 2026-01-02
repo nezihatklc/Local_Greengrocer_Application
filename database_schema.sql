@@ -98,6 +98,7 @@ CREATE TABLE Messages (
     FOREIGN KEY (receiver_id) REFERENCES UserInfo(id)
 );
 
+
 -- 8. Create CarrierRatings Table 
 CREATE TABLE CarrierRatings (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -111,6 +112,21 @@ CREATE TABLE CarrierRatings (
     FOREIGN KEY (customer_id) REFERENCES UserInfo(id),
     FOREIGN KEY (carrier_id) REFERENCES UserInfo(id),
     UNIQUE KEY unique_order_rating (order_id)
+);
+
+-- 9. Create ProductRatings Table
+CREATE TABLE ProductRatings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES OrderInfo(id),
+    FOREIGN KEY (customer_id) REFERENCES UserInfo(id),
+    FOREIGN KEY (product_id) REFERENCES ProductInfo(id),
+    UNIQUE KEY unique_order_product_rating (order_id, product_id)
 );
 
 -- ==========================================

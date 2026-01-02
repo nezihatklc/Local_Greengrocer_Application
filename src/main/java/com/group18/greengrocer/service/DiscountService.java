@@ -60,9 +60,28 @@ public class DiscountService {
         }
 
         // 1) Base subtotal (threshold-aware)
+        // 1) Base subtotal & Price Adjustment (Threshold)
+        // CRITICAL FIX: We must UPDATE item.priceAtPurchase if threshold is met,
+        // so that OrderItems table and Invoice show the actual price paid (doubled).
         double subtotal = 0.0;
         for (CartItem item : items) {
-            subtotal += lineTotalWithThreshold(item);
+             // This existing helper calculates total but we need to verify if it updates the item
+             // The helper 'lineTotalWithThreshold' was originally strictly read-only. We should refactor it or do logic here.
+             
+             // Let's do the logic explicitly here to be safe and clear:
+             Product p = item.getProduct();
+             if (p != null && p.getThreshold() > 0 && p.getStock() <= p.getThreshold()) {
+                 // Double the price!
+                 // BUT we must be careful not to double it multiple times if called repeatedly.
+                 // However, OrderService constructs a fresh cart from DB products right before calling checkout/calculate.
+                 // So item.priceAtPurchase starts as base price.
+                 item.setPriceAtPurchase(p.getPrice() * 2.0);
+             } else if (p != null) {
+                 // Ensure it is base price (reset if needed, though usually fresh)
+                 item.setPriceAtPurchase(p.getPrice());
+             }
+             
+             subtotal += item.getTotalPrice(); // quantity * priceAtPurchase
         }
 
         // 2) Coupon (fixed amount) if order.usedCouponId exists
@@ -162,27 +181,8 @@ public class DiscountService {
     // Helpers
     // -------------------------
 
-    private double lineTotalWithThreshold(CartItem item) {
-        if (item == null) throw new IllegalArgumentException("Cart item cannot be null.");
-        if (item.getQuantity() <= 0) throw new IllegalArgumentException("Quantity must be > 0.");
-
-        Product p = item.getProduct();
-        if (p == null) throw new IllegalArgumentException("Cart item product cannot be null.");
-
-        double unit = item.getPriceAtPurchase(); // preserves purchase-time price
-        if (unit < 0) throw new IllegalArgumentException("Invalid price.");
-
-        // Threshold rule: if stock <= threshold -> price doubled
-        double stock = p.getStock();
-        double threshold = p.getThreshold();
-        if (threshold <= 0) throw new IllegalArgumentException("Invalid threshold.");
-
-        if (stock <= threshold) {
-            unit *= 2.0;
-        }
-
-        return unit * item.getQuantity();
-    }
+    // Helper removed as logic is now inline in calculateFinalPrice to ensure item update
+    // private double lineTotalWithThreshold(CartItem item) { ... }
 
     private boolean isCouponValid(Coupon c) {
         if (c == null) return false;
