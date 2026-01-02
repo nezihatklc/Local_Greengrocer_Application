@@ -768,102 +768,108 @@ public class CustomerController {
     @FXML
     private void handleMessageOwner() {
         Stage stage = new Stage();
-        stage.setTitle("Support Chat - " + currentUser.getUsername());
+        stage.setTitle("Support Ticket - " + currentUser.getUsername());
 
         VBox root = new VBox(10);
         root.setPadding(new Insets(10));
-        root.setPrefSize(400, 500);
+        root.setPrefSize(500, 600);
 
-        // Chat List
+        Label headerLabel = new Label("Support Conversation Listing");
+        headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        // Chat List (Ticket Log Style)
         ListView<Message> chatList = new ListView<>();
         VBox.setVgrow(chatList, Priority.ALWAYS);
 
-        // Custom Cell Factory for Chat Bubbles
+        // Custom Cell Factory for Ticket Log
         chatList.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Message msg, boolean empty) {
                 super.updateItem(msg, empty);
                 if (empty || msg == null) {
                     setText(null);
-                    setStyle("");
+                    setGraphic(null);
+                    setStyle("-fx-background-color: white; -fx-padding: 5;");
                 } else {
-                    boolean isMe = (msg.getSenderId() == currentUser.getId());
-                    String sender = isMe ? "You" : "Owner";
-                    String time = "";
-                    if (msg.getSentAt() != null) {
-                        time = new java.text.SimpleDateFormat("dd/MM HH:mm").format(msg.getSentAt());
-                    }
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    String dateStr = (msg.getSentAt() != null) ? sdf.format(msg.getSentAt()) : "";
 
-                    setText(sender + " (" + time + "):\n" + msg.getContent());
+                    String senderName = (msg.getSenderId() == currentUser.getId()) ? "You" : "Support";
 
-                    if (isMe) {
-                        // User message: Aligned right (text), Blueish background
-                        setStyle(
-                                "-fx-control-inner-background: #E3F2FD; -fx-alignment: center-right; -fx-text-alignment: right;");
-                    } else {
-                        // Owner message: Aligned left, White/Gray background
-                        setStyle("-fx-control-inner-background: #FFFFFF; -fx-font-weight: bold;");
-                    }
+                    // Ticket Layout: [Date] Sender: Content
+                    setText("[" + dateStr + "] " + senderName + ":\n" + msg.getContent());
+
+                    // Simple styling, no bubbles
+                    setStyle(
+                            "-fx-font-family: 'Monospaced'; -fx-padding: 8; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;");
+                    setWrapText(true);
+                    setPrefWidth(0);
                 }
             }
         });
 
-        // Input Area
-        TextArea inputArea = new TextArea();
-        inputArea.setPromptText("Type a message...");
-        inputArea.setPrefRowCount(3);
-        inputArea.setWrapText(true);
-        inputArea.setMaxHeight(80);
+        // INPUT AREA
+        TextArea messageInput = new TextArea();
+        messageInput.setPromptText("Type your message here to start/continue support ticket...");
+        messageInput.setPrefRowCount(3);
+        messageInput.setWrapText(true);
 
-        // Buttons
-        HBox bottom = new HBox(10);
-        Button refreshBtn = new Button("Refresh");
-        Button sendBtn = new Button("Send");
-        sendBtn.setDefaultButton(true); // Enter triggers send if focused (careful with TextArea)
+        Button sendBtn = new Button("Submit Ticket Message");
+        sendBtn.setMaxWidth(Double.MAX_VALUE);
+        sendBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        bottom.getChildren().addAll(refreshBtn, inputArea, sendBtn);
-        HBox.setHgrow(inputArea, Priority.ALWAYS);
-
-        // Load Messages Logic
-        Runnable loadMessages = () -> {
+        // LOAD MESSAGES LOGIC
+        final Runnable refreshChat = () -> {
             try {
-                List<Message> history = messageService.getMessagesForCustomer(currentUser.getId());
-                chatList.getItems().setAll(history);
-                if (!history.isEmpty()) {
-                    chatList.scrollTo(history.size() - 1);
+                // Fetch LATEST (Latest might be CLOSED or OPEN)
+                List<Message> msgs = messageService.getLatestConversationForCustomer(currentUser.getId());
+                chatList.getItems().setAll(msgs);
+                if (!msgs.isEmpty()) {
+                    chatList.scrollTo(chatList.getItems().size() - 1);
+
+                    // Optional: Check status of last message to hint user
+                    Message last = msgs.get(msgs.size() - 1);
+                    if ("CLOSED".equalsIgnoreCase(last.getConversationStatus())) {
+                        headerLabel.setText("Support Ticket (CLOSED) - Send new message to start new ticket");
+                    } else {
+                        headerLabel.setText("Support Ticket (OPEN)");
+                    }
+                } else {
+                    headerLabel.setText("Support Ticket (New)");
                 }
             } catch (Exception e) {
-                System.err.println("Load failed: " + e.getMessage());
+                System.err.println("Error loading chat: " + e.getMessage());
             }
         };
 
-        // Actions
-        refreshBtn.setOnAction(e -> loadMessages.run());
-
+        // SEND ACTION
+        // SEND ACTION
         sendBtn.setOnAction(e -> {
-            String txt = inputArea.getText().trim();
-            if (txt.isEmpty())
+            String content = messageInput.getText();
+            if (content == null || content.trim().isEmpty()) {
+                AlertUtil.showWarning("Validation", "Please enter a message.");
                 return;
+            }
 
             try {
-                Message m = new Message();
-                m.setSenderId(currentUser.getId());
-                m.setContent(txt);
-                messageService.sendMessage(m);
-                inputArea.clear();
-                loadMessages.run(); // Refresh to see sent message
+                Message msg = new Message();
+                msg.setContent(content.trim());
+                messageService.sendMessage(msg);
+
+                messageInput.clear();
+                refreshChat.run();
+
             } catch (Exception ex) {
-                AlertUtil.showError("Error", "Could not send: " + ex.getMessage());
+                AlertUtil.showError("Error", "Failed to send message: " + ex.getMessage());
             }
         });
 
-        root.getChildren().addAll(new Label("Chat History:"), chatList, bottom);
-        stage.setScene(new Scene(root));
-        stage.setMaximized(true);
-        stage.show();
-
         // Initial Load
-        loadMessages.run();
+        refreshChat.run();
+
+        root.getChildren().addAll(headerLabel, chatList, messageInput, sendBtn);
+        stage.setScene(new Scene(root));
+        stage.show();
     }
 
     // =====================
