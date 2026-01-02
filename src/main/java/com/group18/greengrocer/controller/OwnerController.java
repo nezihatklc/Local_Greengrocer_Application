@@ -259,6 +259,15 @@ public class OwnerController {
 
             productTable.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldV, newV) -> showProductDetails(newV));
+
+        }
+
+        // Carrier Table Setup
+        if (carrierTable != null) {
+            carrierIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+            carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
+            carrierPhoneCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPhoneNumber()));
+            carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
         }
 
         // Bind Buttons to Selection
@@ -502,7 +511,8 @@ public class OwnerController {
     private void handleRefreshReports() {
         if (categoryPieChart == null)
             return;
-        // Stats
+        
+        // --- 1. Top Cards Stats ---
         if (totalRevenueLabel != null) {
             totalRevenueLabel.setText(String.format("%.2f TL", orderService.getTotalRevenue()));
         }
@@ -512,63 +522,218 @@ public class OwnerController {
         if (activeCustomersLabel != null) {
             activeCustomersLabel.setText(String.valueOf(orderService.getActiveCustomersCount()));
         }
+        if (avgOrderValueLabel != null) {
+             int totalOrders = orderService.getTotalOrdersCount();
+             double totalRev = orderService.getTotalRevenue();
+             double avg = totalOrders > 0 ? totalRev / totalOrders : 0.0;
+             avgOrderValueLabel.setText(String.format("%.2f TL", avg));
+        }
 
-        // Logic for populating charts simplified for brevity but essential parts
-        // retained
-        // Pie
+        // --- 2. Category Pie Chart ---
         java.util.Map<String, Double> catData = orderService.getSalesByCategory();
         categoryPieChart.getData().clear();
         catData.forEach((cat, val) -> categoryPieChart.getData().add(new javafx.scene.chart.PieChart.Data(cat, val)));
+        
+        // --- 3. Order Status Pie Chart ---
+        if (orderStatusChart != null) {
+            java.util.Map<String, Integer> statusData = orderService.getOrderStatusDistribution();
+            orderStatusChart.getData().clear();
+            statusData.forEach((status, count) -> 
+                orderStatusChart.getData().add(new javafx.scene.chart.PieChart.Data(status, count)));
+        }
+
+        // --- 4. Product Sales Bar Chart ---
+        if (productSalesChart != null) {
+            productSalesChart.getData().clear();
+            javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+            series.setName("Revenue");
+            
+            java.util.Map<String, Double> prodData = orderService.getRevenueByProduct();
+            // Sort top 10 for better visualization? For now show all.
+            prodData.forEach((prod, rev) -> series.getData().add(new javafx.scene.chart.XYChart.Data<>(prod, rev)));
+            
+            productSalesChart.getData().add(series);
+        }
+
+        // --- 5. Revenue Line Chart ---
+        if (revenueChart != null) {
+            revenueChart.getData().clear();
+            javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+            series.setName("Daily Revenue");
+            
+            java.util.Map<String, Double> timeData = orderService.getRevenueOverTime();
+            timeData.forEach((date, val) -> series.getData().add(new javafx.scene.chart.XYChart.Data<>(date, val)));
+            
+            revenueChart.getData().add(series);
+        }
     }
 
     @FXML
     private void handleCreateCoupon() {
-        // Simple impl
         try {
             String code = couponCodeField.getText();
-            double amt = Double.parseDouble(couponAmountField.getText());
-            // ... (Full validation skipped for brevity in fix, but core logic retained)
+            String amountText = couponAmountField.getText();
+
+            if (ValidatorUtil.isEmpty(code) || ValidatorUtil.isEmpty(amountText) || couponExpiryPicker.getValue() == null) {
+                AlertUtil.showWarning("Validation Error", "All coupon fields (Code, Amount, Expiry) are required.");
+                return;
+            }
+
+            double amt;
+            try {
+                amt = Double.parseDouble(amountText);
+            } catch (NumberFormatException e) {
+                AlertUtil.showWarning("Validation Error", "Invalid amount. Please enter a valid number.");
+                return;
+            }
+
             com.group18.greengrocer.model.Coupon c = new com.group18.greengrocer.model.Coupon();
-            c.setCode(code);
+            c.setCode(code.trim());
             c.setDiscountAmount(amt);
             c.setExpiryDate(java.sql.Date.valueOf(couponExpiryPicker.getValue()));
             c.setActive(true);
+            
             discountService.createCoupon(c);
-            AlertUtil.showInfo("Success", "Coupon created");
+            
+            AlertUtil.showInfo("Success", "Coupon created successfully.");
+            
+            // Clear fields
+            couponCodeField.clear();
+            couponAmountField.clear();
+            couponExpiryPicker.setValue(null);
+            
         } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to create coupon: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleUpdateLoyalty() {
+        try {
+            String minOrderText = loyaltyMinOrderField.getText();
+            String discountRateText = loyaltyRateField.getText();
+
+            if (ValidatorUtil.isEmpty(minOrderText) || ValidatorUtil.isEmpty(discountRateText)) {
+                AlertUtil.showWarning("Validation Error", "Min Order Count and Discount Rate are required.");
+                return;
+            }
+
+            int minOrder = Integer.parseInt(minOrderText);
+            double rate = Double.parseDouble(discountRateText);
+
+            discountService.updateLoyaltyRules(minOrder, rate);
+            AlertUtil.showInfo("Success", "Loyalty rules updated.");
+            
+        } catch (NumberFormatException e) {
+            AlertUtil.showWarning("Validation Error", "Please enter valid numbers for loyalty rules.");
+        } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to update loyalty rules: " + e.getMessage());
+        }
     }
 
     @FXML
     private void handleHireCarrier() {
-        // Re-implement basic Hire
+        if (ValidatorUtil.isEmpty(carrierUsernameField.getText()) || 
+            ValidatorUtil.isEmpty(carrierPasswordField.getText())) {
+            AlertUtil.showWarning("Validation Error", "Username and Password are required.");
+            return;
+        }
+
         try {
             User u = new User();
-            u.setUsername(carrierUsernameField.getText());
-            u.setPassword(carrierPasswordField.getText());
-            u.setPhoneNumber(carrierPhoneField.getText());
-            u.setAddress(carrierAddressArea.getText());
+            u.setUsername(carrierUsernameField.getText().trim());
+            u.setPassword(carrierPasswordField.getText().trim());
+            u.setPhoneNumber(carrierPhoneField.getText().trim());
+            u.setAddress(carrierAddressArea.getText().trim());
+            
             userService.addCarrier(u);
+            AlertUtil.showInfo("Success", "Carrier hired successfully.");
+            
+            // Clear fields
+            carrierUsernameField.clear();
+            carrierPasswordField.clear();
+            carrierPhoneField.clear();
+            carrierAddressArea.clear();
+            
             refreshCarrierTable();
         } catch (Exception e) {
+            AlertUtil.showError("Error", "Failed to hire carrier: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleFireCarrier() {
         User u = carrierTable.getSelectionModel().getSelectedItem();
-        if (u != null) {
-            userService.removeCarrier(u.getId());
-            refreshCarrierTable();
+        if (u == null) {
+            AlertUtil.showWarning("Selection Error", "Please select a carrier to fire.");
+            return;
+        }
+        
+        Optional<ButtonType> res = AlertUtil.showConfirmation("Fire Carrier", "Are you sure you want to fire " + u.getUsername() + "?");
+        if (res.isPresent() && res.get() == ButtonType.OK) {
+            try {
+                userService.removeCarrier(u.getId());
+                AlertUtil.showInfo("Success", "Carrier fired successfully.");
+                refreshCarrierTable();
+            } catch (Exception e) {
+                AlertUtil.showError("Error", "Failed to fire carrier: " + e.getMessage());
+            }
         }
     }
 
     @FXML
     private void handleViewCarrierRatings() {
+        User u = carrierTable.getSelectionModel().getSelectedItem();
+        if (u == null) {
+            AlertUtil.showWarning("Selection Error", "Please select a carrier to view ratings.");
+            return;
+        }
+        
+        try {
+            double avgRating = userService.getCarrierRating(u.getId());
+            java.util.List<com.group18.greengrocer.model.CarrierRating> ratings = userService.getCarrierRatings(u.getId());
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("Carrier: ").append(u.getUsername()).append("\n");
+            sb.append("Average Rating: ").append(String.format("%.2f", avgRating)).append(" / 5.0\n");
+            sb.append("Total Ratings: ").append(ratings.size()).append("\n\n");
+            
+            sb.append("--- Details ---\n");
+            if (ratings.isEmpty()) {
+                sb.append("No ratings yet.");
+            } else {
+                for (com.group18.greengrocer.model.CarrierRating r : ratings) {
+                    sb.append("Rating: ").append(r.getRating()).append("/5\n");
+                    if (r.getComment() != null && !r.getComment().isEmpty()) {
+                        sb.append("Comment: ").append(r.getComment()).append("\n");
+                    } else {
+                        sb.append("Comment: -\n");
+                    }
+                    if (r.getCreatedAt() != null) {
+                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                         sb.append("Date: ").append(sdf.format(r.getCreatedAt())).append("\n");
+                    }
+                    sb.append("----------------\n");
+                }
+            }
+            
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Carrier Ratings");
+            alert.setHeaderText("Ratings for " + u.getUsername());
+            
+            TextArea area = new TextArea(sb.toString());
+            area.setEditable(false);
+            area.setWrapText(true);
+            area.setPrefWidth(400);
+            area.setPrefHeight(300);
+            
+            alert.getDialogPane().setContent(area);
+            alert.showAndWait();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Error", "Failed to retrieve ratings: " + e.getMessage());
+        }
     }
 
     // ================= MESSAGES (Fixed for Merge + Ticket System)
@@ -690,7 +855,12 @@ public class OwnerController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
+            
             stage.setScene(new Scene(root));
+            
+            // Ensure full screen
+            stage.setMaximized(true);
+            
             stage.show();
         } catch (IOException e) {
             AlertUtil.showError("Navigation Error", "Could not go to login screen: " + e.getMessage());

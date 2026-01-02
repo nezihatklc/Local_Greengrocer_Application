@@ -221,6 +221,12 @@ public class UserService {
         if (orderId <= 0) return 0;
         return carrierRatingDAO.getRatingByOrderId(orderId);
     }
+    
+    /** Returns all ratings/comments for a carrier. */
+    public List<com.group18.greengrocer.model.CarrierRating> getCarrierRatings(int carrierId) {
+    	if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
+    	return carrierRatingDAO.getRatingsForCarrier(carrierId);
+    }
 
     // -------------------------
     // Helpers
