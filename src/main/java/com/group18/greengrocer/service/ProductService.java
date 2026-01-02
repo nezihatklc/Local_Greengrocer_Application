@@ -222,6 +222,26 @@ public class ProductService {
        Internal validation
        ------------------------- */
 
+    /**
+     * Retrieves all ratings for a specific product.
+     */
+    public List<com.group18.greengrocer.model.ProductRating> getProductRatings(int productId) {
+        if (productId <= 0) throw new IllegalArgumentException("Invalid product id.");
+        com.group18.greengrocer.dao.ProductRatingDAO dao = new com.group18.greengrocer.dao.ProductRatingDAO();
+        return dao.getRatingsByProduct(productId);
+    }
+
+    /**
+     * Calculates average rating for a specific product.
+     */
+    public double getAverageProductRating(int productId) {
+        List<com.group18.greengrocer.model.ProductRating> ratings = getProductRatings(productId);
+        if (ratings.isEmpty()) return 0.0;
+        
+        double sum = ratings.stream().mapToInt(com.group18.greengrocer.model.ProductRating::getRating).sum();
+        return sum / ratings.size();
+    }
+    
     private void validateProductForUpsert(Product product, boolean requireId) {
         if (product == null) throw new IllegalArgumentException("Product cannot be null.");
 

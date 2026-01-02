@@ -28,7 +28,7 @@ public class CarrierRatingDAO {
      * @return true if successful, false otherwise.
      */
     public boolean addRating(CarrierRating rating) {
-        String sql = "INSERT INTO CarrierRatings (order_id, customer_id, carrier_id, rating, comment) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO CarrierRatings (order_id, customer_id, carrier_id, rating, comment, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbAdapter.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -37,6 +37,7 @@ public class CarrierRatingDAO {
             stmt.setInt(3, rating.getCarrierId());
             stmt.setInt(4, rating.getRating());
             stmt.setString(5, rating.getComment());
+            stmt.setTimestamp(6, rating.getCreatedAt());
             
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {

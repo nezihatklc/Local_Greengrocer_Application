@@ -260,6 +260,20 @@ public class OwnerController {
             productTable.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldV, newV) -> showProductDetails(newV));
 
+            // Add Rating Column dynamically
+            TableColumn<Product, String> ratingCol = new TableColumn<>("Rating");
+            ratingCol.setCellValueFactory(cell -> {
+                double avg = productService.getAverageProductRating(cell.getValue().getId());
+                return new SimpleStringProperty(avg > 0 ? String.format("%.1f/5", avg) : "-");
+            });
+            productTable.getColumns().add(ratingCol);
+
+            // Context Menu for Ratings
+            ContextMenu cm = new ContextMenu();
+            MenuItem viewRatingsItem = new MenuItem("View Ratings");
+            viewRatingsItem.setOnAction(e -> handleViewProductRatings());
+            cm.getItems().add(viewRatingsItem);
+            productTable.setContextMenu(cm);
         }
 
         // Carrier Table Setup
@@ -268,6 +282,13 @@ public class OwnerController {
             carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
             carrierPhoneCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPhoneNumber()));
             carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
+            
+            // Context Menu for Carrier Ratings
+            ContextMenu carrierCm = new ContextMenu();
+            MenuItem viewCarrierRatingsItem = new MenuItem("View Ratings");
+            viewCarrierRatingsItem.setOnAction(e -> handleViewCarrierRatings());
+            carrierCm.getItems().add(viewCarrierRatingsItem);
+            carrierTable.setContextMenu(carrierCm);
         }
 
         // Bind Buttons to Selection
@@ -456,7 +477,59 @@ public class OwnerController {
         } catch (Exception e) {
             AlertUtil.showError("Error", e.getMessage());
         }
+
     }
+
+    private void handleViewProductRatings() {
+        Product selected = productTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("Selection Error", "Please select a product to view ratings.");
+            return;
+        }
+
+        try {
+            double avg = productService.getAverageProductRating(selected.getId());
+            java.util.List<com.group18.greengrocer.model.ProductRating> ratings = productService.getProductRatings(selected.getId());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Product: ").append(selected.getName()).append("\n");
+            sb.append("Average Rating: ").append(String.format("%.1f", avg)).append(" / 5.0\n");
+            sb.append("Total Ratings: ").append(ratings.size()).append("\n\n");
+
+            sb.append("--- Reviews ---\n");
+            if (ratings.isEmpty()) {
+                sb.append("No reviews yet.");
+            } else {
+                for (com.group18.greengrocer.model.ProductRating r : ratings) {
+                    sb.append("Rating: ").append(r.getRating()).append("/5\n");
+                    // Assuming date is available
+                    if (r.getCreatedAt() != null) {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                        sb.append("Date: ").append(sdf.format(r.getCreatedAt())).append("\n");
+                    }
+                    sb.append("----------------\n");
+                }
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Product Ratings");
+            alert.setHeaderText("Reviews for " + selected.getName());
+
+            TextArea area = new TextArea(sb.toString());
+            area.setEditable(false);
+            area.setWrapText(true);
+            area.setPrefWidth(400);
+            area.setPrefHeight(300);
+
+            alert.getDialogPane().setContent(area);
+            alert.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Error", "Failed to load ratings: " + e.getMessage());
+        }
+    }
+
 
     @FXML
     private void handleDelete() {
@@ -856,7 +929,8 @@ public class OwnerController {
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             
-            stage.setScene(new Scene(root));
+            // Use setRoot to preserve the stage properties (like maximization)
+            stage.getScene().setRoot(root);
             
             // Ensure full screen
             stage.setMaximized(true);

@@ -396,8 +396,8 @@ public class OrderService {
             return;
         }
 
-        // 2. Only COMPLETED orders can be rated
-        if (order.getStatus() != Order.Status.DELIVERED) {
+        // 2. Only COMPLETED or DELIVERED orders can be rated
+        if (order.getStatus() != Order.Status.DELIVERED && order.getStatus() != Order.Status.COMPLETED) {
             return;
         }
 

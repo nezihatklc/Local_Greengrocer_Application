@@ -632,7 +632,6 @@ public class CustomerController {
                 orderService.rateOrder(order.getId(), rating, commentArea.getText());
                 AlertUtil.showInfo("Success", "Carrier rated successfully!");
                 // Refresh logic: Go back to selection, order list might shrink if fully rated
-                handleRateCarrier();
                 stage.close();
             } catch (Exception ex) {
                 AlertUtil.showError("Error", ex.getMessage());
@@ -722,7 +721,6 @@ public class CustomerController {
                 // locks the whole order.
                 // We will stick to that to satisfy "evaluate once".
 
-                handleRateCarrier(); // Refresh main list
                 stage.close();
             } catch (Exception ex) {
                 AlertUtil.showError("Error", ex.getMessage());
