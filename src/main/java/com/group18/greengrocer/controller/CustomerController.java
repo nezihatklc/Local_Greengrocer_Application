@@ -420,7 +420,41 @@ public class CustomerController {
                 -fx-border-radius: 5;
                 -fx-background-radius: 5;
                 -fx-alignment: center;
+                -fx-background-color: white;
+                -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
                 """);
+
+        // Hover Effect
+        box.setOnMouseEntered(e -> {
+            box.setStyle("""
+                    -fx-padding: 10;
+                    -fx-border-color: #4CAF50;
+                    -fx-border-width: 2;
+                    -fx-border-radius: 5;
+                    -fx-background-radius: 5;
+                    -fx-alignment: center;
+                    -fx-background-color: white;
+                    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+                    -fx-scale-x: 1.05;
+                    -fx-scale-y: 1.05;
+                    """);
+            box.setCursor(javafx.scene.Cursor.HAND);
+        });
+
+        box.setOnMouseExited(e -> {
+            box.setStyle("""
+                    -fx-padding: 10;
+                    -fx-border-color: lightgray;
+                    -fx-border-radius: 5;
+                    -fx-background-radius: 5;
+                    -fx-alignment: center;
+                    -fx-background-color: white;
+                    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
+                    -fx-scale-x: 1.0;
+                    -fx-scale-y: 1.0;
+                    """);
+            box.setCursor(javafx.scene.Cursor.DEFAULT);
+        });
 
         return box;
     }
