@@ -288,7 +288,7 @@ public class OwnerController {
             carrierNameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getUsername()));
             carrierPhoneCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPhoneNumber()));
             carrierAddressCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAddress()));
-            
+
             // Context Menu for Carrier Ratings
             ContextMenu carrierCm = new ContextMenu();
             MenuItem viewCarrierRatingsItem = new MenuItem("View Ratings");
@@ -353,7 +353,8 @@ public class OwnerController {
             java.util.List<com.group18.greengrocer.model.Order> allOrders = orderService.getAllOrdersForOwner();
             java.util.List<com.group18.greengrocer.model.Order> pending = allOrders.stream()
                     .filter(o -> o.getStatus() == com.group18.greengrocer.model.Order.Status.WAITING ||
-                            o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
+                            o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED ||
+                            o.getStatus() == com.group18.greengrocer.model.Order.Status.AVAILABLE)
                     .toList();
             orderTable.getItems().setAll(pending);
         }
@@ -521,7 +522,8 @@ public class OwnerController {
 
         try {
             double avg = productService.getAverageProductRating(selected.getId());
-            java.util.List<com.group18.greengrocer.model.ProductRating> ratings = productService.getProductRatings(selected.getId());
+            java.util.List<com.group18.greengrocer.model.ProductRating> ratings = productService
+                    .getProductRatings(selected.getId());
 
             StringBuilder sb = new StringBuilder();
             sb.append("Product: ").append(selected.getName()).append("\n");
@@ -561,7 +563,6 @@ public class OwnerController {
             AlertUtil.showError("Error", "Failed to load ratings: " + e.getMessage());
         }
     }
-
 
     @FXML
     private void handleDelete() {
@@ -994,10 +995,10 @@ public class OwnerController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/goodbye.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) logoutButton.getScene().getWindow();
-            
+
             // Use setRoot to preserve the stage properties (like maximization)
             stage.getScene().setRoot(root);
-            
+
             // Ensure full screen is maintained
             stage.setMaximized(true);
 
