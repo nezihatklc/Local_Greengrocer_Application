@@ -185,7 +185,7 @@ public class OrderService {
         double finalTotal = discountService.calculateFinalPrice(order);
         order.setTotalCost(finalTotal);
         order.setOrderTime(new java.sql.Timestamp(System.currentTimeMillis()));
-        order.setStatus(Order.Status.RECEIVED);
+        order.setStatus(Order.Status.WAITING);
         order.setItems(new ArrayList<>(cart));
 
         // 3. Coupon Consumption (Critical Step)
@@ -250,8 +250,8 @@ public class OrderService {
         if (order == null)
             throw new IllegalArgumentException("Order not found");
 
-        if (order.getStatus() != Order.Status.RECEIVED) {
-            throw new IllegalStateException("Order must be in RECEIVED state to approve.");
+        if (order.getStatus() != Order.Status.WAITING) {
+            throw new IllegalStateException("Order must be in WAITING state to approve.");
         }
 
         boolean success = orderDAO.approveOrder(orderId);
@@ -283,7 +283,7 @@ public class OrderService {
 
         if (!success) {
             throw new IllegalStateException(
-                    "Order is no longer available (PREPARING) or already selected by another carrier.");
+                    "Order is no longer available (RECEIVED) or already selected by another carrier.");
         }
 
     }
@@ -314,6 +314,22 @@ public class OrderService {
 
         if (!success) {
             throw new IllegalStateException("Failed to complete the order.");
+        }
+    }
+
+    /**
+     * Dismisses the order tracking notification for a delivered order.
+     * Changes status from DELIVERED to COMPLETED.
+     * 
+     * @param orderId The ID of the order.
+     */
+    // ASSIGNED TO: Customer
+    public void dismissTracking(int orderId) {
+        boolean success = orderDAO.dismissOrder(orderId);
+        if (!success) {
+            // It might have failed if status wasn't DELIVERED, which is fine, we just
+            // ignore.
+            System.out.println("Could not dismiss order #" + orderId + " (maybe already dismissed?)");
         }
     }
 
@@ -414,6 +430,17 @@ public class OrderService {
 
         // 6. Save rating to database
         ratingDAO.addRating(carrierRating);
+    }
+
+    /**
+     * Checks if an order has already been rated by the customer.
+     * 
+     * @param orderId The ID of the order.
+     * @return true if already rated, false otherwise.
+     */
+    public boolean isOrderRated(int orderId) {
+        CarrierRatingDAO ratingDAO = new CarrierRatingDAO();
+        return ratingDAO.hasRated(orderId);
     }
 
     /**

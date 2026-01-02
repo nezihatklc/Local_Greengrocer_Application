@@ -17,14 +17,14 @@ public class Order {
      */
     public enum Status {
         /**
-         * Order placed by customer, waiting for owner approval.
+         * Initial state: Order placed, waiting for owner approval (Bekliyor).
          */
-        RECEIVED,
+        WAITING,
 
         /**
-         * Approved by owner, preparing, waiting for carrier.
+         * Owner approved, ready (Received/Alındı).
          */
-        PREPARING,
+        RECEIVED,
 
         /**
          * Picked up by carrier.
@@ -39,17 +39,22 @@ public class Order {
         /**
          * Cancelled.
          */
-        CANCELLED;
+        CANCELLED,
+
+        /**
+         * Completed (Legacy/Archived).
+         */
+        COMPLETED;
 
         @Override
         public String toString() {
             String name = name();
             // Custom string mapping for UI
             switch (name) {
+                case "WAITING":
+                    return "Order Received";
                 case "RECEIVED":
-                    return "Received";
-                case "PREPARING":
-                    return "Preparing";
+                    return "Order Preparing";
                 case "ON_THE_WAY":
                     return "On the Way";
                 case "DELIVERED":
@@ -137,7 +142,7 @@ public class Order {
      * Initializes status to AVAILABLE and orderTime to current time.
      */
     public Order() {
-        this.status = Status.RECEIVED;
+        this.status = Status.WAITING;
         this.orderTime = new Timestamp(System.currentTimeMillis());
     }
 
@@ -178,7 +183,7 @@ public class Order {
         this.customerId = customerId;
         this.totalCost = totalCost;
         this.usedCouponId = usedCouponId;
-        this.status = Status.RECEIVED;
+        this.status = Status.WAITING;
         this.orderTime = new Timestamp(System.currentTimeMillis());
     }
 

@@ -9,18 +9,15 @@ import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.MessageService;
 import com.group18.greengrocer.util.AlertUtil;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ComboBox;
@@ -131,7 +128,8 @@ public class CustomerController {
 
         // Find latest active order
         Order activeOrder = orders.stream()
-                .filter(o -> o.getStatus() != Order.Status.CANCELLED)
+                // Ignore CANCELLED and COMPLETED (which acts as archived/dismissed)
+                .filter(o -> o.getStatus() != Order.Status.CANCELLED && o.getStatus() != Order.Status.COMPLETED)
                 .findFirst() // Sorted by date desc in DAO
                 .orElse(null);
 
@@ -162,20 +160,28 @@ public class CustomerController {
         }
 
         switch (s) {
-            case RECEIVED:
+            case WAITING:
+                statusReceived.setText("Order Received");
                 statusReceived.setStyle(activeStyle);
+                statusPreparing.setText("Order Preparing");
                 break;
-            case PREPARING:
+            case RECEIVED:
+                statusReceived.setText("Order Received");
                 statusReceived.setStyle(doneStyle);
+                statusPreparing.setText("Order Preparing");
                 statusPreparing.setStyle(activeStyle);
                 break;
             case ON_THE_WAY:
+                statusReceived.setText("Order Received");
                 statusReceived.setStyle(doneStyle);
+                statusPreparing.setText("Order Preparing");
                 statusPreparing.setStyle(doneStyle);
                 statusOnWay.setStyle(activeStyle);
                 break;
             case DELIVERED:
+                statusReceived.setText("Order Received");
                 statusReceived.setStyle(doneStyle);
+                statusPreparing.setText("Order Preparing");
                 statusPreparing.setStyle(doneStyle);
                 statusOnWay.setStyle(doneStyle);
                 statusDelivered.setStyle(activeStyle);
@@ -187,7 +193,17 @@ public class CustomerController {
 
     @FXML
     private void handleCloseTracking() {
-        if (orderTrackingBox != null) {
+        if (orderTrackingBox != null && orderTrackingBox.isVisible()) {
+            // Find the active order ID from the label or re-query (safer)
+            List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
+            Order active = orders.stream()
+                    .filter(o -> o.getStatus() != Order.Status.CANCELLED && o.getStatus() != Order.Status.COMPLETED)
+                    .findFirst().orElse(null);
+
+            if (active != null && active.getStatus() == Order.Status.DELIVERED) {
+                orderService.dismissTracking(active.getId());
+            }
+
             orderTrackingBox.setVisible(false);
             orderTrackingBox.setManaged(false);
         }
@@ -443,7 +459,8 @@ public class CustomerController {
     private void handleRateCarrier() {
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
         List<Order> deliveredOrders = orders.stream()
-                .filter(o -> o.getStatus() == Order.Status.DELIVERED)
+                // Rate both DELIVERED (fresh) and COMPLETED (dismissed/archived)
+                .filter(o -> (o.getStatus() == Order.Status.DELIVERED || o.getStatus() == Order.Status.COMPLETED))
                 .toList();
 
         if (deliveredOrders.isEmpty()) {
