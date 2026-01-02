@@ -265,6 +265,12 @@ public class ProductService {
             throw new IllegalArgumentException("Product stock cannot be negative.");
         }
 
+        if ("piece".equalsIgnoreCase(product.getUnit())) {
+            if (product.getStock() % 1 != 0 || product.getThreshold() % 1 != 0) {
+                throw new IllegalArgumentException("Products measured in 'piece' cannot have decimal stock or threshold.");
+            }
+        }
+
         if (product.getThreshold() <= 0) {
             throw new IllegalArgumentException("Product threshold must be > 0.");
         }

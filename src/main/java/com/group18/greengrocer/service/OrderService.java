@@ -66,6 +66,12 @@ public class OrderService {
         if (product == null)
             throw new IllegalArgumentException("Product not found.");
 
+        if ("piece".equalsIgnoreCase(product.getUnit())) {
+            if (amount % 1 != 0) {
+                throw new IllegalArgumentException("Products measured in 'piece' must be ordered in whole numbers (no decimals).");
+            }
+        }
+
         Order cartOrder = getCart(userId);
         List<CartItem> cart = cartOrder.getItems();
 
@@ -131,6 +137,12 @@ public class OrderService {
 
         if (product.getStock() < amount)
             throw new IllegalStateException("Insufficient stock.");
+
+        if ("piece".equalsIgnoreCase(product.getUnit())) {
+            if (amount % 1 != 0) {
+                throw new IllegalArgumentException("Products measured in 'piece' must be ordered in whole numbers (no decimals).");
+            }
+        }
 
         Order cartOrder = getCart(userId);
 

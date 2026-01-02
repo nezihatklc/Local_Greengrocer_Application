@@ -86,9 +86,11 @@ public class OwnerController {
     @FXML
     private Label effectivePriceLabel;
     @FXML
-    private TextField nameField, typeField, unitField, priceField, stockField, thresholdField;
+    private TextField nameField, typeField, priceField, stockField, thresholdField;
     @FXML
     private ComboBox<Category> categoryCombo;
+    @FXML
+    private ComboBox<String> unitCombo;
     @FXML
     private ImageView productImageView;
     @FXML
@@ -205,6 +207,10 @@ public class OwnerController {
             categoryCombo.getItems().setAll(Category.values());
         }
 
+        if (unitCombo != null) {
+            unitCombo.getItems().setAll("piece", "kg");
+        }
+
         // Messages Setup
         if (messageTable != null) {
             fromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderName()));
@@ -317,8 +323,12 @@ public class OwnerController {
     }
 
     private void refreshProductTable() {
-        if (productTable != null)
-            productTable.getItems().setAll(productService.getAllProductsForOwner());
+        if (productTable != null) {
+            productTable.getSortOrder().clear(); // Clear any UI-driven sorting
+            java.util.List<Product> products = productService.getAllProductsForOwner();
+            products.sort(java.util.Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER));
+            productTable.getItems().setAll(products);
+        }
     }
 
     private void loadCarrierData() {
@@ -360,7 +370,7 @@ public class OwnerController {
         nameField.setText(product.getName());
         categoryCombo.setValue(product.getCategory());
         typeField.setText(product.getType());
-        unitField.setText(product.getUnit());
+        unitCombo.setValue(product.getUnit());
         priceField.setText(String.valueOf(product.getPrice()));
         stockField.setText(String.valueOf(product.getStock()));
         thresholdField.setText(String.valueOf(product.getThreshold()));
@@ -387,7 +397,7 @@ public class OwnerController {
         nameField.clear();
         categoryCombo.getSelectionModel().clearSelection();
         typeField.clear();
-        unitField.clear();
+        unitCombo.getSelectionModel().clearSelection();
         priceField.clear();
         stockField.clear();
         thresholdField.clear();
@@ -438,10 +448,21 @@ public class OwnerController {
             p.setName(nameField.getText().trim());
             p.setCategory(categoryCombo.getValue());
             p.setType(typeField.getText().trim());
-            p.setUnit(unitField.getText().trim());
+            p.setUnit(unitCombo.getValue());
             p.setPrice(Double.parseDouble(priceField.getText().trim()));
-            p.setStock(Double.parseDouble(stockField.getText().trim()));
-            p.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
+            
+            double stock = Double.parseDouble(stockField.getText().trim());
+            double threshold = Double.parseDouble(thresholdField.getText().trim());
+            
+            if ("piece".equals(unitCombo.getValue())) {
+                if (stock % 1 != 0 || threshold % 1 != 0) {
+                    AlertUtil.showWarning("Validation Error", "Products measured in 'piece' cannot have decimal stock or threshold.");
+                    return;
+                }
+            }
+            
+            p.setStock(stock);
+            p.setThreshold(threshold);
             p.setImage(currentImageBytes);
             productService.addProduct(p);
 
@@ -466,10 +487,21 @@ public class OwnerController {
             selected.setName(nameField.getText().trim());
             selected.setCategory(categoryCombo.getValue());
             selected.setType(typeField.getText().trim());
-            selected.setUnit(unitField.getText().trim());
+            selected.setUnit(unitCombo.getValue());
             selected.setPrice(Double.parseDouble(priceField.getText().trim()));
-            selected.setStock(Double.parseDouble(stockField.getText().trim()));
-            selected.setThreshold(Double.parseDouble(thresholdField.getText().trim()));
+            
+            double stock = Double.parseDouble(stockField.getText().trim());
+            double threshold = Double.parseDouble(thresholdField.getText().trim());
+
+            if ("piece".equals(unitCombo.getValue())) {
+                if (stock % 1 != 0 || threshold % 1 != 0) {
+                    AlertUtil.showWarning("Validation Error", "Products measured in 'piece' cannot have decimal stock or threshold.");
+                    return;
+                }
+            }
+
+            selected.setStock(stock);
+            selected.setThreshold(threshold);
             selected.setImage(currentImageBytes);
             productService.updateProduct(selected);
             AlertUtil.showInfo("Success", "Product updated.");
@@ -545,10 +577,30 @@ public class OwnerController {
     }
 
     private boolean validateForm() {
-        if (ValidatorUtil.isEmpty(nameField.getText()))
+        if (ValidatorUtil.isEmpty(nameField.getText())) {
+            AlertUtil.showWarning("Validation Error", "Product name is required.");
             return false;
-        if (categoryCombo.getValue() == null)
+        }
+        if (categoryCombo.getValue() == null) {
+            AlertUtil.showWarning("Validation Error", "Category is required.");
             return false;
+        }
+        if (unitCombo.getValue() == null) {
+            AlertUtil.showWarning("Validation Error", "Unit selection is required.");
+            return false;
+        }
+        if (ValidatorUtil.isEmpty(priceField.getText())) {
+            AlertUtil.showWarning("Validation Error", "Price is required.");
+            return false;
+        }
+        if (ValidatorUtil.isEmpty(stockField.getText())) {
+            AlertUtil.showWarning("Validation Error", "Stock value is required.");
+            return false;
+        }
+        if (ValidatorUtil.isEmpty(thresholdField.getText())) {
+            AlertUtil.showWarning("Validation Error", "Threshold value is required.");
+            return false;
+        }
         return true;
     }
 

@@ -113,7 +113,7 @@
                             <TextField fx:id="typeField" promptText="e.g. Golden" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                             
                             <Label text="Unit:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="label"/>
-                            <TextField fx:id="unitField" promptText="e.g. kg" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <ComboBox fx:id="unitCombo" promptText="Select Unit" prefWidth="200" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                             
                             <Label text="Price (₺):" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="label"/>
                             <TextField fx:id="priceField" promptText="0.00" GridPane.rowIndex="4" GridPane.columnIndex="1"/>

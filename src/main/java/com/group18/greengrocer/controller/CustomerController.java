@@ -221,8 +221,8 @@ public class CustomerController {
 
         List<Product> products = productService.getAllProducts();
 
-        // SORT BY PRODUCT NAME
-        products.sort(Comparator.comparing(Product::getName));
+        // SORT BY PRODUCT NAME (Case-Insensitive)
+        products.sort(java.util.Comparator.comparing(Product::getName, String.CASE_INSENSITIVE_ORDER));
 
         // SEARCH KEYWORD
         String keyword = "";
@@ -307,7 +307,7 @@ public class CustomerController {
 
         // AMOUNT INPUT
         TextField amountField = new TextField();
-        amountField.setPromptText("kg");
+        amountField.setPromptText(product.getUnit());
         amountField.setMaxWidth(80);
 
         Button addButton = new Button("Add to Cart");
@@ -316,11 +316,18 @@ public class CustomerController {
                 String input = amountField.getText();
 
                 if (input == null || input.isBlank()) {
-                    showError("Please enter amount in kg.");
+                    showError("Please enter amount in " + product.getUnit() + ".");
                     return;
                 }
 
                 double amount = Double.parseDouble(input);
+
+                if ("piece".equalsIgnoreCase(product.getUnit())) {
+                    if (amount % 1 != 0) {
+                        showError("Products measured in 'piece' must be ordered in whole numbers (no decimals).");
+                        return;
+                    }
+                }
 
                 if (amount <= 0) {
                     showError("Amount must be greater than 0.");
@@ -332,7 +339,7 @@ public class CustomerController {
                 // =====================
                 if (amount > product.getStock()) {
                     showError(
-                            "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " kg");
+                            "Not enough stock.\nAvailable stock: " + String.format("%.2f", product.getStock()) + " " + product.getUnit());
                     return;
                 }
 
@@ -344,7 +351,7 @@ public class CustomerController {
                 Order cart = orderService.getCart(currentUser.getId());
                 cartButton.setText("Cart (" + cart.getItems().size() + ")");
 
-                showInfo(amount + " kg of " + product.getName() + " added to cart.");
+                showInfo(amount + " " + product.getUnit() + " of " + product.getName() + " added to cart.");
                 amountField.clear();
 
             } catch (NumberFormatException ex) {
