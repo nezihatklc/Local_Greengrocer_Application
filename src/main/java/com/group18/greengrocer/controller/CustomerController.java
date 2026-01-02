@@ -166,29 +166,32 @@ public class CustomerController {
 
         switch (s) {
             case WAITING:
-                statusReceived.setText("Order Received");
+                statusReceived.setText("📝 Order Received");
                 statusReceived.setStyle(activeStyle);
-                statusPreparing.setText("Order Preparing");
+                statusPreparing.setText("📦 Order Preparing");
                 break;
             case RECEIVED:
-                statusReceived.setText("Order Received");
+                statusReceived.setText("📝 Order Received");
                 statusReceived.setStyle(doneStyle);
-                statusPreparing.setText("Order Preparing");
+                statusPreparing.setText("📦 Order Preparing");
                 statusPreparing.setStyle(activeStyle);
                 break;
             case ON_THE_WAY:
-                statusReceived.setText("Order Received");
+                statusReceived.setText("📝 Order Received");
                 statusReceived.setStyle(doneStyle);
-                statusPreparing.setText("Order Preparing");
+                statusPreparing.setText("📦 Order Preparing");
                 statusPreparing.setStyle(doneStyle);
+                statusOnWay.setText("🛵 On the Way");
                 statusOnWay.setStyle(activeStyle);
                 break;
             case DELIVERED:
-                statusReceived.setText("Order Received");
+                statusReceived.setText("📝 Order Received");
                 statusReceived.setStyle(doneStyle);
-                statusPreparing.setText("Order Preparing");
+                statusPreparing.setText("📦 Order Preparing");
                 statusPreparing.setStyle(doneStyle);
+                statusOnWay.setText("🛵 On the Way");
                 statusOnWay.setStyle(doneStyle);
+                statusDelivered.setText("🏠 Delivered");
                 statusDelivered.setStyle(activeStyle);
                 break;
             default:
