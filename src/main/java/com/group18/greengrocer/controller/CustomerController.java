@@ -76,6 +76,22 @@ public class CustomerController {
     @FXML
     private TextField searchField;
 
+    // Order Tracking
+    @FXML
+    private VBox orderTrackingBox;
+    @FXML
+    private Label statusReceived;
+    @FXML
+    private Label statusPreparing;
+    @FXML
+    private Label statusOnWay;
+    @FXML
+    private Label statusDelivered;
+    @FXML
+    private Label trackingOrderIdLabel;
+    @FXML
+    private Button closeTrackingButton;
+
     // =====================
     // INITIALIZE
     // =====================
@@ -103,6 +119,77 @@ public class CustomerController {
         if (currentUser != null) {
             usernameLabel.setText("Customer: " + currentUser.getUsername());
             loadProducts();
+            refreshOrderTracking();
+        }
+    }
+
+    private void refreshOrderTracking() {
+        if (orderTrackingBox == null)
+            return;
+
+        List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
+
+        // Find latest active order
+        Order activeOrder = orders.stream()
+                .filter(o -> o.getStatus() != Order.Status.CANCELLED)
+                .findFirst() // Sorted by date desc in DAO
+                .orElse(null);
+
+        if (activeOrder == null) {
+            orderTrackingBox.setVisible(false);
+            orderTrackingBox.setManaged(false);
+            return;
+        }
+
+        orderTrackingBox.setVisible(true);
+        orderTrackingBox.setManaged(true);
+        trackingOrderIdLabel.setText("Order #" + activeOrder.getId() + " - " + activeOrder.getOrderTime());
+
+        // Reset Styles
+        String defaultStyle = "-fx-padding: 5 10; -fx-background-radius: 15; -fx-background-color: #E0E0E0;";
+        String activeStyle = "-fx-padding: 5 10; -fx-background-radius: 15; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;";
+        String doneStyle = "-fx-padding: 5 10; -fx-background-radius: 15; -fx-background-color: #81C784; -fx-text-fill: white;";
+
+        statusReceived.setStyle(defaultStyle);
+        statusPreparing.setStyle(defaultStyle);
+        statusOnWay.setStyle(defaultStyle);
+        statusDelivered.setStyle(defaultStyle);
+
+        Order.Status s = activeOrder.getStatus();
+
+        if (closeTrackingButton != null) {
+            closeTrackingButton.setVisible(s == Order.Status.DELIVERED);
+        }
+
+        switch (s) {
+            case RECEIVED:
+                statusReceived.setStyle(activeStyle);
+                break;
+            case PREPARING:
+                statusReceived.setStyle(doneStyle);
+                statusPreparing.setStyle(activeStyle);
+                break;
+            case ON_THE_WAY:
+                statusReceived.setStyle(doneStyle);
+                statusPreparing.setStyle(doneStyle);
+                statusOnWay.setStyle(activeStyle);
+                break;
+            case DELIVERED:
+                statusReceived.setStyle(doneStyle);
+                statusPreparing.setStyle(doneStyle);
+                statusOnWay.setStyle(doneStyle);
+                statusDelivered.setStyle(activeStyle);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @FXML
+    private void handleCloseTracking() {
+        if (orderTrackingBox != null) {
+            orderTrackingBox.setVisible(false);
+            orderTrackingBox.setManaged(false);
         }
     }
 
@@ -308,6 +395,7 @@ public class CustomerController {
 
             cartButton.setText("Cart (0)");
             showInfo("Order completed successfully.");
+            refreshOrderTracking();
 
         } catch (Exception e) {
             showError(e.getMessage());
@@ -350,7 +438,7 @@ public class CustomerController {
     private void handleRateCarrier() {
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
         List<Order> deliveredOrders = orders.stream()
-                .filter(o -> o.getStatus() == Order.Status.COMPLETED)
+                .filter(o -> o.getStatus() == Order.Status.DELIVERED)
                 .toList();
 
         if (deliveredOrders.isEmpty()) {

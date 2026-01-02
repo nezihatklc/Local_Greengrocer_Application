@@ -52,7 +52,8 @@ public class DiscountService {
      * - VAT
      */
     public double calculateFinalPrice(Order order) {
-        if (order == null) throw new IllegalArgumentException("Order cannot be null.");
+        if (order == null)
+            throw new IllegalArgumentException("Order cannot be null.");
 
         List<CartItem> items = order.getItems();
         if (items == null || items.isEmpty()) {
@@ -65,23 +66,26 @@ public class DiscountService {
         // so that OrderItems table and Invoice show the actual price paid (doubled).
         double subtotal = 0.0;
         for (CartItem item : items) {
-             // This existing helper calculates total but we need to verify if it updates the item
-             // The helper 'lineTotalWithThreshold' was originally strictly read-only. We should refactor it or do logic here.
-             
-             // Let's do the logic explicitly here to be safe and clear:
-             Product p = item.getProduct();
-             if (p != null && p.getThreshold() > 0 && p.getStock() <= p.getThreshold()) {
-                 // Double the price!
-                 // BUT we must be careful not to double it multiple times if called repeatedly.
-                 // However, OrderService constructs a fresh cart from DB products right before calling checkout/calculate.
-                 // So item.priceAtPurchase starts as base price.
-                 item.setPriceAtPurchase(p.getPrice() * 2.0);
-             } else if (p != null) {
-                 // Ensure it is base price (reset if needed, though usually fresh)
-                 item.setPriceAtPurchase(p.getPrice());
-             }
-             
-             subtotal += item.getTotalPrice(); // quantity * priceAtPurchase
+            // This existing helper calculates total but we need to verify if it updates the
+            // item
+            // The helper 'lineTotalWithThreshold' was originally strictly read-only. We
+            // should refactor it or do logic here.
+
+            // Let's do the logic explicitly here to be safe and clear:
+            Product p = item.getProduct();
+            if (p != null && p.getThreshold() > 0 && p.getStock() <= p.getThreshold()) {
+                // Double the price!
+                // BUT we must be careful not to double it multiple times if called repeatedly.
+                // However, OrderService constructs a fresh cart from DB products right before
+                // calling checkout/calculate.
+                // So item.priceAtPurchase starts as base price.
+                item.setPriceAtPurchase(p.getPrice() * 2.0);
+            } else if (p != null) {
+                // Ensure it is base price (reset if needed, though usually fresh)
+                item.setPriceAtPurchase(p.getPrice());
+            }
+
+            subtotal += item.getTotalPrice(); // quantity * priceAtPurchase
         }
 
         // 2) Coupon (fixed amount) if order.usedCouponId exists
@@ -114,13 +118,16 @@ public class DiscountService {
 
     /**
      * Validates coupon code.
+     * 
      * @return Coupon if valid, null otherwise.
      */
     public Coupon validateCoupon(String code) {
-        if (ValidatorUtil.isEmpty(code)) return null;
+        if (ValidatorUtil.isEmpty(code))
+            return null;
 
         Coupon c = couponDAO.findCouponByCode(code.trim());
-        if (c == null) return null;
+        if (c == null)
+            return null;
 
         return isCouponValid(c) ? c : null;
     }
@@ -131,10 +138,14 @@ public class DiscountService {
      * Discount amount MUST be > 0.
      */
     public void createCoupon(Coupon coupon) {
-        if (coupon == null) throw new IllegalArgumentException("Coupon cannot be null.");
-        if (ValidatorUtil.isEmpty(coupon.getCode())) throw new IllegalArgumentException("Coupon code cannot be empty.");
-        if (coupon.getDiscountAmount() <= 0) throw new IllegalArgumentException("Discount amount must be > 0.");
-        if (coupon.getExpiryDate() == null) throw new IllegalArgumentException("Expiry date is required.");
+        if (coupon == null)
+            throw new IllegalArgumentException("Coupon cannot be null.");
+        if (ValidatorUtil.isEmpty(coupon.getCode()))
+            throw new IllegalArgumentException("Coupon code cannot be empty.");
+        if (coupon.getDiscountAmount() <= 0)
+            throw new IllegalArgumentException("Discount amount must be > 0.");
+        if (coupon.getExpiryDate() == null)
+            throw new IllegalArgumentException("Expiry date is required.");
 
         // Expiry must not be in the past
         LocalDate exp = coupon.getExpiryDate().toLocalDate();
@@ -143,22 +154,25 @@ public class DiscountService {
         }
 
         boolean ok = couponDAO.addCoupon(coupon);
-        if (!ok) throw new IllegalStateException("Failed to create coupon.");
+        if (!ok)
+            throw new IllegalStateException("Failed to create coupon.");
     }
 
     /**
      * Loyalty discount percent based on user's past COMPLETED orders.
+     * 
      * @return percent (e.g., 10.0 for %10)
      */
     public double getLoyaltyDiscount(int userId) {
-        if (userId <= 0) return 0.0;
+        if (userId <= 0)
+            return 0.0;
 
         // DAO already exists: findOrdersByCustomerId
         List<Order> orders = orderDAO.findOrdersByCustomerId(userId);
 
         int completed = 0;
         for (Order o : orders) {
-            if (o != null && o.getStatus() == Order.Status.COMPLETED) {
+            if (o != null && o.getStatus() == Order.Status.DELIVERED) {
                 completed++;
             }
         }
@@ -170,8 +184,10 @@ public class DiscountService {
      * Updates loyalty rule configuration (Owner-only in controller).
      */
     public void updateLoyaltyRules(int minOrderCount, double discountRate) {
-        if (minOrderCount <= 0) throw new IllegalArgumentException("minOrderCount must be > 0.");
-        if (discountRate <= 0) throw new IllegalArgumentException("discountRate must be > 0.");
+        if (minOrderCount <= 0)
+            throw new IllegalArgumentException("minOrderCount must be > 0.");
+        if (discountRate <= 0)
+            throw new IllegalArgumentException("discountRate must be > 0.");
 
         this.loyaltyMinOrderCount = minOrderCount;
         this.loyaltyDiscountRate = discountRate;
@@ -181,24 +197,31 @@ public class DiscountService {
     // Helpers
     // -------------------------
 
-    // Helper removed as logic is now inline in calculateFinalPrice to ensure item update
+    // Helper removed as logic is now inline in calculateFinalPrice to ensure item
+    // update
     // private double lineTotalWithThreshold(CartItem item) { ... }
 
     private boolean isCouponValid(Coupon c) {
-        if (c == null) return false;
-        if (!c.isActive()) return false;
-        if (c.getDiscountAmount() <= 0) return false;
+        if (c == null)
+            return false;
+        if (!c.isActive())
+            return false;
+        if (c.getDiscountAmount() <= 0)
+            return false;
 
         if (c.getExpiryDate() != null) {
             LocalDate exp = c.getExpiryDate().toLocalDate();
-            if (exp.isBefore(LocalDate.now())) return false;
+            if (exp.isBefore(LocalDate.now()))
+                return false;
         }
         return true;
     }
 
     private double applyPercentDiscount(double total, double percent) {
-        if (percent <= 0) return total;
-        if (percent > 100) throw new IllegalArgumentException("Discount percent cannot exceed 100.");
+        if (percent <= 0)
+            return total;
+        if (percent > 100)
+            throw new IllegalArgumentException("Discount percent cannot exceed 100.");
         return total * (1.0 - (percent / 100.0));
     }
 

@@ -16,6 +16,11 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.io.IOException;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import com.group18.greengrocer.util.SessionManager;
 
 /**
  * Controller for Carrier Dashboard.
@@ -31,36 +36,60 @@ public class CarrierController {
     private User currentUser;
 
     // ===== HEADER =====
-    @FXML private Label usernameLabel;
-    @FXML private Button logoutButton;
+    @FXML
+    private Label usernameLabel;
+    @FXML
+    private Button logoutButton;
 
     // ===== AVAILABLE ORDERS =====
-    @FXML private TableView<Order> availableOrdersTable;
-    @FXML private TableColumn<Order, Integer> colOrderId;
-    @FXML private TableColumn<Order, String> colCustomerName;
-    @FXML private TableColumn<Order, String> colAddress;
-    @FXML private TableColumn<Order, String> colAvProducts;
-    @FXML private TableColumn<Order, String> colAvDate;
-    @FXML private TableColumn<Order, String> colTotalPrice;
-    @FXML private Button acceptOrderButton;
+    @FXML
+    private TableView<Order> availableOrdersTable;
+    @FXML
+    private TableColumn<Order, Integer> colOrderId;
+    @FXML
+    private TableColumn<Order, String> colCustomerName;
+    @FXML
+    private TableColumn<Order, String> colAddress;
+    @FXML
+    private TableColumn<Order, String> colAvProducts;
+    @FXML
+    private TableColumn<Order, String> colAvDate;
+    @FXML
+    private TableColumn<Order, String> colTotalPrice;
+    @FXML
+    private Button acceptOrderButton;
 
     // ===== CURRENT ORDERS =====
-    @FXML private TableView<Order> currentOrdersTable;
-    @FXML private TableColumn<Order, Integer> colCurOrderId;
-    @FXML private TableColumn<Order, String> colCurCustomer;
-    @FXML private TableColumn<Order, String> colCurAddress;
-    @FXML private TableColumn<Order, String> colCurProducts;
-    @FXML private TableColumn<Order, String> colCurTotal;
-    @FXML private TableColumn<Order, String> colCurStatus;
-    @FXML private DatePicker deliveryDatePicker;
-    @FXML private Button completeDeliveryButton;
+    @FXML
+    private TableView<Order> currentOrdersTable;
+    @FXML
+    private TableColumn<Order, Integer> colCurOrderId;
+    @FXML
+    private TableColumn<Order, String> colCurCustomer;
+    @FXML
+    private TableColumn<Order, String> colCurAddress;
+    @FXML
+    private TableColumn<Order, String> colCurProducts;
+    @FXML
+    private TableColumn<Order, String> colCurTotal;
+    @FXML
+    private TableColumn<Order, String> colCurStatus;
+    @FXML
+    private DatePicker deliveryDatePicker;
+    @FXML
+    private Button completeDeliveryButton;
 
     // ===== HISTORY =====
-    @FXML private TableView<Order> completedOrdersTable;
-    @FXML private TableColumn<Order, Integer> colHistOrderId;
-    @FXML private TableColumn<Order, String> colHistDate;
-    @FXML private TableColumn<Order, String> colHistStatus;
-    @FXML private TableColumn<Order, String> colHistRating;
+    @FXML
+    private TableView<Order> completedOrdersTable;
+    @FXML
+    private TableColumn<Order, Integer> colHistOrderId;
+    @FXML
+    private TableColumn<Order, String> colHistDate;
+    @FXML
+    private TableColumn<Order, String> colHistStatus;
+    @FXML
+    private TableColumn<Order, String> colHistRating;
 
     public void initData(User user) {
         this.currentUser = user;
@@ -107,15 +136,14 @@ public class CarrierController {
 
         colAvDate.setCellValueFactory(cd -> {
             Date d = cd.getValue().getRequestedDeliveryDate();
-            if (d == null) return new SimpleStringProperty("-");
+            if (d == null)
+                return new SimpleStringProperty("-");
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
             return new SimpleStringProperty(sdf.format(d));
         });
 
-        colTotalPrice.setCellValueFactory(cd ->
-                new SimpleStringProperty(
-                        "$" + String.format("%.2f", cd.getValue().getTotalCost())
-                ));
+        colTotalPrice.setCellValueFactory(cd -> new SimpleStringProperty(
+                "$" + String.format("%.2f", cd.getValue().getTotalCost())));
     }
 
     private void setupCurrentOrdersTable() {
@@ -145,11 +173,10 @@ public class CarrierController {
             return new SimpleStringProperty(summary);
         });
 
-        colCurTotal.setCellValueFactory(cd ->
-                new SimpleStringProperty("$" + String.format("%.2f", cd.getValue().getTotalCost())));
+        colCurTotal.setCellValueFactory(
+                cd -> new SimpleStringProperty("$" + String.format("%.2f", cd.getValue().getTotalCost())));
 
-        colCurStatus.setCellValueFactory(cd ->
-                new SimpleStringProperty(cd.getValue().getStatus().toString()));
+        colCurStatus.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getStatus().toString()));
     }
 
     private void setupHistoryTable() {
@@ -161,8 +188,7 @@ public class CarrierController {
             return new SimpleStringProperty(d != null ? d.toString() : "-");
         });
 
-        colHistStatus.setCellValueFactory(cd ->
-                new SimpleStringProperty(cd.getValue().getStatus().toString()));
+        colHistStatus.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getStatus().toString()));
 
         colHistRating.setCellValueFactory(cd -> {
             int r = userService.getRatingForOrder(cd.getValue().getId());
@@ -174,12 +200,11 @@ public class CarrierController {
 
     private void refreshAll() {
         availableOrdersTable.setItems(
-                FXCollections.observableArrayList(orderService.getPendingOrders())
-        );
+                FXCollections.observableArrayList(orderService.getPendingOrders()));
 
         List<Order> active = orderService.getOrdersByCarrier(currentUser.getId())
                 .stream()
-                .filter(o -> o.getStatus() == Order.Status.SELECTED)
+                .filter(o -> o.getStatus() == Order.Status.ON_THE_WAY)
                 .toList();
 
         currentOrdersTable.setItems(FXCollections.observableArrayList(active));
@@ -188,10 +213,8 @@ public class CarrierController {
                 FXCollections.observableArrayList(
                         orderService.getOrdersByCarrier(currentUser.getId())
                                 .stream()
-                                .filter(o -> o.getStatus() == Order.Status.COMPLETED)
-                                .toList()
-                )
-        );
+                                .filter(o -> o.getStatus() == Order.Status.DELIVERED)
+                                .toList()));
 
         boolean hasActive = !active.isEmpty();
         deliveryDatePicker.setDisable(!hasActive);
@@ -234,8 +257,7 @@ public class CarrierController {
         Date deliveryDate = Date.from(
                 deliveryDatePicker.getValue()
                         .atStartOfDay(ZoneId.systemDefault())
-                        .toInstant()
-        );
+                        .toInstant());
 
         if (selected.getOrderTime() != null &&
                 deliveryDate.before(selected.getOrderTime())) {
@@ -257,7 +279,18 @@ public class CarrierController {
 
     @FXML
     private void handleLogout() {
-        ((Stage) logoutButton.getScene().getWindow()).close();
+        try {
+            SessionManager.getInstance().logout();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Group18 GreenGrocer - Login");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Could not return to login screen.");
+        }
     }
 
     private void showAlert(String title, String msg) {

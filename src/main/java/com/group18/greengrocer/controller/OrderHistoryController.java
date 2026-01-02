@@ -153,7 +153,7 @@ public class OrderHistoryController {
                         return;
                 }
 
-                if (selected.getStatus() == Order.Status.COMPLETED) {
+                if (selected.getStatus() == Order.Status.DELIVERED) {
                         showAlert("Error", "You cannot cancel a delivered order.");
                         return;
                 }
@@ -227,7 +227,7 @@ public class OrderHistoryController {
                         return;
                 }
 
-                if (selected.getStatus() != Order.Status.COMPLETED) {
+                if (selected.getStatus() != Order.Status.DELIVERED) {
                         showAlert("Error", "You can only rate products from delivered orders.");
                         return;
                 }

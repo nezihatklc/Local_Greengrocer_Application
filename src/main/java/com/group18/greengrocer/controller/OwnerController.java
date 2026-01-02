@@ -155,12 +155,30 @@ public class OwnerController {
     private TextArea msgReplyArea;
 
     private final MessageService messageService;
+    private final com.group18.greengrocer.service.OrderService orderService; // Add OrderService
+
+    // Order Approval Tab
+    @FXML
+    private TableView<com.group18.greengrocer.model.Order> ordersTable;
+    @FXML
+    private TableColumn<com.group18.greengrocer.model.Order, Integer> orderIdCol;
+    @FXML
+    private TableColumn<com.group18.greengrocer.model.Order, String> orderCustomerCol;
+    @FXML
+    private TableColumn<com.group18.greengrocer.model.Order, String> orderDateCol;
+    @FXML
+    private TableColumn<com.group18.greengrocer.model.Order, String> orderTotalCol;
+    @FXML
+    private TableColumn<com.group18.greengrocer.model.Order, String> orderStatusCol;
+    @FXML
+    private TextArea orderDetailsArea;
 
     public OwnerController() {
         this.productService = new ProductService();
         this.userService = new UserService();
         this.discountService = new DiscountService();
         this.messageService = new MessageService();
+        this.orderService = new com.group18.greengrocer.service.OrderService();
     }
 
     public void initData(User user) {
@@ -224,9 +242,81 @@ public class OwnerController {
             handleRefreshMessages();
         }
 
+        // Order Table
+        if (ordersTable != null) {
+            orderIdCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getId()));
+            orderCustomerCol.setCellValueFactory(
+                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getCustomerId())));
+            orderDateCol
+                    .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getOrderTime().toString()));
+            orderTotalCol.setCellValueFactory(
+                    cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getTotalCost())));
+            orderStatusCol
+                    .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getStatus().toString()));
+
+            ordersTable.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldV, newV) -> showOrderDetails(newV));
+        }
+
         loadOwnerData();
         loadCarrierData();
-        handleRefreshReports(); // Load charts automatically
+        handleRefreshReports();
+        handleRefreshOrders();
+    }
+
+    // ================= ORDER APPROVAL =================
+    @FXML
+    private void handleRefreshOrders() {
+        if (ordersTable == null)
+            return;
+
+        java.util.List<com.group18.greengrocer.model.Order> allOrders = orderService.getAllOrdersForOwner();
+        // Filter mainly for RECEIVED orders for approval, but maybe show others too?
+        // User flow: "Sipariş, ilk olarak owner (işletme sahibi) onayına düşer."
+        // So we focus on RECEIVED orders.
+        java.util.List<com.group18.greengrocer.model.Order> pending = allOrders.stream()
+                .filter(o -> o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
+                .toList();
+
+        ordersTable.getItems().setAll(pending);
+    }
+
+    @FXML
+    private void handleApproveOrder() {
+        com.group18.greengrocer.model.Order selected = ordersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("No Selection", "Please select an order to approve.");
+            return;
+        }
+
+        try {
+            orderService.approveOrder(selected.getId());
+            AlertUtil.showInfo("Success", "Order #" + selected.getId() + " approved and moved to PREPARING.");
+            handleRefreshOrders();
+            orderDetailsArea.clear();
+        } catch (Exception e) {
+            AlertUtil.showError("Error", e.getMessage());
+        }
+    }
+
+    private void showOrderDetails(com.group18.greengrocer.model.Order order) {
+        if (orderDetailsArea == null)
+            return;
+        if (order == null) {
+            orderDetailsArea.clear();
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Order ID: ").append(order.getId()).append("\n");
+        sb.append("Status: ").append(order.getStatus()).append("\n");
+        sb.append("Date: ").append(order.getOrderTime()).append("\n");
+        sb.append("Total: ").append(order.getTotalCost()).append(" ₺\n\n");
+        sb.append("Items:\n");
+        for (com.group18.greengrocer.model.CartItem item : order.getItems()) {
+            sb.append("- ").append(item.getQuantity()).append(" x ")
+                    .append(item.getProduct().getName()).append("\n");
+        }
+        orderDetailsArea.setText(sb.toString());
     }
 
     private void loadOwnerData() {

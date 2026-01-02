@@ -17,33 +17,48 @@ public class Order {
      */
     public enum Status {
         /**
-         * Order placed by customer, waiting to be picked up by a carrier.
+         * Order placed by customer, waiting for owner approval.
          */
-        AVAILABLE,
+        RECEIVED,
 
         /**
-         * Order selected by a carrier and is currently in progress.
+         * Approved by owner, preparing, waiting for carrier.
          */
-        SELECTED,
+        PREPARING,
 
         /**
-         * Order successfully delivered to the customer.
+         * Picked up by carrier.
          */
-        COMPLETED,
+        ON_THE_WAY,
 
         /**
-         * Order cancelled.
+         * Delivered to customer.
+         */
+        DELIVERED,
+
+        /**
+         * Cancelled.
          */
         CANCELLED;
 
-        /**
-         * Returns a user-friendly string representation of the status.
-         * Example: "Available", "Selected".
-         */
         @Override
         public String toString() {
             String name = name();
-            return name.charAt(0) + name.substring(1).toLowerCase();
+            // Custom string mapping for UI
+            switch (name) {
+                case "RECEIVED":
+                    return "Received";
+                case "PREPARING":
+                    return "Preparing";
+                case "ON_THE_WAY":
+                    return "On the Way";
+                case "DELIVERED":
+                    return "Delivered";
+                case "CANCELLED":
+                    return "Cancelled";
+                default:
+                    return name.charAt(0) + name.substring(1).toLowerCase();
+            }
         }
     }
 
@@ -122,7 +137,7 @@ public class Order {
      * Initializes status to AVAILABLE and orderTime to current time.
      */
     public Order() {
-        this.status = Status.AVAILABLE;
+        this.status = Status.RECEIVED;
         this.orderTime = new Timestamp(System.currentTimeMillis());
     }
 
@@ -163,7 +178,7 @@ public class Order {
         this.customerId = customerId;
         this.totalCost = totalCost;
         this.usedCouponId = usedCouponId;
-        this.status = Status.AVAILABLE;
+        this.status = Status.RECEIVED;
         this.orderTime = new Timestamp(System.currentTimeMillis());
     }
 

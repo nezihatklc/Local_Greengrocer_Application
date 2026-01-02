@@ -39,6 +39,12 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        // Run database migration
+        try {
+            com.group18.greengrocer.dao.SchemaPatcher.updateSchema();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         launch(args);
     }
 }
