@@ -414,22 +414,28 @@ public class CustomerController {
                 stockLabel,
                 amountField,
                 addButton);
+        // Determine base color based on category
+        String baseBorderColor = (product.getCategory() == com.group18.greengrocer.model.Category.FRUIT)
+                ? "#FF9800" // Orange for Fruit
+                : "#4CAF50"; // Green for Veg/Default
+
         box.setStyle("""
                 -fx-padding: 10;
-                -fx-border-color: lightgray;
+                -fx-border-color: %s;
+                -fx-border-width: 2;
                 -fx-border-radius: 5;
                 -fx-background-radius: 5;
                 -fx-alignment: center;
                 -fx-background-color: white;
                 -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
-                """);
+                """.formatted(baseBorderColor));
 
         // Hover Effect
         box.setOnMouseEntered(e -> {
             box.setStyle("""
                     -fx-padding: 10;
-                    -fx-border-color: #4CAF50;
-                    -fx-border-width: 2;
+                    -fx-border-color: %s;
+                    -fx-border-width: 3;
                     -fx-border-radius: 5;
                     -fx-background-radius: 5;
                     -fx-alignment: center;
@@ -437,14 +443,15 @@ public class CustomerController {
                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
                     -fx-scale-x: 1.05;
                     -fx-scale-y: 1.05;
-                    """);
+                    """.formatted(baseBorderColor));
             box.setCursor(javafx.scene.Cursor.HAND);
         });
 
         box.setOnMouseExited(e -> {
             box.setStyle("""
                     -fx-padding: 10;
-                    -fx-border-color: lightgray;
+                    -fx-border-color: %s;
+                    -fx-border-width: 2;
                     -fx-border-radius: 5;
                     -fx-background-radius: 5;
                     -fx-alignment: center;
@@ -452,7 +459,7 @@ public class CustomerController {
                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
                     -fx-scale-x: 1.0;
                     -fx-scale-y: 1.0;
-                    """);
+                    """.formatted(baseBorderColor));
             box.setCursor(javafx.scene.Cursor.DEFAULT);
         });
 
