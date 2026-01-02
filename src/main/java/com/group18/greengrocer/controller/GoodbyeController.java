@@ -12,7 +12,16 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
-
+/**
+ * Controller for the "Goodbye" or Logout confirmation screen.
+ * <p>
+ * This class handles the visual transition when a user finishes their session.
+ * It plays a short animation of a shopping cart driving away and then
+ * automatically redirects the application back to the Login screen.
+ *
+ * @author Group18
+ * @version 1.0
+ */
 public class GoodbyeController {
 
     @FXML
@@ -20,7 +29,17 @@ public class GoodbyeController {
 
     @FXML
     private Group cartGroup;
-
+/**
+     * Initializes the controller and immediately starts the exit animation.
+     * <p>
+     * The animation logic:
+     * <ol>
+     * <li>Waits for a short delay (0.5s).</li>
+     * <li>Moves the {@code cartGroup} 800 pixels to the right (off-screen).</li>
+     * <li>Uses an EASE_IN interpolator for a natural acceleration effect.</li>
+     * <li>Calls {@link #navigateToLogin()} automatically when the animation finishes.</li>
+     * </ol>
+     */
     @FXML
     public void initialize() {
         // Animation: Cart drives away to the right
@@ -33,7 +52,10 @@ public class GoodbyeController {
 
         driveAway.play();
     }
-
+/**
+     * Loads the Login FXML view and resets the stage to the login screen.
+     * This method is triggered automatically by the animation's onFinished event.
+     */
     private void navigateToLogin() {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/group18/greengrocer/fxml/login.fxml"));
