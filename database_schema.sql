@@ -86,7 +86,17 @@ CREATE TABLE OrderItems (
     UNIQUE KEY unique_order_item (order_id, product_id)
 );
 
--- 6. Create Messages Table
+-- 6a. Create Conversations Table
+CREATE TABLE Conversations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    status ENUM('OPEN', 'CLOSED') DEFAULT 'OPEN',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    closed_at TIMESTAMP NULL,
+    FOREIGN KEY (customer_id) REFERENCES UserInfo(id)
+);
+
+-- 6b. Create Messages Table
 CREATE TABLE Messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
@@ -94,8 +104,10 @@ CREATE TABLE Messages (
     content TEXT NOT NULL,
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN DEFAULT FALSE,
+    conversation_id INT,
     FOREIGN KEY (sender_id) REFERENCES UserInfo(id),
-    FOREIGN KEY (receiver_id) REFERENCES UserInfo(id)
+    FOREIGN KEY (receiver_id) REFERENCES UserInfo(id),
+    FOREIGN KEY (conversation_id) REFERENCES Conversations(id)
 );
 
 

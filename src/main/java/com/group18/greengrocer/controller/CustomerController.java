@@ -270,7 +270,7 @@ public class CustomerController {
             }
         }
 
-        // 2. Fallback to Classpath Resource
+        // 2. Fallback to Classpath Resource (Specific name)
         if (image == null) {
             try {
                 String imageName = product.getName().toLowerCase() + ".png";
@@ -285,7 +285,26 @@ public class CustomerController {
             }
         }
 
-        // 3. Display if found
+        // 3. Fallback to Category Defaults (Requested)
+        if (image == null) {
+            try {
+                String defaultPath = "/com/group18/greengrocer/images/products/";
+                if (product.getCategory() == Category.FRUIT) {
+                    defaultPath += "furits.png"; // Per user request spelling
+                } else {
+                    defaultPath += "vegetables.png";
+                }
+
+                var stream = getClass().getResourceAsStream(defaultPath);
+                if (stream != null) {
+                    image = new Image(stream);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+
+        // 4. Display if found
         if (image != null) {
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(120);

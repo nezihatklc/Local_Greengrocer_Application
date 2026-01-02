@@ -205,6 +205,11 @@ public class OwnerController {
 
         if (categoryCombo != null) {
             categoryCombo.getItems().setAll(Category.values());
+            categoryCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+                if (currentImageBytes == null) {
+                    displayImage(null, newV);
+                }
+            });
         }
 
         if (unitCombo != null) {
@@ -376,7 +381,7 @@ public class OwnerController {
         thresholdField.setText(String.valueOf(product.getThreshold()));
 
         currentImageBytes = product.getImage();
-        displayImage(currentImageBytes);
+        displayImage(currentImageBytes, product.getCategory());
 
         try {
             double eff = productService.getEffectivePrice(product);
@@ -402,7 +407,7 @@ public class OwnerController {
         stockField.clear();
         thresholdField.clear();
         currentImageBytes = null;
-        displayImage(null);
+        displayImage(null, null);
         if (productTable != null)
             productTable.getSelectionModel().clearSelection();
     }
@@ -417,25 +422,48 @@ public class OwnerController {
         if (file != null) {
             try {
                 currentImageBytes = Files.readAllBytes(file.toPath());
-                displayImage(currentImageBytes);
+                displayImage(currentImageBytes, categoryCombo.getValue());
             } catch (IOException e) {
                 AlertUtil.showError("Image Error", "Failed to read image.");
             }
         }
     }
 
-    private void displayImage(byte[] data) {
+    private void displayImage(byte[] data, Category category) {
         if (productImageView == null)
             return;
+
+        Image image = null;
+
+        // 1. Try provided data (DB BLOB or Uploaded)
         if (data != null && data.length > 0) {
             try {
-                productImageView.setImage(new Image(new ByteArrayInputStream(data)));
+                image = new Image(new ByteArrayInputStream(data));
             } catch (Exception e) {
-                productImageView.setImage(null);
+                // Ignore corrupt BLOB
             }
-        } else {
-            productImageView.setImage(null);
         }
+
+        // 2. Fallback to Category Defaults (Requested)
+        if (image == null && category != null) {
+            try {
+                String defaultPath = "/com/group18/greengrocer/images/products/";
+                if (category == Category.FRUIT) {
+                    defaultPath += "furits.png"; // Per user request spelling
+                } else {
+                    defaultPath += "vegetables.png";
+                }
+
+                var stream = getClass().getResourceAsStream(defaultPath);
+                if (stream != null) {
+                    image = new Image(stream);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
+
+        productImageView.setImage(image);
     }
 
     @FXML
