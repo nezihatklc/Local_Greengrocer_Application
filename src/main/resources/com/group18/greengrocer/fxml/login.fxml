@@ -9,6 +9,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
            fx:controller="com.group18.greengrocer.controller.LoginController"
@@ -18,7 +20,12 @@
     <children>
         <VBox alignment="CENTER" maxWidth="420.0" spacing="24.0" styleClass="login-card">
             <children>
-                <Label text="Group18 GreenGrocer" styleClass="heading-1"/>
+                <Label text=" GreenGrocer" styleClass="heading-1"/>
+                <ImageView fitHeight="150.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../images/logo.png" />
+                    </image>
+                </ImageView>
                 
                 <Label text="Welcome back! Please login." styleClass="subtitle">
                     <VBox.margin>
