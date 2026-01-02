@@ -584,10 +584,22 @@ public class OwnerController {
             AlertUtil.showWarning("Validation", "Name is required.");
             return false;
         }
+        if (!ValidatorUtil.isValidName(nameField.getText())) {
+             AlertUtil.showWarning("Validation", "Product Name must contain only letters and spaces.");
+             return false;
+        }
+
         if (categoryCombo.getValue() == null) {
             AlertUtil.showWarning("Validation", "Category is required.");
             return false;
         }
+        
+        // Optional: Validate Type if desired
+        if (!ValidatorUtil.isEmpty(typeField.getText()) && !ValidatorUtil.isValidName(typeField.getText())) {
+             AlertUtil.showWarning("Validation", "Type must contain only letters and spaces.");
+             return false;
+        }
+
         if (ValidatorUtil.isEmpty(priceField.getText()) ||
                 ValidatorUtil.isEmpty(stockField.getText()) ||
                 ValidatorUtil.isEmpty(thresholdField.getText())) {

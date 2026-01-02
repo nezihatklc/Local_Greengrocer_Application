@@ -13,6 +13,8 @@ public class ValidatorUtil {
     // Regex Patterns
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{10,13}$");
+    // Name Pattern: Allows letters (English + Turkish) and spaces. No numbers or special symbols.
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-ZçÇğĞıİöÖşŞüÜ\\s]+$");
 
     /**
      * Checks if a string is null or empty.
@@ -75,6 +77,15 @@ public class ValidatorUtil {
         if (isEmpty(phone))
             return false;
         return PHONE_PATTERN.matcher(phone).matches();
+    }
+
+    /**
+     * Validates if the string contains only letters and spaces (for names).
+     */
+    public static boolean isValidName(String name) {
+        if (isEmpty(name))
+            return false;
+        return NAME_PATTERN.matcher(name).matches();
     }
 
     public static void validateNotNull(Object object, String message) {
@@ -151,6 +162,15 @@ public class ValidatorUtil {
      */
     public static void validateFutureDate(java.util.Date date, String message) {
         if (date == null || !date.after(new java.util.Date())) {
+            throw new ValidationException(message);
+        }
+    }
+
+    /**
+     * Validates that a name contains only letters and spaces.
+     */
+    public static void validateName(String name, String message) {
+        if (!isValidName(name)) {
             throw new ValidationException(message);
         }
     }
