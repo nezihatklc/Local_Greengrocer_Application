@@ -36,7 +36,6 @@ import java.nio.file.Files;
 import com.group18.greengrocer.model.Category;
 import com.group18.greengrocer.util.ValidatorUtil;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.geometry.Insets;
@@ -251,8 +250,14 @@ public class OwnerController {
                     .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getOrderTime().toString()));
             orderTotalCol.setCellValueFactory(
                     cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getTotalCost())));
-            orderStatusCol
-                    .setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getStatus().toString()));
+            orderStatusCol.setCellValueFactory(cell -> {
+                com.group18.greengrocer.model.Order.Status status = cell.getValue().getStatus();
+                if (status == com.group18.greengrocer.model.Order.Status.WAITING)
+                    return new SimpleStringProperty("Waiting");
+                if (status == com.group18.greengrocer.model.Order.Status.RECEIVED)
+                    return new SimpleStringProperty("Received");
+                return new SimpleStringProperty(status.toString());
+            });
 
             ordersTable.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldV, newV) -> showOrderDetails(newV));
@@ -275,7 +280,8 @@ public class OwnerController {
         // User flow: "Sipariş, ilk olarak owner (işletme sahibi) onayına düşer."
         // So we focus on RECEIVED orders.
         java.util.List<com.group18.greengrocer.model.Order> pending = allOrders.stream()
-                .filter(o -> o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
+                .filter(o -> o.getStatus() == com.group18.greengrocer.model.Order.Status.WAITING ||
+                        o.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
                 .toList();
 
         ordersTable.getItems().setAll(pending);
@@ -291,7 +297,7 @@ public class OwnerController {
 
         try {
             orderService.approveOrder(selected.getId());
-            AlertUtil.showInfo("Success", "Order #" + selected.getId() + " approved and moved to PREPARING.");
+            AlertUtil.showInfo("Success", "Order #" + selected.getId() + " approved and moved to Received.");
             handleRefreshOrders();
             orderDetailsArea.clear();
         } catch (Exception e) {
@@ -308,9 +314,14 @@ public class OwnerController {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("Order ID: ").append(order.getId()).append("\n");
-        sb.append("Status: ").append(order.getStatus()).append("\n");
+        String statusLabel = order.getStatus().toString();
+        if (order.getStatus() == com.group18.greengrocer.model.Order.Status.WAITING)
+            statusLabel = "Waiting";
+        else if (order.getStatus() == com.group18.greengrocer.model.Order.Status.RECEIVED)
+            statusLabel = "Received";
+        sb.append("Status: ").append(statusLabel).append("\n");
         sb.append("Date: ").append(order.getOrderTime()).append("\n");
-        sb.append("Total: ").append(order.getTotalCost()).append(" ₺\n\n");
+        sb.append("Total: ").append(order.getTotalCost()).append(" $\n\n");
         sb.append("Items:\n");
         for (com.group18.greengrocer.model.CartItem item : order.getItems()) {
             sb.append("- ").append(item.getQuantity()).append(" x ")

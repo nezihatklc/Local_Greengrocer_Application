@@ -15,8 +15,8 @@ public class SchemaPatcher {
             // usually safe to repeat if it just changes definition to superset
             String sql = "ALTER TABLE OrderInfo MODIFY COLUMN status " +
                     "ENUM('AVAILABLE', 'SELECTED', 'COMPLETED', 'CANCELLED', " +
-                    "'RECEIVED', 'PREPARING', 'ON_THE_WAY', 'DELIVERED') " +
-                    "DEFAULT 'RECEIVED'";
+                    "'RECEIVED', 'PREPARING', 'ON_THE_WAY', 'DELIVERED', 'WAITING') " +
+                    "DEFAULT 'WAITING'";
 
             stmt.executeUpdate(sql);
             System.out.println("Schema update: OrderInfo status enum updated.");

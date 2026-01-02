@@ -235,8 +235,8 @@ public class OrderDAO {
     // ASSIGNED TO: Carrier (Job Board)
     public List<Order> findAvailableOrders() {
         List<Order> orders = new ArrayList<>();
-        // Carriers see orders that are PREPARING (Approved by Owner)
-        String sql = "SELECT * FROM OrderInfo WHERE status = 'PREPARING' ORDER BY ordertime ASC";
+        // Carriers see orders that are RECEIVED (Approved by Owner)
+        String sql = "SELECT * FROM OrderInfo WHERE status = 'RECEIVED' ORDER BY ordertime ASC";
         System.out.println("DEBUG DAO: Executing SQL: " + sql);
 
         try (Connection conn = dbAdapter.getConnection();
@@ -289,8 +289,8 @@ public class OrderDAO {
      */
     // ASSIGNED TO: Owner
     public boolean approveOrder(int orderId) {
-        // Allow approving 'RECEIVED' (new) or 'AVAILABLE' (legacy) orders
-        String sql = "UPDATE OrderInfo SET status = 'PREPARING' WHERE id = ? AND (status = 'RECEIVED' OR status = 'AVAILABLE')";
+        // Allow approving 'WAITING' (new) or legacy orders
+        String sql = "UPDATE OrderInfo SET status = 'RECEIVED' WHERE id = ? AND (status = 'WAITING' OR status = 'RECEIVED')";
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -314,7 +314,7 @@ public class OrderDAO {
      */
     // ASSIGNED TO: Carrier
     public boolean selectOrder(int orderId, int carrierId) {
-        String sql = "UPDATE OrderInfo SET carrier_id = ?, status = 'ON_THE_WAY' WHERE id = ? AND status = 'PREPARING'";
+        String sql = "UPDATE OrderInfo SET carrier_id = ?, status = 'ON_THE_WAY' WHERE id = ? AND status = 'RECEIVED'";
 
         try (Connection conn = dbAdapter.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -403,6 +403,27 @@ public class OrderDAO {
         return false;
     }
 
+    /**
+     * Dismisses an order from the tracking view by setting its status to COMPLETED
+     * (Legacy/Archived).
+     * 
+     * @param orderId The ID of the order.
+     * @return true if successful.
+     */
+    public boolean dismissOrder(int orderId) {
+        String sql = "UPDATE OrderInfo SET status = 'COMPLETED' WHERE id = ? AND status = 'DELIVERED'";
+        try (Connection conn = dbAdapter.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, orderId);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // --- Helper Methods ---
 
     private Order mapOrder(ResultSet rs) throws SQLException {
@@ -423,7 +444,7 @@ public class OrderDAO {
             order.setStatus(Order.Status.valueOf(rs.getString("status")));
         } catch (IllegalArgumentException e) {
             // Default or error handling
-            order.setStatus(Order.Status.RECEIVED);
+            order.setStatus(Order.Status.WAITING);
         }
 
         order.setTotalCost(rs.getDouble("totalcost"));
