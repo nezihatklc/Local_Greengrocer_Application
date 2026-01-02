@@ -23,6 +23,11 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Separator;
+import javafx.collections.FXCollections;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
@@ -339,50 +344,205 @@ public class CustomerController {
     }
 
     // =====================
-    // CARRIER RATING
+    // RATE DELIVERY (CARRIER & PRODUCTS)
     // =====================
-
     @FXML
     private void handleRateCarrier() {
-
-        // 1 Customer orders
         List<Order> orders = orderService.getOrdersByCustomer(currentUser.getId());
-
-        // only those that have been DELIVERED
         List<Order> deliveredOrders = orders.stream()
                 .filter(o -> o.getStatus() == Order.Status.COMPLETED)
                 .toList();
 
         if (deliveredOrders.isEmpty()) {
-            showInfo("You have no delivered orders to rate.");
+            AlertUtil.showInfo("Info", "You have no delivered orders to rate.");
             return;
         }
 
-        // 2 Order seçimi
-        ChoiceDialog<Order> orderDialog =
+        Stage stage = new Stage();
+        stage.setTitle("Rate Delivery");
 
-                new ChoiceDialog<>(deliveredOrders.get(0), deliveredOrders);
+        showOrderSelection(stage, deliveredOrders);
+    }
 
-        orderDialog.setTitle("Rate Carrier");
-        orderDialog.setHeaderText("Select an order to rate");
-        orderDialog.setContentText("Order:");
+    // Step 1: Select Order
+    private void showOrderSelection(Stage stage, List<Order> orders) {
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(20));
+        root.setPrefSize(350, 300);
+        root.setStyle("-fx-background-color: white;");
 
-        orderDialog.showAndWait().ifPresent(selectedOrder -> {
+        Label header = new Label("Select Delivery");
+        header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-            // 3 Rating dialog
-            ChoiceDialog<Integer> ratingDialog = new ChoiceDialog<>(5, List.of(1, 2, 3, 4, 5));
+        ComboBox<Order> orderBox = new ComboBox<>(FXCollections.observableArrayList(orders));
+        orderBox.setMaxWidth(Double.MAX_VALUE);
+        orderBox.setPromptText("Choose an order...");
 
-            ratingDialog.setTitle("Rate Carrier");
-            ratingDialog.setHeaderText("Rate the carrier (1–5)");
-            ratingDialog.setContentText("Rating:");
+        Button nextBtn = new Button("Next");
+        nextBtn.setMaxWidth(Double.MAX_VALUE);
+        nextBtn.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold;");
 
-            ratingDialog.showAndWait().ifPresent(rating -> {
-
-                // Call OrderService to save rating
-                orderService.rateOrder(selectedOrder.getId(), rating, "");
-                showInfo("Thank you! Carrier rated successfully.");
-            });
+        nextBtn.setOnAction(e -> {
+            Order selected = orderBox.getValue();
+            if (selected == null) {
+                AlertUtil.showWarning("Validation", "Please select an order.");
+            } else {
+                showRatingOptions(stage, selected, orders);
+            }
         });
+
+        Button backBtn = new Button("Back");
+        backBtn.setMaxWidth(Double.MAX_VALUE);
+        backBtn.setOnAction(e -> stage.close());
+
+        root.getChildren().addAll(header, new Label("Which order do you want to rate?"), orderBox, new Separator(),
+                nextBtn, backBtn);
+        stage.setScene(new Scene(root));
+        stage.show();
+    }
+
+    // Step 2: Choose Rating Type
+    private void showRatingOptions(Stage stage, Order order, List<Order> allOrders) {
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(20));
+        root.setPrefSize(350, 350);
+        root.setStyle("-fx-background-color: white;");
+
+        Label header = new Label("Order #" + order.getId());
+        header.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        Button rateCarrierBtn = new Button("Rate Carrier");
+        rateCarrierBtn.setMaxWidth(Double.MAX_VALUE);
+        rateCarrierBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
+        rateCarrierBtn.setOnAction(e -> showCarrierRatingForm(stage, order, allOrders));
+
+        Button rateProductsBtn = new Button("Rate Products");
+        rateProductsBtn.setMaxWidth(Double.MAX_VALUE);
+        rateProductsBtn.setStyle("-fx-font-size: 14px; -fx-padding: 10px;");
+        rateProductsBtn.setOnAction(e -> showProductRatingSelection(stage, order, allOrders));
+
+        Button backBtn = new Button("Back");
+        backBtn.setMaxWidth(Double.MAX_VALUE);
+        backBtn.setOnAction(e -> showOrderSelection(stage, allOrders)); // Go back to Step 1
+
+        root.getChildren().addAll(header, new Label("What would you like to rate?"), rateCarrierBtn, rateProductsBtn,
+                new Separator(), backBtn);
+        stage.setScene(new Scene(root));
+    }
+
+    // Step 3a: Rate Carrier
+    private void showCarrierRatingForm(Stage stage, Order order, List<Order> allOrders) {
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setPrefSize(400, 450);
+        root.setStyle("-fx-background-color: white;");
+
+        Label header = new Label("Rate Carrier");
+        header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label ratingLabel = new Label("Rating:");
+        HBox ratingBox = new HBox(10);
+        ToggleGroup group = new ToggleGroup();
+        for (int i = 1; i <= 5; i++) {
+            RadioButton rb = new RadioButton(String.valueOf(i));
+            rb.setUserData(i);
+            rb.setToggleGroup(group);
+            ratingBox.getChildren().add(rb);
+        }
+
+        TextArea commentArea = new TextArea();
+        commentArea.setPromptText("Write your experience...");
+        commentArea.setPrefRowCount(3);
+        commentArea.setWrapText(true);
+
+        Button submitBtn = new Button("Submit");
+        submitBtn.setMaxWidth(Double.MAX_VALUE);
+        submitBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        submitBtn.setOnAction(e -> {
+            if (group.getSelectedToggle() == null) {
+                AlertUtil.showWarning("Validation", "Please select a rating score.");
+                return;
+            }
+            int rating = (int) group.getSelectedToggle().getUserData();
+            try {
+                orderService.rateOrder(order.getId(), rating, commentArea.getText());
+                stage.close();
+                AlertUtil.showInfo("Success", "Carrier rated successfully!");
+            } catch (Exception ex) {
+                AlertUtil.showError("Error", ex.getMessage());
+            }
+        });
+
+        Button backBtn = new Button("Back");
+        backBtn.setMaxWidth(Double.MAX_VALUE);
+        backBtn.setOnAction(e -> showRatingOptions(stage, order, allOrders));
+
+        root.getChildren().addAll(header, ratingLabel, ratingBox, new Label("Comment:"), commentArea, new Separator(),
+                submitBtn, backBtn);
+        stage.setScene(new Scene(root));
+    }
+
+    // Step 3b: Select Product to Rate
+    private void showProductRatingSelection(Stage stage, Order order, List<Order> allOrders) {
+        if (order.getItems().isEmpty()) {
+            AlertUtil.showWarning("Info", "No items in this order.");
+            return;
+        }
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setPrefSize(400, 400);
+
+        Label header = new Label("Rate Products");
+        header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        ComboBox<com.group18.greengrocer.model.CartItem> itemBox = new ComboBox<>(
+                FXCollections.observableArrayList(order.getItems()));
+        itemBox.setMaxWidth(Double.MAX_VALUE);
+        itemBox.setPromptText("Select a product...");
+
+        HBox ratingBox = new HBox(10);
+        ToggleGroup group = new ToggleGroup();
+        for (int i = 1; i <= 5; i++) {
+            RadioButton rb = new RadioButton(String.valueOf(i));
+            rb.setUserData(i);
+            rb.setToggleGroup(group);
+            ratingBox.getChildren().add(rb);
+        }
+
+        Button submitBtn = new Button("Rate");
+        submitBtn.setMaxWidth(Double.MAX_VALUE);
+        submitBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        submitBtn.setOnAction(e -> {
+            com.group18.greengrocer.model.CartItem item = itemBox.getValue();
+            if (item == null) {
+                AlertUtil.showWarning("Validation", "Select a product.");
+                return;
+            }
+            if (group.getSelectedToggle() == null) {
+                AlertUtil.showWarning("Validation", "Select a rating.");
+                return;
+            }
+            int rating = (int) group.getSelectedToggle().getUserData();
+            try {
+                orderService.rateProduct(currentUser.getId(), item.getProduct().getId(), rating);
+                AlertUtil.showInfo("Success", "Product rated!");
+                // Optionally reset form
+                group.selectToggle(null);
+            } catch (Exception ex) {
+                AlertUtil.showError("Error", ex.getMessage());
+            }
+        });
+
+        Button backBtn = new Button("Back");
+        backBtn.setMaxWidth(Double.MAX_VALUE);
+        backBtn.setOnAction(e -> showRatingOptions(stage, order, allOrders));
+
+        root.getChildren().addAll(header, new Label("Product:"), itemBox, new Label("Score:"), ratingBox,
+                new Separator(), submitBtn, backBtn);
+        stage.setScene(new Scene(root));
     }
 
     // =====================
