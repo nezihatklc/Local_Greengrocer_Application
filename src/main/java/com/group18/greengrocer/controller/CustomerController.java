@@ -8,6 +8,7 @@ import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.service.OrderService;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.MessageService;
+import com.group18.greengrocer.util.AlertUtil;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,12 +23,16 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -466,68 +471,112 @@ public class CustomerController {
     // =====================
     @FXML
     private void handleMessageOwner() {
+        Stage stage = new Stage();
+        stage.setTitle("Support Chat - " + currentUser.getUsername());
 
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Message to Owner");
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+        root.setPrefSize(400, 500);
 
-        ButtonType sendButtonType = new ButtonType("Send", ButtonBar.ButtonData.OK_DONE);
+        // Chat List
+        ListView<Message> chatList = new ListView<>();
+        VBox.setVgrow(chatList, Priority.ALWAYS);
 
-        dialog.getDialogPane().getButtonTypes()
-                .addAll(sendButtonType, ButtonType.CANCEL);
+        // Custom Cell Factory for Chat Bubbles
+        chatList.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(Message msg, boolean empty) {
+                super.updateItem(msg, empty);
+                if (empty || msg == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    boolean isMe = (msg.getSenderId() == currentUser.getId());
+                    String sender = isMe ? "You" : "Owner";
+                    String time = "";
+                    if (msg.getSentAt() != null) {
+                        time = new java.text.SimpleDateFormat("dd/MM HH:mm").format(msg.getSentAt());
+                    }
 
-        TextArea messageArea = new TextArea();
-        messageArea.setPromptText("Write your message to the owner...");
-        messageArea.setWrapText(true);
-        messageArea.setPrefHeight(150);
+                    setText(sender + " (" + time + "):\n" + msg.getContent());
 
-        dialog.getDialogPane().setContent(messageArea);
-
-        dialog.setResultConverter(button -> {
-            if (button == sendButtonType) {
-
-                String message = messageArea.getText();
-
-                if (message == null || message.isBlank()) {
-                    showError("Message cannot be empty.");
-                    return null;
-                }
-
-                // Send message using MessageService
-                // Sender: currentUser.getId()
-                // Receiver: 1 (Owner) - Hardcoded/Assumed for now
-                try {
-                    Message msgObj = new Message();
-                    msgObj.setSenderId(currentUser.getId());
-                    msgObj.setReceiverId(1); // Owner
-                    msgObj.setContent(message);
-                    msgObj.setSentAt(new java.sql.Timestamp(System.currentTimeMillis()));
-
-                    messageService.sendMessage(msgObj);
-                    showInfo("Message sent to owner.");
-                } catch (Exception e) {
-                    showError("Failed to send message: " + e.getMessage());
+                    if (isMe) {
+                        // User message: Aligned right (text), Blueish background
+                        setStyle(
+                                "-fx-control-inner-background: #E3F2FD; -fx-alignment: center-right; -fx-text-alignment: right;");
+                    } else {
+                        // Owner message: Aligned left, White/Gray background
+                        setStyle("-fx-control-inner-background: #FFFFFF; -fx-font-weight: bold;");
+                    }
                 }
             }
-            return null;
         });
 
-        dialog.showAndWait();
+        // Input Area
+        TextArea inputArea = new TextArea();
+        inputArea.setPromptText("Type a message...");
+        inputArea.setPrefRowCount(3);
+        inputArea.setWrapText(true);
+        inputArea.setMaxHeight(80);
+
+        // Buttons
+        HBox bottom = new HBox(10);
+        Button refreshBtn = new Button("Refresh");
+        Button sendBtn = new Button("Send");
+        sendBtn.setDefaultButton(true); // Enter triggers send if focused (careful with TextArea)
+
+        bottom.getChildren().addAll(refreshBtn, inputArea, sendBtn);
+        HBox.setHgrow(inputArea, Priority.ALWAYS);
+
+        // Load Messages Logic
+        Runnable loadMessages = () -> {
+            try {
+                List<Message> history = messageService.getMessagesForCustomer(currentUser.getId());
+                chatList.getItems().setAll(history);
+                if (!history.isEmpty()) {
+                    chatList.scrollTo(history.size() - 1);
+                }
+            } catch (Exception e) {
+                System.err.println("Load failed: " + e.getMessage());
+            }
+        };
+
+        // Actions
+        refreshBtn.setOnAction(e -> loadMessages.run());
+
+        sendBtn.setOnAction(e -> {
+            String txt = inputArea.getText().trim();
+            if (txt.isEmpty())
+                return;
+
+            try {
+                Message m = new Message();
+                m.setSenderId(currentUser.getId());
+                m.setContent(txt);
+                messageService.sendMessage(m);
+                inputArea.clear();
+                loadMessages.run(); // Refresh to see sent message
+            } catch (Exception ex) {
+                AlertUtil.showError("Error", "Could not send: " + ex.getMessage());
+            }
+        });
+
+        root.getChildren().addAll(new Label("Chat History:"), chatList, bottom);
+        stage.setScene(new Scene(root));
+        stage.show();
+
+        // Initial Load
+        loadMessages.run();
     }
 
     // =====================
     // UTIL
     // =====================
     private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        AlertUtil.showInfo("Info", message);
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText("Error");
-        alert.setContentText(message);
-        alert.showAndWait();
+        AlertUtil.showError("Error", message);
     }
 }

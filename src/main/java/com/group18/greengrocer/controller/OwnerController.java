@@ -2,9 +2,11 @@ package com.group18.greengrocer.controller;
 
 import com.group18.greengrocer.model.Product;
 import com.group18.greengrocer.model.User;
+import com.group18.greengrocer.model.Message;
 import com.group18.greengrocer.service.ProductService;
 import com.group18.greengrocer.service.UserService;
 import com.group18.greengrocer.service.DiscountService;
+import com.group18.greengrocer.service.MessageService;
 import com.group18.greengrocer.util.AlertUtil;
 import com.group18.greengrocer.util.SessionManager;
 import javafx.beans.property.SimpleObjectProperty;
@@ -131,10 +133,29 @@ public class OwnerController {
     @FXML
     private TextField loyaltyRateField;
 
+    // Messages
+    @FXML
+    private TableView<Message> messagesTable;
+    @FXML
+    private TableColumn<Message, String> msgFromCol;
+    @FXML
+    private TableColumn<Message, String> msgDateCol;
+    @FXML
+    private TableColumn<Message, String> msgContentCol;
+    @FXML
+    private TextField msgSenderField;
+    @FXML
+    private TextArea msgReadArea;
+    @FXML
+    private TextArea msgReplyArea;
+
+    private final MessageService messageService;
+
     public OwnerController() {
         this.productService = new ProductService();
         this.userService = new UserService();
         this.discountService = new DiscountService();
+        this.messageService = new MessageService();
     }
 
     public void initData(User user) {
@@ -182,6 +203,20 @@ public class OwnerController {
 
         if (categoryCombo != null) {
             categoryCombo.getItems().setAll(Category.values());
+        }
+
+        // Messages Setup
+        if (messagesTable != null) {
+            msgFromCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getSenderName()));
+            msgDateCol.setCellValueFactory(cell -> {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
+                return new SimpleStringProperty(sdf.format(cell.getValue().getSentAt()));
+            });
+            msgContentCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getContent()));
+
+            messagesTable.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldV, newV) -> showMessageDetails(newV));
+            handleRefreshMessages();
         }
 
         loadOwnerData();
@@ -591,5 +626,86 @@ public class OwnerController {
             seriesT.getData().add(new javafx.scene.chart.XYChart.Data<>(date, val));
         });
         revenueChart.getData().add(seriesT);
+    }
+
+    // ================= MESSAGE LOGIC =================
+
+    @FXML
+    private void handleRefreshMessages() {
+        if (messagesTable == null)
+            return;
+        try {
+            messagesTable.getItems().setAll(messageService.getMessagesForOwner());
+        } catch (Exception e) {
+            // Might fail if not logged in as Owner, but this is OwnerController
+            System.err.println("Failed to load messages: " + e.getMessage());
+        }
+    }
+
+    private void showMessageDetails(Message msg) {
+        if (msgSenderField == null || msgReadArea == null)
+            return;
+
+        if (msg == null) {
+            msgSenderField.clear();
+            msgReadArea.clear();
+            msgReplyArea.clear();
+            return;
+        }
+
+        msgSenderField.setText(msg.getSenderName() + " (ID: " + msg.getSenderId() + ")");
+        msgReadArea.setText(msg.getContent());
+
+        // Auto-mark as read if unread
+        if (!msg.isRead()) {
+            try {
+                messageService.markMessageAsRead(msg.getId());
+                msg.setRead(true);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+
+    @FXML
+    private void handleMarkAsRead() {
+        Message selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected != null && !selected.isRead()) {
+            messageService.markMessageAsRead(selected.getId());
+            selected.setRead(true);
+            messagesTable.refresh();
+            AlertUtil.showInfo("Success", "Marked as read.");
+        }
+    }
+
+    @FXML
+    private void handleSendReply() {
+        Message selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            AlertUtil.showWarning("No Selection", "Select a message to reply to.");
+            return;
+        }
+
+        String replyText = msgReplyArea.getText();
+        if (ValidatorUtil.isEmpty(replyText)) {
+            AlertUtil.showWarning("Validation", "Reply cannot be empty.");
+            return;
+        }
+
+        try {
+            messageService.replyToMessage(selected.getId(), replyText);
+
+            // Replaced Alert with clearing and status update to prevent potential
+            // focus/stage issues
+            msgReplyArea.clear();
+            msgReplyArea.setPromptText("Reply sent successfully!");
+
+            // Refresh table
+            handleRefreshMessages();
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+            AlertUtil.showError("Error", "Failed to send reply: " + e.getMessage());
+        }
     }
 }
