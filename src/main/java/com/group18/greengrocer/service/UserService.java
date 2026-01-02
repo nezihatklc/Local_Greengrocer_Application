@@ -36,7 +36,8 @@ public class UserService {
     /** Get user by id */
     // ASSIGNED TO: Team Leader
     public User getUserById(int userId) {
-        if (userId <= 0) throw new IllegalArgumentException("Invalid user id.");
+        if (userId <= 0)
+            throw new IllegalArgumentException("Invalid user id.");
         return userDAO.findUserById(userId);
     }
 
@@ -61,22 +62,29 @@ public class UserService {
      */
     // ASSIGNED TO: Team Leader
     public void updateUser(User user) {
-        if (user == null) throw new IllegalArgumentException("User cannot be null.");
-        if (user.getId() <= 0) throw new IllegalArgumentException("Invalid user id.");
+        if (user == null)
+            throw new IllegalArgumentException("User cannot be null.");
+        if (user.getId() <= 0)
+            throw new IllegalArgumentException("Invalid user id.");
 
         // Fetch existing user first (existence + keep password/role safely)
         User existing = userDAO.findUserById(user.getId());
-        if (existing == null) throw new IllegalArgumentException("User not found.");
+        if (existing == null)
+            throw new IllegalArgumentException("User not found.");
 
         // Normalize inputs
         String username = safeTrim(user.getUsername());
-        String address  = safeTrim(user.getAddress());
-        String phone    = safeTrim(user.getPhoneNumber());
+        String address = safeTrim(user.getAddress());
+        String phone = safeTrim(user.getPhoneNumber());
 
-        if (username.isEmpty()) throw new IllegalArgumentException("Username cannot be empty.");
-        if (address.isEmpty())  throw new IllegalArgumentException("Address cannot be empty.");
-        if (phone.isEmpty())    throw new IllegalArgumentException("Phone number cannot be empty.");
-        if (!ValidatorUtil.isValidPhoneNumber(phone)) throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
+        if (username.isEmpty())
+            throw new IllegalArgumentException("Username cannot be empty.");
+        if (address.isEmpty())
+            throw new IllegalArgumentException("Address cannot be empty.");
+        if (phone.isEmpty())
+            throw new IllegalArgumentException("Phone number cannot be empty.");
+        if (!ValidatorUtil.isValidPhoneNumber(phone))
+            throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 
         // CRITICAL: Profile update must NEVER change the role.
         // We force the existing role, ignoring whatever came from the UI.
@@ -85,7 +93,8 @@ public class UserService {
         // Username unique check ONLY if changed
         if (!existing.getUsername().equals(username)) {
             User check = userDAO.findUserByUsername(username);
-            if (check != null) throw new IllegalArgumentException("Username already taken.");
+            if (check != null)
+                throw new IllegalArgumentException("Username already taken.");
         }
 
         // Password safety:
@@ -96,7 +105,10 @@ public class UserService {
         } else {
             // If password is provided (optional), enforce your ValidatorUtil rule
             if (!ValidatorUtil.isStrongPassword(incomingPass)) {
-                throw new IllegalArgumentException("Weak password (min 8, upper+lower+digit).");
+                // If it's the SAME password as before, allow it (legacy support)
+                if (!incomingPass.equals(existing.getPassword())) {
+                    throw new IllegalArgumentException("Weak password (min 8, upper+lower+digit).");
+                }
             }
         }
 
@@ -106,7 +118,8 @@ public class UserService {
         user.setPhoneNumber(phone);
 
         boolean ok = userDAO.updateUser(user);
-        if (!ok) throw new IllegalArgumentException("Profile update failed.");
+        if (!ok)
+            throw new IllegalArgumentException("Profile update failed.");
     }
 
     // -------------------------
@@ -119,7 +132,8 @@ public class UserService {
      */
     // ASSIGNED TO: Team Leader
     public void changePassword(int userId, String oldPass, String newPass) {
-        if (userId <= 0) throw new IllegalArgumentException("Invalid user id.");
+        if (userId <= 0)
+            throw new IllegalArgumentException("Invalid user id.");
 
         oldPass = safeTrim(oldPass);
         newPass = safeTrim(newPass);
@@ -131,7 +145,8 @@ public class UserService {
             throw new IllegalArgumentException("New password must be different.");
 
         User existing = userDAO.findUserById(userId);
-        if (existing == null) throw new IllegalArgumentException("User not found.");
+        if (existing == null)
+            throw new IllegalArgumentException("User not found.");
 
         if (existing.getPassword() == null || !existing.getPassword().equals(oldPass))
             throw new IllegalArgumentException("Old password is incorrect.");
@@ -140,7 +155,8 @@ public class UserService {
             throw new IllegalArgumentException("Weak password (min 8, upper+lower+digit).");
 
         boolean ok = userDAO.updatePassword(userId, newPass);
-        if (!ok) throw new IllegalArgumentException("Password update failed.");
+        if (!ok)
+            throw new IllegalArgumentException("Password update failed.");
     }
 
     // -------------------------
@@ -153,18 +169,24 @@ public class UserService {
      */
     // ASSIGNED TO: Owner
     public void addCarrier(User carrier) {
-        if (carrier == null) throw new IllegalArgumentException("Carrier cannot be null.");
+        if (carrier == null)
+            throw new IllegalArgumentException("Carrier cannot be null.");
 
         String username = safeTrim(carrier.getUsername());
         String password = safeTrim(carrier.getPassword());
-        String address  = safeTrim(carrier.getAddress());
-        String phone    = safeTrim(carrier.getPhoneNumber());
+        String address = safeTrim(carrier.getAddress());
+        String phone = safeTrim(carrier.getPhoneNumber());
 
-        if (username.isEmpty()) throw new IllegalArgumentException("Username cannot be empty.");
-        if (password.isEmpty()) throw new IllegalArgumentException("Password cannot be empty.");
-        if (address.isEmpty())  throw new IllegalArgumentException("Address cannot be empty.");
-        if (phone.isEmpty())    throw new IllegalArgumentException("Phone number cannot be empty.");
-        if (!ValidatorUtil.isValidPhoneNumber(phone)) throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
+        if (username.isEmpty())
+            throw new IllegalArgumentException("Username cannot be empty.");
+        if (password.isEmpty())
+            throw new IllegalArgumentException("Password cannot be empty.");
+        if (address.isEmpty())
+            throw new IllegalArgumentException("Address cannot be empty.");
+        if (phone.isEmpty())
+            throw new IllegalArgumentException("Phone number cannot be empty.");
+        if (!ValidatorUtil.isValidPhoneNumber(phone))
+            throw new IllegalArgumentException("Invalid phone number format (10-13 digits).");
 
         if (userDAO.findUserByUsername(username) != null)
             throw new IllegalArgumentException("Username already taken.");
@@ -179,7 +201,8 @@ public class UserService {
         carrier.setPhoneNumber(phone);
 
         boolean ok = userDAO.createUser(carrier);
-        if (!ok) throw new IllegalArgumentException("Carrier could not be created.");
+        if (!ok)
+            throw new IllegalArgumentException("Carrier could not be created.");
     }
 
     /**
@@ -188,14 +211,18 @@ public class UserService {
      */
     // ASSIGNED TO: Owner
     public void removeCarrier(int carrierId) {
-        if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
+        if (carrierId <= 0)
+            throw new IllegalArgumentException("Invalid carrier id.");
 
         User existing = userDAO.findUserById(carrierId);
-        if (existing == null) throw new IllegalArgumentException("Carrier not found.");
-        if (existing.getRole() != Role.CARRIER) throw new IllegalArgumentException("User is not a carrier.");
+        if (existing == null)
+            throw new IllegalArgumentException("Carrier not found.");
+        if (existing.getRole() != Role.CARRIER)
+            throw new IllegalArgumentException("User is not a carrier.");
 
         boolean ok = userDAO.deleteUser(carrierId);
-        if (!ok) throw new IllegalArgumentException("Carrier could not be removed.");
+        if (!ok)
+            throw new IllegalArgumentException("Carrier could not be removed.");
     }
 
     // -------------------------
@@ -205,27 +232,34 @@ public class UserService {
     /** Returns average rating for a carrier from CarrierRatings table. */
     // ASSIGNED TO: Carrier
     public double getCarrierRating(int carrierId) {
-        if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
+        if (carrierId <= 0)
+            throw new IllegalArgumentException("Invalid carrier id.");
 
         // Optional: verify it is a carrier
         User u = userDAO.findUserById(carrierId);
-        if (u == null) throw new IllegalArgumentException("Carrier not found.");
-        if (u.getRole() != Role.CARRIER) throw new IllegalArgumentException("User is not a carrier.");
+        if (u == null)
+            throw new IllegalArgumentException("Carrier not found.");
+        if (u.getRole() != Role.CARRIER)
+            throw new IllegalArgumentException("User is not a carrier.");
 
         return carrierRatingDAO.getAverageRatingForCarrier(carrierId);
     }
 
-    /** Returns the specific rating for a completed order. Returns 0 if not rated. */
+    /**
+     * Returns the specific rating for a completed order. Returns 0 if not rated.
+     */
     // ASSIGNED TO: Carrier
     public int getRatingForOrder(int orderId) {
-        if (orderId <= 0) return 0;
+        if (orderId <= 0)
+            return 0;
         return carrierRatingDAO.getRatingByOrderId(orderId);
     }
-    
+
     /** Returns all ratings/comments for a carrier. */
     public List<com.group18.greengrocer.model.CarrierRating> getCarrierRatings(int carrierId) {
-    	if (carrierId <= 0) throw new IllegalArgumentException("Invalid carrier id.");
-    	return carrierRatingDAO.getRatingsForCarrier(carrierId);
+        if (carrierId <= 0)
+            throw new IllegalArgumentException("Invalid carrier id.");
+        return carrierRatingDAO.getRatingsForCarrier(carrierId);
     }
 
     // -------------------------

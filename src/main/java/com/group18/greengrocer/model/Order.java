@@ -44,7 +44,17 @@ public class Order {
         /**
          * Completed (Legacy/Archived).
          */
-        COMPLETED;
+        COMPLETED,
+
+        /**
+         * Legacy/Alternative status for Approved/Ready orders.
+         */
+        AVAILABLE,
+
+        /**
+         * Carrier has selected the order.
+         */
+        SELECTED;
 
         @Override
         public String toString() {
@@ -52,9 +62,12 @@ public class Order {
             // Custom string mapping for UI
             switch (name) {
                 case "WAITING":
-                    return "Order Received";
+                    return "Waiting"; // Changed from "Order Received" to "Waiting" to match User Request terminology
                 case "RECEIVED":
-                    return "Order Preparing";
+                case "AVAILABLE": // In case DB uses AVAILABLE for approved orders
+                    return "Received";
+                case "SELECTED":
+                    return "Carrier Assigned";
                 case "ON_THE_WAY":
                     return "On the Way";
                 case "DELIVERED":
