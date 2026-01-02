@@ -88,9 +88,10 @@ public class OrderService {
         }
 
         double price = product.getPrice();
-        if (product.getStock() <= product.getThreshold()) {
-            price *= 2.0;
-        }
+        // Logic moved to DiscountService to avoid double application
+        // if (product.getStock() <= product.getThreshold()) {
+        //    price *= 2.0;
+        // }
 
         CartItem newItem = new CartItem(product, amount);
         newItem.setPriceAtPurchase(price);
@@ -171,9 +172,10 @@ public class OrderService {
             item.setProduct(product);
             double currentPrice = product.getPrice();
 
-            if (product.getStock() <= product.getThreshold()) {
-                currentPrice *= 2.0;
-            }
+            // Logic moved to DiscountService
+            // if (product.getStock() <= product.getThreshold()) {
+            //    currentPrice *= 2.0;
+            // }
 
             item.setPriceAtPurchase(currentPrice);
 
