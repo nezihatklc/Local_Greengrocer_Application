@@ -18,7 +18,7 @@ public class Constants {
     /**
      * The JDBC URL for connecting to the local MySQL database.
      */
-    public static final String DB_URL = "jdbc:mysql://localhost:3306/greengrocer_db";
+    public static final String DB_URL = "jdbc:mysql://localhost:3306/greengrocer_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
     /**
      * The database username.
      * <p>

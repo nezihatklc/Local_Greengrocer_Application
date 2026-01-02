@@ -32,7 +32,7 @@ CREATE TABLE ProductInfo (
     price DECIMAL(10, 2) NOT NULL,
     stock DECIMAL(10, 2) NOT NULL,
     threshold DECIMAL(10, 2) NOT NULL DEFAULT 5.00, 
-    imagelocation BLOB, 
+    imagelocation MEDIUMBLOB, 
     unit VARCHAR(10) DEFAULT 'kg'
 );
 
