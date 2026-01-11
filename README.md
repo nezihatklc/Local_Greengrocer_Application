@@ -72,6 +72,21 @@ Some users are defined in the database schema (`database_schema.sql`) for testin
 | **Carrier** | `carr` | `carr` |
 | **Customer** | `cust` | `cust` |
 
+## 📸 Screenshots
+
+### Login Screen & Customer Dashboard
+
+| Login Screen | Customer Dashboard |
+|:---:|:---:|
+| <img width="1909" height="1019" alt="Login Screen" src="https://github.com/user-attachments/assets/ac177bfd-21f2-4f4d-ab32-0a93a52f2aff" /> | <img width="1919" height="1017" alt="Customer Dashboard" src="https://github.com/user-attachments/assets/37c6f9d0-e829-4f91-8857-25d1071a6e07" /> |
+
+### Owner Dashboard & Carrier Dashboard
+
+| Owner Dashboard | Carrier Dashboard |
+|:---:|:---:|
+| <img width="1912" height="1011" alt="Owner Dashboard" src="https://github.com/user-attachments/assets/8b111677-f334-434c-8bad-3e4f99f8142a" /> | <img width="1916" height="1018" alt="Carrier Dashboard" src="https://github.com/user-attachments/assets/e46ae77e-074a-4fdb-b37e-86c7f4220fc3" /> |
+
+
 ## 📂 Project Structure
 
 *   `src/main/java/com/group18/greengrocer`
